@@ -1,0 +1,99 @@
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.h:57: warning: Compound QtExt::EmfPaintEngine is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.h:98: warning: Compound QtExt::EmfPaintDevice is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_GraphicsRectItemWithHatch.h:20: warning: Compound QtExt::GraphicsRectItemWithHatch is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_TextFrameInformations.h:23: warning: Compound QtExt::TextFrameInformations::TextFrameInfo is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_PainterSaver.h:9: warning: Compound QtExt::PainterSaver is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_ChartScene.h:9: warning: Compound QtExt::ChartScene is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_Report.h:26: warning: Compound QtExt::Report is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_IOCompress.cpp:60: warning: Compound QtExt::IOCompressPrivate is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.cpp:38: warning: Member HPEN (typedef) of namespace QtExt is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_GraphicsRectItemWithHatch.h:9: warning: Member HatchingType (enumeration) of namespace QtExt is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_RectHatchingFunctions.cpp:15: warning: Member drawHorizontalLines(QPainter *painter, const QRectF &rect, int distance) (function) of namespace QtExt is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_RectHatchingFunctions.cpp:33: warning: Member drawVerticalLines(QPainter *painter, const QRectF &rect, int distance) (function) of namespace QtExt is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_RectHatchingFunctions.cpp:51: warning: Member drawLinesObliqueLeftToRight(QPainter *painter, const QRectF &rect, int distance) (function) of namespace QtExt is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_RectHatchingFunctions.cpp:80: warning: Member drawLinesObliqueRightToLeft(QPainter *painter, const QRectF &rect, int distance) (function) of namespace QtExt is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_RectHatchingFunctions.cpp:111: warning: Member degree(qreal arc) (function) of namespace QtExt is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_RectHatchingFunctions.cpp:116: warning: Member degree16(qreal angle) (function) of namespace QtExt is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_RectHatchingFunctions.cpp:120: warning: Member drawInsulationHatch(QPainter *painter, const QRectF &rect, int density) (function) of namespace QtExt is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_ReportUtilities.cpp:5: warning: Member htmlCaptionFormat(const QString &text, FormatTags level) (function) of namespace QtExt is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_ReportUtilities.cpp:17: warning: Member smallerFormatTag(FormatTags org) (function) of namespace QtExt is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_ReportUtilities.cpp:29: warning: Member biggerFormatTag(FormatTags org) (function) of namespace QtExt is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_GraphicsRectItemWithHatch.cpp:8: warning: Member SQRT2 (variable) of namespace QtExt is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_GraphicsRectItemWithHatch.cpp:9: warning: Member PI (variable) of namespace QtExt is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_RectHatchingFunctions.cpp:7: warning: Member SQRT2 (variable) of namespace QtExt is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_RectHatchingFunctions.cpp:8: warning: Member PI (variable) of namespace QtExt is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_BrowseFilenameWidget.h:27: warning: Member BrowseFilenameWidget(QWidget *parent=0) (function) of class QtExt::BrowseFilenameWidget is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_ChartScene.h:12: warning: Member ChartScene(bool onScreen, QPaintDevice *device, QObject *parent=0) (function) of class QtExt::ChartScene is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_ChartScene.h:18: warning: Member penWidth(qreal minWidth, qreal resWidth) (function) of class QtExt::ChartScene is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_ChartScene.h:20: warning: Member m_topBorder (variable) of class QtExt::ChartScene is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_ChartScene.h:21: warning: Member m_bottomBorder (variable) of class QtExt::ChartScene is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_ChartScene.h:22: warning: Member m_leftBorder (variable) of class QtExt::ChartScene is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_ChartScene.h:23: warning: Member m_rightBorder (variable) of class QtExt::ChartScene is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_ColorButton.h:14: warning: Member ColorButton(QWidget *parent=0) (function) of class QtExt::ColorButton is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_ColorButton.h:23: warning: Member paintEvent(QPaintEvent *) (function) of class QtExt::ColorButton is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.h:100: warning: Member EmfPaintDevice(const QSize &s, const QString &fileName) (function) of class QtExt::EmfPaintDevice is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.h:101: warning: Member EmfPaintDevice(const QSize &s, QIODevice *outputDevice) (function) of class QtExt::EmfPaintDevice is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.h:103: warning: Member paintEngine() const  (function) of class QtExt::EmfPaintDevice is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.h:106: warning: Member metric(PaintDeviceMetric) const  (function) of class QtExt::EmfPaintDevice is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.h:59: warning: Member EmfPaintEngine(const QString &) (function) of class QtExt::EmfPaintEngine is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.h:60: warning: Member EmfPaintEngine(QIODevice *outputDevice) (function) of class QtExt::EmfPaintEngine is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.h:62: warning: Member begin(QPaintDevice *) (function) of class QtExt::EmfPaintEngine is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.h:63: warning: Member end() (function) of class QtExt::EmfPaintEngine is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.h:64: warning: Member updateState(const QPaintEngineState &) (function) of class QtExt::EmfPaintEngine is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.h:65: warning: Member drawEllipse(const QRectF &) (function) of class QtExt::EmfPaintEngine is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.h:66: warning: Member drawImage(const QRectF &r, const QImage &im, const QRectF &sr) (function) of class QtExt::EmfPaintEngine is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.h:67: warning: Member type() const  (function) of class QtExt::EmfPaintEngine is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.h:68: warning: Member drawPoints(const QPointF *points, int pointCount) (function) of class QtExt::EmfPaintEngine is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.h:69: warning: Member drawLines(const QLineF *, int) (function) of class QtExt::EmfPaintEngine is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.h:70: warning: Member drawPath(const QPainterPath &path) (function) of class QtExt::EmfPaintEngine is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.h:71: warning: Member drawPolygon(const QPointF *, int, PolygonDrawMode) (function) of class QtExt::EmfPaintEngine is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.h:72: warning: Member drawTextItem(const QPointF &, const QTextItem &) (function) of class QtExt::EmfPaintEngine is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.h:73: warning: Member drawRects(const QRectF *, int) (function) of class QtExt::EmfPaintEngine is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.h:74: warning: Member drawPixmap(const QRectF &, const QPixmap &, const QRectF &) (function) of class QtExt::EmfPaintEngine is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.h:75: warning: Member drawTiledPixmap(const QRectF &, const QPixmap &, const QPointF &) (function) of class QtExt::EmfPaintEngine is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_EmfEngine.h:76: warning: Member drawImage(const QRectF &, const QImage &, const QRectF &, Qt::ImageConversionFlags) (function) of class QtExt::EmfPaintEngine is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_GraphicsRectItemWithHatch.h:22: warning: Member GraphicsRectItemWithHatch(HatchingType hatchingType=HT_NoHatch, int distance=0) (function) of class QtExt::GraphicsRectItemWithHatch is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_GraphicsRectItemWithHatch.h:24: warning: Member paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget=0) (function) of class QtExt::GraphicsRectItemWithHatch is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_GraphicsRectItemWithHatch.h:26: warning: Member hatchPen() const  (function) of class QtExt::GraphicsRectItemWithHatch is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_GraphicsRectItemWithHatch.h:28: warning: Member setHatchPen(const QPen &pen) (function) of class QtExt::GraphicsRectItemWithHatch is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_IOCompress.h:152: warning: Member readData(char *data, qint64 maxSize) (function) of class QtExt::IOCompress is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_IOCompress.h:156: warning: Member writeData(const char *data, qint64 maxSize) (function) of class QtExt::IOCompress is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_IOCompress.cpp:62: warning: Member State (enumeration) of class QtExt::IOCompressPrivate is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_IOCompress.cpp:74: warning: Member IOCompressPrivate(QIODevice *device, int bufferSize) (function) of class QtExt::IOCompressPrivate is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_IOCompress.cpp:90: warning: Member writeBytes(ZlibByte *buffer, ZlibSize outputSize) (function) of class QtExt::IOCompressPrivate is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_IOCompress.cpp:92: warning: Member m_device (variable) of class QtExt::IOCompressPrivate is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_IOCompress.cpp:93: warning: Member m_bufferSize (variable) of class QtExt::IOCompressPrivate is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_IOCompress.cpp:94: warning: Member m_buffer (variable) of class QtExt::IOCompressPrivate is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_IOCompress.cpp:95: warning: Member m_state (variable) of class QtExt::IOCompressPrivate is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_IOCompress.cpp:96: warning: Member m_zlibStream (variable) of class QtExt::IOCompressPrivate is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_PainterSaver.h:11: warning: Member PainterSaver(QPainter *painter) (function) of class QtExt::PainterSaver is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_Report.h:30: warning: The following parameters of QtExt::Report::Report(const QString &fontFamily, int defaultFontSize=11) are not documented:
+  parameter 'defaultFontSize'
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_ReportFrameBase.h:18: warning: argument 'fontFamily' of command @param is not found in the argument list of QtExt::ReportFrameBase::ReportFrameBase(Report *report, QTextDocument *textDocument)
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_ReportFrameBase.h:18: warning: argument 'fontPointSize' of command @param is not found in the argument list of QtExt::ReportFrameBase::ReportFrameBase(Report *report, QTextDocument *textDocument)
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_Style.h:30: warning: Member AlternativeBackgroundBright (variable) of class QtExt::Style is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_Style.h:31: warning: Member AlternativeBackgroundDark (variable) of class QtExt::Style is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_Style.h:32: warning: Member AlternativeBackgroundText (variable) of class QtExt::Style is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_Table.h:205: warning: Member changed() (signal) of class QtExt::Table is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_Table.h:98: warning: argument 'color' of command @param is not found in the argument list of QtExt::Table::setBackgroundColor(const QColor &col, bool allCells=false)
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_Table.h:98: warning: The following parameters of QtExt::Table::setBackgroundColor(const QColor &col, bool allCells=false) are not documented:
+  parameter 'col'
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_Table.h:139: warning: The following parameters of QtExt::Table::setColumnSizeFormat(unsigned int col, CellSizeFormater::FormatType format, qreal fixedSize=0) are not documented:
+  parameter 'fixedSize'
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_Table.h:145: warning: The following parameters of QtExt::Table::setRowSizeFormat(unsigned int row, CellSizeFormater::FormatType format, qreal fixedSize=0) are not documented:
+  parameter 'fixedSize'
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_TableWidget.h:29: warning: Member repaintTable() (slot) of class QtExt::TableWidget is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_TableWidget.h:20: warning: Member table() (function) of class QtExt::TableWidget is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_TextFrame.h:64: warning: The following parameters of QtExt::TextFrame::drawFrame(QPainter *painter, const QPointF &pos, qreal width) are not documented:
+  parameter 'width'
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_TextFrame.h:32: warning: argument 'Current' of command @param is not found in the argument list of QtExt::TextFrame::frameRect(QPaintDevice *paintDevice, qreal width=0)
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_TextFrame.h:32: warning: The following parameters of QtExt::TextFrame::frameRect(QPaintDevice *paintDevice, qreal width=0) are not documented:
+  parameter 'paintDevice'
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_TextFrameInformations.h:28: warning: Member TextFrameInfo(int lineCount_, qreal height_, qreal minWidth_) (function) of class QtExt::TextFrameInformations::TextFrameInfo is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_TextFrameInformations.h:29: warning: Member TextFrameInfo(int lineCount_, const QSizeF &size) (function) of class QtExt::TextFrameInformations::TextFrameInfo is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_TextFrameInformations.h:24: warning: Member lineCount (variable) of class QtExt::TextFrameInformations::TextFrameInfo is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_TextFrameInformations.h:25: warning: Member height (variable) of class QtExt::TextFrameInformations::TextFrameInfo is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_TextFrameInformations.h:26: warning: Member minWidth (variable) of class QtExt::TextFrameInformations::TextFrameInfo is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_Utf8LineEdit.h:12: warning: Member Utf8LineEdit(QWidget *parent=0) (function) of class QtExt::Utf8LineEdit is not documented.
+/home/ghorwin/svn/Delphin6_trunk/externals/QtExt/src/QtExt_ValidatingLineEdit.h:168: warning: The following parameters of QtExt::ValidatingLineEdit::setEmptyAllowed(bool allowEmpty, const QString &placeholderText) are not documented:
+  parameter 'placeholderText'

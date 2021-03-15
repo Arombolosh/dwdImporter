@@ -1,0 +1,34 @@
+Information about the IBK Library
+=================================
+
+Files in the library root directory
+-----------------------------------
+  README        - this file
+  ChangeLog     - recent changes to the library
+  COPYING       - formulation of the Lesser GNU Public License
+  AUTHORS       - copyright and contact information
+  CMakeList.txt - build information for CMake
+
+Subdirectories
+--------------
+  src           - contains the sources and include files of the IBK lib
+  src/examples  - example source code that demonstrates some features of the IBK lib
+  doc           - IBK library API documentation
+  projects      - contains some project files for various IDEs
+
+Compiling
+---------
+Compiling the IBK lib is very simple. You need a fairly new C++ compiler. The
+library has been successfully compiled with both Borland C++ compiler 5.5 and
+GCC 3.2. Project files for various IDEs and compilers have been added for 
+your convenience. Also the compiler independent CMAKE build-system is included.
+
+Before compiling you need to create a IBK_configuration.h file. You can do this
+manually by copying the IBK_configuration.h.in file to IBK_configuration.h and
+editing it (enable/disable desired defines). Or you can use the CMAKE 
+configuration framework.
+
+
+Have fun and please report any bugs or wishes to me!
+
+Andreas Nicolai (http://www.bauklimatik-dresden.de/privat/nicolai)

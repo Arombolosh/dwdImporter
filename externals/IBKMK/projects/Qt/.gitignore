@@ -1,0 +1,4 @@
+*.pro.user
+/Makefile.IBKMK
+/Makefile.IBKMK.Debug
+/Makefile.IBKMK.Release
