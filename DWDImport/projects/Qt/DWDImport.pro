@@ -29,6 +29,8 @@ CODECFORSRC = UTF-8
 
 SOURCES += \
 	../../src/Constants.cpp \
+	../../src/DWDData.cpp \
+	../../src/DWDDescriptonData.cpp \
 	../../src/MainWindow.cpp \
 	../../src/main.cpp
 
@@ -37,6 +39,8 @@ FORMS += \
 
 HEADERS += \
 	../../src/Constants.h \
+	../../src/DWDData.h \
+	../../src/DWDDescriptonData.h \
 	../../src/MainWindow.h
 
 

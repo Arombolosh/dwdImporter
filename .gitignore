@@ -7,7 +7,7 @@ lib_x64/
 lib/
 moc/
 ui/
-/build-*
+build-*
 
 cmake_local/
 VC8/

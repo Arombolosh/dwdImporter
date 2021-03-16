@@ -1,9 +1,11 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
-#include <IBK_Path.h>
 #include <IBK_NotificationHandler.h>
 #include <IBK_messages.h>
+#include <IBK_FileReader.h>
+#include <QtExt_Directories.h>
+#include <QtExt_ValidatingLineEdit.h>
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -13,6 +15,7 @@
 #include <QProgressDialog>
 
 
+#include "Constants.h"
 
 class ProgressNotify : public IBK::NotificationHandler{
 public:
@@ -54,12 +57,109 @@ MainWindow::MainWindow(QWidget *parent) :
   m_progressDlg(nullptr)
 {
 	m_ui->setupUi(this);
+
+
+
+	IBK::Path filepath("../../data/Tests/ST_Stundenwerte_Beschreibung_Stationen.txt");
+	std::map<unsigned int, DWDDescriptonData> stationDescription;
+	readDescription(filepath,stationDescription, DWDDescriptonData::D_TemperatureAndHumidity);
 }
 
 MainWindow::~MainWindow()
 {
 	delete m_ui;
 }
+
+
+void MainWindow::readDescription(const IBK::Path &filepath, std::map<unsigned int, DWDDescriptonData> &stationDescription, const DWDDescriptonData::Data &dataType){
+//	IBK::Path filepath(QtExt::Directories::userDataDir().toStdString() + "filename.txt");
+
+	IBK::FileReader fileReader(filepath);
+
+	//check if file is valid
+	if(!fileReader.valid()){
+		QMessageBox::warning(this, QString(),QString("File '%1' is not valid").arg(QString::fromStdString(filepath.absolutePath().c_str())));
+		return;
+	}
+	std::vector<std::string> lines;
+	//fill lines vector
+	fileReader.readAll(filepath, lines,std::vector<std::string>{"\n"});
+
+	//parse each line
+	for (unsigned int i=2; i<lines.size(); ++i ) {
+		const std::string & line =lines[i];
+		if(line.empty())
+			break;
+		DWDDescriptonData dwd;
+		try {
+			//extract all informations
+			dwd.m_id = IBK::string2val<unsigned int>(line.substr(0,5));
+			dwd.m_data[dataType] = 1;
+
+			dwd.m_startDate.set( IBK::string2val<unsigned int>(line.substr(6,4)), IBK::string2val<unsigned int>(line.substr(10,2))-1,IBK::string2val<unsigned int>(line.substr(12,2))-1,0);
+			dwd.m_endDate.set( IBK::string2val<unsigned int>(line.substr(15,4)), IBK::string2val<unsigned int>(line.substr(19,2))-1,IBK::string2val<unsigned int>(line.substr(21,2))-1,0);
+			dwd.m_height = IBK::string2val<double>(line.substr(24,38-24));
+			dwd.m_latitude = IBK::string2val<double>(line.substr(39,50-39));
+			dwd.m_longitude = IBK::string2val<double>(line.substr(51,60-51));
+			dwd.m_name = line.substr(61,100-61);
+			dwd.m_country = line.substr(101,500);
+
+			QMessageBox::warning(this, QString(),
+								 QString("%1\n").arg(dwd.m_id)
+								 + QString("%1\n").arg(QString::fromStdString(dwd.m_startDate.toDateTimeFormat()))
+								 + QString("%1\n").arg(QString::fromStdString(dwd.m_endDate.toDateTimeFormat()))
+								 + QString("%1\n").arg(dwd.m_height)
+								 + QString("%1\n").arg(dwd.m_latitude)
+								 + QString("%1\n").arg(dwd.m_longitude)
+								 + QString("%1\n").arg(QString::fromStdString(dwd.m_name))
+								 + QString("%1\n").arg(QString::fromStdString(dwd.m_country))
+								 + QString("%1\n").arg(QString::fromStdString(line))
+								 );
+			//add dwd object to map
+			///TODO check if other information are equal
+			if(stationDescription.find(dwd.m_id) != stationDescription.end())
+				stationDescription[dwd.m_id].m_data[dataType] = 1;
+			else
+				stationDescription[dwd.m_id] = dwd;
+		}  catch (IBK::Exception &ex) {
+			QMessageBox::warning(this, QString(), QString("Got an exception while reading lines. In line %1\n").arg(i)
+								 + QString("%1\n").arg(dwd.m_id)
+								 + QString("%1\n").arg(QString::fromStdString(dwd.m_startDate.toDateTimeFormat()))
+								 + QString("%1\n").arg(QString::fromStdString(dwd.m_endDate.toDateTimeFormat()))
+								 + QString("%1\n").arg(dwd.m_height)
+								 + QString("%1\n").arg(dwd.m_latitude)
+								 + QString("%1\n").arg(dwd.m_longitude)
+								 + QString("%1\n").arg(QString::fromStdString(dwd.m_name))
+								 + QString("%1\n").arg(QString::fromStdString(dwd.m_country))
+								 + QString("%1\n").arg(QString::fromStdString(line))
+								 );
+		}
+	}
+
+}
+
+
+
+/// TODO
+/// Herunterladen der Beschreibungsdateien
+/// Lesen der Stationsbeschreibungsdateien
+///
+/* Stations_id von_datum bis_datum Stationshoehe geoBreite geoLaenge Stationsname Bundesland
+----------- --------- --------- ------------- --------- --------- ----------------------------------------- ----------
+012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+00003 19500401 20110331            202     50.7827    6.0941 Aachen                                   Nordrhein-Westfalen
+00044 20070401 20210314             44     52.9336    8.2370 Großenkneten                             Niedersachsen
+*/
+/// sind für die ausgewählte datei daten vorhanden
+/// Intervalfestlegung
+/// Temperatur Feuchte
+/// Strahlung
+/// Wind, etc...
+///
+/// Daten runterladen
+/// Fehlerprüfung
+///		Fehlwerte korrigieren
+/// fertigstellen für CCM (epw) oder ccd (nicht jahresscheiben)
 
 #if 0
 
