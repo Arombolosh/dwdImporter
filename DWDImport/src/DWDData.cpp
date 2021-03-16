@@ -42,7 +42,7 @@ void DWDData::addDataLine(std::string &line, std::set<DataType> &dataType){
 	else
 		return;	//if no time point is given return
 
-	double timepoint = time.secondsUntil(m_startTime)/3600;
+	double timepoint = m_startTime.secondsUntil(time)/3600;
 	//shift all data because startpoint is later
 	unsigned int newTimepoint = static_cast<unsigned int>(timepoint);
 	if(timepoint<0){

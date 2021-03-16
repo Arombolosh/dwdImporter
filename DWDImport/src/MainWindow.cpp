@@ -14,7 +14,7 @@
 #include <QPicture>
 #include <QProgressDialog>
 
-
+#include "DWDData.h"
 #include "Constants.h"
 
 class ProgressNotify : public IBK::NotificationHandler{
@@ -54,7 +54,7 @@ public:
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
 	m_ui(new Ui::MainWindow),
-  m_progressDlg(nullptr)
+	m_progressDlg(nullptr)
 {
 	m_ui->setupUi(this);
 
@@ -63,6 +63,33 @@ MainWindow::MainWindow(QWidget *parent) :
 	IBK::Path filepath("../../data/Tests/ST_Stundenwerte_Beschreibung_Stationen.txt");
 	std::map<unsigned int, DWDDescriptonData> stationDescription;
 	readDescription(filepath,stationDescription, DWDDescriptonData::D_TemperatureAndHumidity);
+
+	DWDData data;
+	data.m_startTime = IBK::Time(1981,0,0,0);
+	data.m_intervalDuration = 3600;
+
+	filepath = IBK::Path("../../data/Tests/produkt_tu_stunde_20190912_20210314_00044.txt");
+	IBK::FileReader fileReader(filepath);
+
+	//check if file is valid
+	if(!fileReader.valid()){
+		QMessageBox::warning(this, QString(),QString("File '%1' is not valid").arg(QString::fromStdString(filepath.absolutePath().c_str())));
+		return;
+	}
+	std::vector<std::string> lines;
+	//fill lines vector
+	fileReader.readAll(filepath, lines,std::vector<std::string>{"\n"});
+
+	std::set<DWDData::DataType> dataSet;
+
+	dataSet.insert(DWDData::DT_AirTemperature);
+	dataSet.insert(DWDData::DT_RelativeHumidity);
+
+	for (unsigned int i=1; i<lines.size(); ++i) {
+		data.addDataLine(lines[i], dataSet);
+	}
+
+
 }
 
 MainWindow::~MainWindow()
@@ -101,20 +128,20 @@ void MainWindow::readDescription(const IBK::Path &filepath, std::map<unsigned in
 			dwd.m_height = IBK::string2val<double>(line.substr(24,38-24));
 			dwd.m_latitude = IBK::string2val<double>(line.substr(39,50-39));
 			dwd.m_longitude = IBK::string2val<double>(line.substr(51,60-51));
-			dwd.m_name = line.substr(61,100-61);
-			dwd.m_country = line.substr(101,500);
+			dwd.m_name = IBK::trim_copy(line.substr(61,100-61));
+			dwd.m_country = IBK::trim_copy(line.substr(101,500));
 
-			QMessageBox::warning(this, QString(),
-								 QString("%1\n").arg(dwd.m_id)
-								 + QString("%1\n").arg(QString::fromStdString(dwd.m_startDate.toDateTimeFormat()))
-								 + QString("%1\n").arg(QString::fromStdString(dwd.m_endDate.toDateTimeFormat()))
-								 + QString("%1\n").arg(dwd.m_height)
-								 + QString("%1\n").arg(dwd.m_latitude)
-								 + QString("%1\n").arg(dwd.m_longitude)
-								 + QString("%1\n").arg(QString::fromStdString(dwd.m_name))
-								 + QString("%1\n").arg(QString::fromStdString(dwd.m_country))
-								 + QString("%1\n").arg(QString::fromStdString(line))
-								 );
+//			QMessageBox::warning(this, QString(),
+//								 QString("%1\n").arg(dwd.m_id)
+//								 + QString("%1\n").arg(QString::fromStdString(dwd.m_startDate.toDateTimeFormat()))
+//								 + QString("%1\n").arg(QString::fromStdString(dwd.m_endDate.toDateTimeFormat()))
+//								 + QString("%1\n").arg(dwd.m_height)
+//								 + QString("%1\n").arg(dwd.m_latitude)
+//								 + QString("%1\n").arg(dwd.m_longitude)
+//								 + QString("%1\n").arg(QString::fromStdString(dwd.m_name))
+//								 + QString("%1\n").arg(QString::fromStdString(dwd.m_country))
+//								 + QString("%1\n").arg(QString::fromStdString(line))
+//								 );
 			//add dwd object to map
 			///TODO check if other information are equal
 			if(stationDescription.find(dwd.m_id) != stationDescription.end())
