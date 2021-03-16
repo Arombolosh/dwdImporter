@@ -44,12 +44,17 @@ void DWDData::addDataLine(std::string &line, std::set<DataType> &dataType){
 
 	double timepoint = time.secondsUntil(m_startTime)/3600;
 	//shift all data because startpoint is later
+	unsigned int newTimepoint = static_cast<unsigned int>(timepoint);
 	if(timepoint<0){
 		timepoint *=-1;
-		unsigned int newTimepoint = static_cast<unsigned int>(timepoint);
-		m_data.resize(newTimepoint + m_data.size());
+		std::vector<IntervalData> newData(newTimepoint);
+		m_data.insert( m_data.begin(), newData.begin(), newData.end() );
 	}
+	else{
+		if(m_data.size()<newTimepoint)
+			m_data.insert(m_data.end(),timepoint-m_data.size(), IntervalData());
 
+	}
 	//add data to interval data
 	while(it!= dataType.end()) {
 
@@ -58,12 +63,6 @@ void DWDData::addDataLine(std::string &line, std::set<DataType> &dataType){
 			m_data[timepoint].setVal(*it, IBK::string2val<double>(data[col]));
 		}
 		++it;
-	}
-
-	//get max column in data type vector
-	for(unsigned int i=1; i<data.size(); ++i){
-
-
 	}
 
 	//get timepoint
