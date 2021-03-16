@@ -165,6 +165,24 @@ void MainWindow::readDescription(const IBK::Path &filepath, std::map<unsigned in
 
 }
 
+std::string MainWindow::ftpName(const DWDDescriptonData::Data &dt, bool isRecent){
+
+	std::string baseDirFTP = "ftp://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/";
+
+	std::string type = "recent/";
+
+	if(!isRecent)
+		type = "historical/";
+
+	switch (dt) {
+		case DWDDescriptonData::D_TemperatureAndHumidity :	baseDirFTP += "air_temperature/" + type + "TU_Stundenwerte_Beschreibung_Stationen.txt";	break;
+		case DWDDescriptonData::D_Solar :					baseDirFTP += "solar/ST_Stundenwerte_Beschreibung_Stationen.txt";						break;
+		case DWDDescriptonData::D_Wind:						baseDirFTP += "wind/" + type +"FF_Stundenwerte_Beschreibung_Stationen.txt";				break;
+		case DWDDescriptonData::D_Pressure :				baseDirFTP += "pressure/" + type + "P0_Stundenwerte_Beschreibung_Stationen.txt";		break;
+	}
+
+	return baseDirFTP;
+}
 
 
 /// TODO

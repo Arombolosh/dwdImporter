@@ -38,6 +38,8 @@ private:
 	/*! Reads a decription file and adds all stations in stationDescription map. The dataType must be given. */
 	void readDescription(const IBK::Path &filepath, std::map<unsigned int, DWDDescriptonData> &stationDescription, const DWDDescriptonData::Data &dataType);
 
+	std::string ftpName(const DWDDescriptonData::Data &dt, bool recent=true);
+
 	Ui::MainWindow						*m_ui;
 
 	QProgressDialog						*m_progressDlg;
