@@ -51,8 +51,10 @@ void DWDData::addDataLine(std::string &line, std::set<DataType> &dataType){
 		m_data.insert( m_data.begin(), newData.begin(), newData.end() );
 	}
 	else{
-		if(m_data.size()<newTimepoint)
-			m_data.insert(m_data.end(),timepoint-m_data.size(), IntervalData());
+		if(m_data.size()<=newTimepoint){
+			unsigned int aaa =newTimepoint-m_data.size()+1;
+			m_data.insert(m_data.end(), aaa, IntervalData());
+		}
 
 	}
 	//add data to interval data
@@ -60,7 +62,7 @@ void DWDData::addDataLine(std::string &line, std::set<DataType> &dataType){
 
 		unsigned int col = getColumnDWD(*it);
 		if(col < data.size()){
-			m_data[timepoint].setVal(*it, IBK::string2val<double>(data[col]));
+			m_data[newTimepoint].setVal(*it, IBK::string2val<double>(data[col]));
 		}
 		++it;
 	}
