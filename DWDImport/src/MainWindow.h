@@ -7,6 +7,7 @@
 #include <QWidget>
 #include <QProcess>
 #include <QTimer>
+#include <QStandardItemModel>
 
 #include <IBK_Time.h>
 #include <IBK_Path.h>
@@ -30,18 +31,21 @@ public:
 	explicit MainWindow(QWidget *parent = nullptr);
 	~MainWindow();
 
-private slots:
+	void testFunc();
 
+private slots:
+	void on_checkboxChecked();
+
+	void on_checkBox_toggled(bool checked);
 
 private:
 
 	/*! Reads a decription file and adds all stations in stationDescription map. The dataType must be given. */
 	void readDescription(const IBK::Path &filepath, std::map<unsigned int, DWDDescriptonData> &stationDescription, const DWDDescriptonData::Data &dataType);
 
-	std::string ftpName(const DWDDescriptonData::Data &dt, bool recent=true);
-
 	Ui::MainWindow						*m_ui;
 
+	QStandardItemModel					*m_model;
 	QProgressDialog						*m_progressDlg;
 	QTimer								m_progressTimer;
 

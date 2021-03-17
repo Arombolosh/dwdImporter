@@ -52,6 +52,7 @@ int main(int argc, char* argv[]) {
 	// return exit code to environment
 
 	return res;
+	return 0;
 }
 
 

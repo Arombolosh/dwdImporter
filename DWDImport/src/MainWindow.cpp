@@ -7,6 +7,8 @@
 #include <QtExt_Directories.h>
 #include <QtExt_ValidatingLineEdit.h>
 
+#include <QCheckBox>
+#include <QStandardItemModel>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDir>
@@ -58,45 +60,143 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 	m_ui->setupUi(this);
 
+	m_model = new QStandardItemModel();
 
+	m_ui->tableWidget->setColumnCount(9);
+	m_ui->tableWidget->setHorizontalHeaderItem(0, new QTableWidgetItem("Station Id"));
+	m_ui->tableWidget->setHorizontalHeaderItem(1, new QTableWidgetItem("Location Longitude Deg"));
+	m_ui->tableWidget->setHorizontalHeaderItem(2, new QTableWidgetItem("Location Latitude Deg"));
+	m_ui->tableWidget->setHorizontalHeaderItem(3, new QTableWidgetItem("Name"));
+	m_ui->tableWidget->setHorizontalHeaderItem(4, new QTableWidgetItem("Country"));
+	m_ui->tableWidget->setHorizontalHeaderItem(5, new QTableWidgetItem("T_air + rH"));
+	m_ui->tableWidget->setHorizontalHeaderItem(6, new QTableWidgetItem("Radiation"));
+	m_ui->tableWidget->setHorizontalHeaderItem(7, new QTableWidgetItem("Wind"));
+	m_ui->tableWidget->setHorizontalHeaderItem(8, new QTableWidgetItem("Pressure"));
+	m_ui->tableWidget->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter | (Qt::Alignment)Qt::TextWordWrap);
+	m_ui->tableWidget->horizontalHeader()->setMinimumHeight(40);
+	m_ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+	m_ui->tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 
-	IBK::Path filepath("../../data/Tests/ST_Stundenwerte_Beschreibung_Stationen.txt");
-	std::map<unsigned int, DWDDescriptonData> stationDescription;
-	readDescription(filepath,stationDescription, DWDDescriptonData::D_TemperatureAndHumidity);
-
-	DWDData data;
-	data.m_startTime = IBK::Time(1981,0,0,0);
-	data.m_intervalDuration = 3600;
-
-	filepath = IBK::Path("../../data/Tests/produkt_tu_stunde_20190912_20210314_00044.txt");
-	IBK::FileReader fileReader(filepath);
-
-	//check if file is valid
-	if(!fileReader.valid()){
-		QMessageBox::warning(this, QString(),QString("File '%1' is not valid").arg(QString::fromStdString(filepath.absolutePath().c_str())));
-		return;
-	}
-	std::vector<std::string> lines;
-	//fill lines vector
-	fileReader.readAll(filepath, lines,std::vector<std::string>{"\n"});
-
-	std::set<DWDData::DataType> dataSet;
-
-	dataSet.insert(DWDData::DT_AirTemperature);
-	dataSet.insert(DWDData::DT_RelativeHumidity);
-
-	for (unsigned int i=1; i<lines.size(); ++i) {
-		data.addDataLine(lines[i], dataSet);
-	}
-
-
+	testFunc();
 }
+
 
 MainWindow::~MainWindow()
 {
 	delete m_ui;
 }
 
+void MainWindow::testFunc(){
+
+	//download all files
+	//DWDDescriptonData  descData;
+
+
+	//descData.downloadDescriptionFiles();
+
+	//read all decription files
+	DWDDescriptonData descData;
+	std::map<unsigned int, DWDDescriptonData> descDataMap;
+	descData.readAllDescriptions(descDataMap);
+
+	//fill table view with these data
+	//auto model = m_ui->tableView->model();
+	unsigned int counter =0;
+	QTableWidget &tw =  *m_ui->tableWidget;
+	for (std::map<unsigned int, DWDDescriptonData>::const_iterator	it = descDataMap.begin();
+																	it != descDataMap.end();
+																	++it){
+		tw.insertRow(counter);
+		tw.setItem(counter, 0, new QTableWidgetItem(QString::number(it->second.m_id)));
+
+		tw.setItem(counter, 0, new QTableWidgetItem(QString::number(it->second.m_id)));
+		tw.setItem(counter, 1, new QTableWidgetItem(QString::number(it->second.m_longitude)));
+		tw.setItem(counter, 2, new QTableWidgetItem(QString::number(it->second.m_latitude)));
+		tw.setItem(counter, 3, new QTableWidgetItem(QString::fromStdString(it->second.m_name)));
+		tw.setItem(counter, 4, new QTableWidgetItem(QString::fromStdString(it->second.m_country)));
+
+		for (unsigned int i=0;i<4; ++i) {
+			bool checkable = false;
+			switch (i) {
+				case 0:{
+					if(it->second.m_data[DWDDescriptonData::D_TemperatureAndHumidity] != 0)
+						checkable = true;
+				}break;
+				case 1:{
+					if(it->second.m_data[DWDDescriptonData::D_Solar] != 0)
+						checkable = true;
+
+				}break;
+				case 2:{
+					if(it->second.m_data[DWDDescriptonData::D_Wind] != 0)
+						checkable = true;
+
+				}break;
+				case 3:{
+					if(it->second.m_data[DWDDescriptonData::D_Pressure] != 0)
+						checkable = true;
+
+				}break;
+
+			}
+			QStandardItem *item = new QStandardItem(true);
+			QCheckBox *cb = new QCheckBox();
+			QWidget *w = new QWidget();
+
+			QHBoxLayout *lay = new QHBoxLayout();
+			lay->addWidget(cb,0, Qt::AlignHCenter);
+			lay->setMargin(0);
+			w->setLayout(lay);
+			tw.setCellWidget(counter,5+i, w);
+			item->setCheckable(checkable);
+			lay->setEnabled(checkable);
+
+			item->setCheckState(Qt::Unchecked);
+			item->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
+			m_model->setItem(counter, 5+i, item);
+
+		}
+
+		++counter;
+	}
+
+
+
+
+//	DWDData data;
+//	data.m_startTime = IBK::Time(1981,0,0,0);
+//	data.m_intervalDuration = 3600;
+
+//	filepath = IBK::Path("../../data/Tests/produkt_tu_stunde_20190912_20210314_00044.txt");
+//	IBK::FileReader fileReader(filepath);
+
+//	//check if file is valid
+//	if(!fileReader.valid()){
+//		QMessageBox::warning(this, QString(),QString("File '%1' is not valid").arg(QString::fromStdString(filepath.absolutePath().c_str())));
+//		return;
+//	}
+//	std::vector<std::string> lines;
+//	//fill lines vector
+//	fileReader.readAll(filepath, lines,std::vector<std::string>{"\n"});
+
+//	std::set<DWDData::DataType> dataSet;
+
+//	dataSet.insert(DWDData::DT_AirTemperature);
+//	dataSet.insert(DWDData::DT_RelativeHumidity);
+
+//	for (unsigned int i=1; i<lines.size(); ++i) {
+//		data.addDataLine(lines[i], dataSet);
+	//	}
+}
+
+void MainWindow::on_checkboxChecked(){
+	QTableWidget &tw =  *m_ui->tableWidget;
+	int col=0;
+	for(unsigned int i=0; i<tw.rowCount();++i){
+		QTableWidgetItem *item = tw.item(i,col);
+		item->setCheckState(Qt::Unchecked);
+	}
+}
 
 void MainWindow::readDescription(const IBK::Path &filepath, std::map<unsigned int, DWDDescriptonData> &stationDescription, const DWDDescriptonData::Data &dataType){
 //	IBK::Path filepath(QtExt::Directories::userDataDir().toStdString() + "filename.txt");
@@ -165,24 +265,6 @@ void MainWindow::readDescription(const IBK::Path &filepath, std::map<unsigned in
 
 }
 
-std::string MainWindow::ftpName(const DWDDescriptonData::Data &dt, bool isRecent){
-
-	std::string baseDirFTP = "ftp://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/";
-
-	std::string type = "recent/";
-
-	if(!isRecent)
-		type = "historical/";
-
-	switch (dt) {
-		case DWDDescriptonData::D_TemperatureAndHumidity :	baseDirFTP += "air_temperature/" + type + "TU_Stundenwerte_Beschreibung_Stationen.txt";	break;
-		case DWDDescriptonData::D_Solar :					baseDirFTP += "solar/ST_Stundenwerte_Beschreibung_Stationen.txt";						break;
-		case DWDDescriptonData::D_Wind:						baseDirFTP += "wind/" + type +"FF_Stundenwerte_Beschreibung_Stationen.txt";				break;
-		case DWDDescriptonData::D_Pressure :				baseDirFTP += "pressure/" + type + "P0_Stundenwerte_Beschreibung_Stationen.txt";		break;
-	}
-
-	return baseDirFTP;
-}
 
 
 /// TODO
@@ -739,3 +821,8 @@ void MainWindow::on_pushButton_InputIFC_clicked()
 }
 
 #endif
+
+void MainWindow::on_checkBox_toggled(bool checked)
+{
+
+}

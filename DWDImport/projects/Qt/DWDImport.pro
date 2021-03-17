@@ -12,8 +12,8 @@ CONFIG += console
 
 LIBS += -L../../../lib$${DIR_PREFIX} \
 	#-lIBKMK \
-	-lIBK \
-	-lQtExt
+	-lQtExt \
+	-lIBK
 
 INCLUDEPATH = \
 	../../src \
