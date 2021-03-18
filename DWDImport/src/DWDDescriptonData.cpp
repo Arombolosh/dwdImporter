@@ -284,7 +284,7 @@ void DWDDescriptonData::readDescription(const IBK::Path &filepath, std::map<unsi
 	for (unsigned int i=2; i<lines.size(); ++i ) {
 		const std::string & line =lines[i];
 		if(line.empty())
-			break;
+			continue;
 		DWDDescriptonData dwd;
 		try {
 			//extract all informations

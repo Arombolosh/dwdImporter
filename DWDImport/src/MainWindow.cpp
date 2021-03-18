@@ -18,6 +18,7 @@
 
 #include "DWDData.h"
 #include "Constants.h"
+#include "DWD_CheckBox.h"
 
 class ProgressNotify : public IBK::NotificationHandler{
 public:
@@ -140,7 +141,7 @@ void MainWindow::testFunc(){
 
 			}
 			QStandardItem *item = new QStandardItem(true);
-			QCheckBox *cb = new QCheckBox();
+			CheckBoxHelper *cb = new CheckBoxHelper(counter, 5+i);
 			QWidget *w = new QWidget();
 
 			QHBoxLayout *lay = new QHBoxLayout();
@@ -149,11 +150,10 @@ void MainWindow::testFunc(){
 			w->setLayout(lay);
 			tw.setCellWidget(counter,5+i, w);
 			item->setCheckable(checkable);
+
 			lay->setEnabled(checkable);
 
-			item->setCheckState(Qt::Unchecked);
-			item->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
-			m_model->setItem(counter, 5+i, item);
+			connect( cb, &CheckBoxHelper::checkBoxChanged, this, &MainWindow::on_checkboxChecked );
 
 		}
 
@@ -189,12 +189,23 @@ void MainWindow::testFunc(){
 	//	}
 }
 
-void MainWindow::on_checkboxChecked(){
+void MainWindow::on_checkboxChecked(int state, int row, int col){
 	QTableWidget &tw =  *m_ui->tableWidget;
-	int col=0;
-	for(unsigned int i=0; i<tw.rowCount();++i){
-		QTableWidgetItem *item = tw.item(i,col);
-		item->setCheckState(Qt::Unchecked);
+	QWidget * wdg = tw.cellWidget(row, col);
+	QObject *aa = wdg->children().first();
+	QCheckBox *cbH = (QCheckBox*)(tw.cellWidget(row, col)->children().first());
+
+	if(cbH == nullptr)
+		return;
+
+	if(!cbH->isChecked()){
+		for (unsigned int i=0;i<tw.rowCount(); ++i) {
+			QCheckBox *cbH2 = (QCheckBox*)(tw.cellWidget(i, col)->children().first());
+			if(cbH2 == nullptr || row == i)
+				continue;
+
+			cbH2->setChecked(false);
+		}
 	}
 }
 

@@ -34,7 +34,7 @@ public:
 	void testFunc();
 
 private slots:
-	void on_checkboxChecked();
+	void on_checkboxChecked(int state, int row, int col);
 
 	void on_checkBox_toggled(bool checked);
 
