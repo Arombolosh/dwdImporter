@@ -253,7 +253,6 @@ void DWDDescriptonData::downloadDescriptionFiles(bool isRecent){
 void DWDDescriptonData::readAllDescriptions(std::map<unsigned int, DWDDescriptonData> &stationDescription){
 
 	IBK::Path filepath("../../data/Tests/TU_Stundenwerte_Beschreibung_Stationen.txt");
-
 	readDescription(filepath, stationDescription, D_TemperatureAndHumidity);
 
 	filepath= IBK::Path ("../../data/Tests/P0_Stundenwerte_Beschreibung_Stationen.txt");
