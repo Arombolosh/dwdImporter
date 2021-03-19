@@ -42,4 +42,50 @@ private:
 	int						m_totalCount = 0;
 
 };
+
+
+class DWDDownloaderDirk : public QObject {
+	Q_OBJECT
+
+public:
+	explicit DWDDownloaderDirk(QObject *parent = nullptr);
+
+	void startDownload(){ on_downloadButton_clicked();}
+
+	void startRequest(QUrl url);
+
+	QString			m_urlString;
+
+private slots:
+	void on_downloadButton_clicked();
+
+	//void on_quitButton_clicked();
+
+	//void on_urlEdit_returnPressed();
+
+	// slot for readyRead() signal
+	void httpReadyRead();
+
+	void makeQMessBox(const QString &str);
+
+	// slot for finished() signal from reply
+	void httpDownloadFinished();
+
+	// slot for downloadProgress()
+	//void updateDownloadProgress(qint64, qint64);
+
+	//void enableDownloadButton();
+	//void cancelDownload();
+
+private:
+	QUrl url;
+	QNetworkAccessManager *manager;
+	QNetworkReply *reply;
+	QFile *file;
+	bool httpRequestAborted;
+	qint64 fileSize;
+
+
+};
+
 #endif // DWDDownloaderH

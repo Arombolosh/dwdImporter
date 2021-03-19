@@ -170,3 +170,136 @@ void DWDDownloader::reportRedirect()
 	QTextStream(stderr) << "Redirected to: " << redirectUrl.toDisplayString()
 						<< '\n';
 }
+
+DWDDownloaderDirk::DWDDownloaderDirk(QObject *parent)
+	: QObject(parent)
+{
+
+}
+
+void DWDDownloaderDirk::startRequest(QUrl url)
+{
+	// get() method posts a request
+	// to obtain the contents of the target request
+	// and returns a new QNetworkReply object
+	// opened for reading which emits
+	// the readyRead() signal whenever new data arrives.
+	reply = manager->get(QNetworkRequest(url));
+
+	// Whenever more data is received from the network,
+	// this readyRead() signal is emitted
+	connect(reply, SIGNAL(readyRead()),
+			this, SLOT(httpReadyRead()));
+
+	// Also, downloadProgress() signal is emitted when data is received
+	//connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
+	//		this, SLOT(updateDownloadProgress(qint64,qint64)));
+
+	// This signal is emitted when the reply has finished processing.
+	// After this signal is emitted,
+	// there will be no more updates to the reply's data or metadata.
+	connect(reply, SIGNAL(finished()),
+			this, SLOT(httpDownloadFinished()));
+}
+
+void DWDDownloaderDirk::on_downloadButton_clicked(){
+	manager = new QNetworkAccessManager(this);
+
+	url = m_urlString;
+	//makeQMessBox(m_urlString);
+	//makeQMessBox(url.toString());
+
+	QFileInfo fileInfo(url.path());
+	QString fileName = fileInfo.fileName();
+
+	//makeQMessBox(QString("Filename: '%1'").arg(fileName));
+	if (fileName.isEmpty())
+		fileName = "index.html";
+
+	QString filePath = "../../data/Tests/" + fileName;
+	//makeQMessBox(QString("Filename: '%1'").arg(filePath));
+
+	if (QFile::exists(filePath)) {
+		//makeQMessBox("filepath exists true");
+		QFile::remove(filePath);
+//        if (QMessageBox::question(this, tr("HTTP"),
+//                tr("There already exists a file called %1 in "
+//                "the current directory. Overwrite?").arg(fileName),
+//                QMessageBox::Yes|QMessageBox::No, QMessageBox::No)
+//                == QMessageBox::No)
+//                return;
+	}
+
+	file = new QFile(filePath);
+	if (!file->open(QIODevice::WriteOnly)) {
+		QMessageBox::information(nullptr, tr("HTTP"),
+					  tr("Unable to save the file %1: %2.")
+					  .arg(filePath).arg(file->errorString()));
+		delete file;
+		file = nullptr;
+		return;
+	}
+
+	// used for progressDialog
+	// This will be set true when canceled from progress dialog
+	httpRequestAborted = false;
+
+	//progressDialog->setWindowTitle(tr("HTTP"));
+	//progressDialog->setLabelText(tr("Downloading %1.").arg(fileName));
+
+	// download button disabled after requesting download
+	//ui->downloadButton->setEnabled(false);
+
+	startRequest(url);
+}
+
+void DWDDownloaderDirk::httpReadyRead(){
+	// this slot gets called every time the QNetworkReply has new data.
+	// We read all of its new data and write it into the file.
+	// That way we use less RAM than when reading it at the finished()
+	// signal of the QNetworkReply
+	if (file)
+		file->write(reply->readAll());
+}
+
+void DWDDownloaderDirk::makeQMessBox(const QString &str){
+	QMessageBox::information(nullptr, "Dirk", str);
+}
+
+void DWDDownloaderDirk::httpDownloadFinished(){
+
+	// download finished normally
+	file->flush();
+	file->close();
+
+	// get redirection url
+	QVariant redirectionTarget = reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
+	if (reply->error()) {
+		file->remove();
+		QMessageBox::information(nullptr, tr("HTTP"),
+								 tr("Download failed: %1.")
+								 .arg(reply->errorString()));
+		//ui->downloadButton->setEnabled(true);
+	} else if (!redirectionTarget.isNull()) {
+		QUrl newUrl = url.resolved(redirectionTarget.toUrl());
+		if (QMessageBox::question(nullptr, tr("HTTP"),
+								  tr("Redirect to %1 ?").arg(newUrl.toString()),
+								  QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
+			url = newUrl;
+			reply->deleteLater();
+			file->open(QIODevice::WriteOnly);
+			file->resize(0);
+			startRequest(url);
+			return;
+		}
+	} else {
+		QString fileName = QFileInfo(QUrl(m_urlString).path()).fileName();
+		//makeQMessBox("httpDownloadFinished im else. " + fileName);
+	}
+
+	reply->deleteLater();
+	reply = nullptr;
+	delete file;
+	file = nullptr;
+	manager = nullptr;
+}

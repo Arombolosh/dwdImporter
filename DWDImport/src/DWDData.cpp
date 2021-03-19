@@ -72,6 +72,37 @@ void DWDData::addDataLine(std::string &line, std::set<DataType> &dataType){
 
 }
 
+QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numberString, bool isRecent) const{
+	QString rec = "_akt", rec2 = "";
+	if(!isRecent)
+		rec = "_hist";
+
+	QString base = "ftp://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/";
+
+	if(!(type == DT_RadiationDiffuse || type == DT_RadiationGlobal || type == DT_RadiationLongWave))
+		rec2 = isRecent ? "recent/" : "historical/";
+
+	switch (type) {
+	case DT_AirTemperature:
+	case DT_RelativeHumidity:
+		return base + "air_temperature/" + rec2 + "stundenwerte_TU_" + numberString + rec + ".zip";
+
+	case DT_Pressure:
+		return base + "pressure/" + rec2 + "stundenwerte_P0_" + numberString + rec + ".zip";
+
+	case DT_WindSpeed:
+	case DT_WindDirection:
+		return base + "wind/" + rec2 + "stundenwerte_FF_" + numberString + rec + ".zip";
+
+	case DT_RadiationDiffuse:
+	case DT_RadiationGlobal:
+	case DT_RadiationLongWave:
+		return base + "solar/" + "stundenwerte_ST_" + numberString + rec + ".zip";
+
+
+	}
+}
+
 unsigned int DWDData::getColumnDWD(const DataType &dt){
 	switch (dt) {
 		case DT_AirTemperature:					return 3;

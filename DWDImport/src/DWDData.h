@@ -5,6 +5,8 @@
 #include <vector>
 #include <set>
 
+#include <QString>
+
 #include <IBK_Time.h>
 
 class DWDData
@@ -23,13 +25,6 @@ public:
 		DT_Pressure,
 		NUM_DT
 	};
-
-	/*! Add a data line from dwd file.
-		map:
-		key		-> column
-		value	-> which interpretation
-	*/
-	void addDataLine(std::string &line, std::set<DataType> &dataType);
 
 	struct IntervalData{
 
@@ -59,6 +54,15 @@ public:
 
 
 	};
+
+	/*! Add a data line from dwd file.
+		map:
+		key		-> column
+		value	-> which interpretation
+	*/
+	void addDataLine(std::string &line, std::set<DataType> &dataType);
+
+	QString urlFilename(const DataType &type, const QString &numberString, bool isRecent=true) const;
 
 	IBK::Time					m_startTime;			///< Start time for the first interval data
 	unsigned int				m_intervalDuration;		///< Interval duration in sec

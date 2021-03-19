@@ -43,9 +43,14 @@ private slots:
 
 	void on_tableWidget_itemChanged(QTableWidgetItem *item);
 
+	void on_pushButton_clicked();
+
 private:
 
 	Ui::MainWindow						*m_ui;
+
+	/*! Description input of all stations. */
+	std::map<unsigned int, DWDDescriptonData> m_descDataMap;
 
 	QStandardItemModel					*m_model;
 	QProgressDialog						*m_progressDlg;
