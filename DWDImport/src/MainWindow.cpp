@@ -15,10 +15,11 @@
 #include <QFile>
 #include <QPicture>
 #include <QProgressDialog>
+#include <QTableWidgetItem>
 
 #include "DWDData.h"
 #include "Constants.h"
-#include "DWD_CheckBox.h"
+//#include "DWD_CheckBox.h"
 
 class ProgressNotify : public IBK::NotificationHandler{
 public:
@@ -104,6 +105,7 @@ void MainWindow::testFunc(){
 	//auto model = m_ui->tableView->model();
 	unsigned int counter =0;
 	QTableWidget &tw =  *m_ui->tableWidget;
+	tw.blockSignals(true);
 	for (std::map<unsigned int, DWDDescriptonData>::const_iterator	it = descDataMap.begin();
 																	it != descDataMap.end();
 																	++it){
@@ -115,6 +117,9 @@ void MainWindow::testFunc(){
 		tw.setItem(counter, 2, new QTableWidgetItem(QString::number(it->second.m_latitude)));
 		tw.setItem(counter, 3, new QTableWidgetItem(QString::fromStdString(it->second.m_name)));
 		tw.setItem(counter, 4, new QTableWidgetItem(QString::fromStdString(it->second.m_country)));
+
+		for (unsigned int i=0;i<5 ; ++i)
+			tw.item(counter,i)->setFlags(Qt::ItemIsEnabled);
 
 		for (unsigned int i=0;i<4; ++i) {
 			bool checkable = false;
@@ -140,26 +145,39 @@ void MainWindow::testFunc(){
 				}break;
 
 			}
-			QStandardItem *item = new QStandardItem(true);
-			CheckBoxHelper *cb = new CheckBoxHelper(counter, 5+i);
-			QWidget *w = new QWidget();
 
-			QHBoxLayout *lay = new QHBoxLayout();
-			lay->addWidget(cb,0, Qt::AlignHCenter);
-			lay->setMargin(0);
-			w->setLayout(lay);
-			tw.setCellWidget(counter,5+i, w);
-			item->setCheckable(checkable);
+			QTableWidgetItem *item = new QTableWidgetItem();
+			if(checkable){
+				item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable);
+				item->setCheckState(Qt::Unchecked);
+			}
+			else
+				item->setFlags(Qt::ItemIsEnabled);
 
-			lay->setEnabled(checkable);
+			tw.setItem(counter,5+i,item);
 
-			connect( cb, &CheckBoxHelper::checkBoxChanged, this, &MainWindow::on_checkboxChecked );
+
+
+//			QStandardItem *item = new QStandardItem(true);
+//			CheckBoxHelper *cb = new CheckBoxHelper(counter, 5+i);
+//			QWidget *w = new QWidget();
+
+//			QHBoxLayout *lay = new QHBoxLayout();
+//			lay->addWidget(cb,0, Qt::AlignHCenter);
+//			lay->setMargin(0);
+//			w->setLayout(lay);
+//			tw.setCellWidget(counter,5+i, w);
+//			item->setCheckable(checkable);
+
+//			lay->setEnabled(checkable);
+
+//			connect( cb, &CheckBoxHelper::checkBoxChanged, this, &MainWindow::on_checkboxChecked );
 
 		}
 
 		++counter;
 	}
-
+	tw.blockSignals(false);
 
 
 
@@ -189,25 +207,27 @@ void MainWindow::testFunc(){
 	//	}
 }
 
-void MainWindow::on_checkboxChecked(int state, int row, int col){
-	QTableWidget &tw =  *m_ui->tableWidget;
-	QWidget * wdg = tw.cellWidget(row, col);
-	QObject *aa = wdg->children().first();
-	QCheckBox *cbH = (QCheckBox*)(tw.cellWidget(row, col)->children().first());
 
-	if(cbH == nullptr)
-		return;
 
-	if(!cbH->isChecked()){
-		for (unsigned int i=0;i<tw.rowCount(); ++i) {
-			QCheckBox *cbH2 = (QCheckBox*)(tw.cellWidget(i, col)->children().first());
-			if(cbH2 == nullptr || row == i)
-				continue;
+void MainWindow::on_tableWidget_itemChanged(QTableWidgetItem *item) {
+	if(item->column() >4){
+		// get checked stated, if item was checked, uncheck all others
+		if (item->checkState() == Qt::Checked) {
+			// prevent events to fire
+			m_ui->tableWidget->blockSignals(true);
+			for (int i=0; i<m_ui->tableWidget->rowCount(); ++i) {
+				bool test = item->flags() & Qt::ItemIsUserCheckable;
+				QMessageBox::information(this, QString(), QString("i: %1 | col: %2 | bool: %3").arg(i).arg(item->column()).arg(test));
 
-			cbH2->setChecked(false);
+				if (i == item->row() && item->flags() & Qt::ItemIsUserCheckable) continue;
+				m_ui->tableWidget->item(i, item->column())->setCheckState(Qt::Unchecked);
+			}
+			m_ui->tableWidget->blockSignals(false);
 		}
 	}
 }
+
+
 
 void MainWindow::readDescription(const IBK::Path &filepath, std::map<unsigned int, DWDDescriptonData> &stationDescription, const DWDDescriptonData::Data &dataType){
 //	IBK::Path filepath(QtExt::Directories::userDataDir().toStdString() + "filename.txt");
@@ -833,7 +853,3 @@ void MainWindow::on_pushButton_InputIFC_clicked()
 
 #endif
 
-void MainWindow::on_checkBox_toggled(bool checked)
-{
-
-}

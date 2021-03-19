@@ -19,6 +19,7 @@ namespace Ui {
 class MainWindow;
 }
 class QProgressDialog;
+class QTableWidgetItem;
 
 class MainWindow : public QMainWindow
 {
@@ -34,9 +35,9 @@ public:
 	void testFunc();
 
 private slots:
-	void on_checkboxChecked(int state, int row, int col);
 
-	void on_checkBox_toggled(bool checked);
+
+	void on_tableWidget_itemChanged(QTableWidgetItem *item);
 
 private:
 

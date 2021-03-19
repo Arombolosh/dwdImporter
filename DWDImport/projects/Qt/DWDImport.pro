@@ -31,7 +31,7 @@ SOURCES += \
 	../../src/Constants.cpp \
 	../../src/DWDData.cpp \
 	../../src/DWDDescriptonData.cpp \
-	../../src/DWD_CheckBox.cpp \
+	#../../src/DWD_CheckBox.cpp \
 	../../src/MainWindow.cpp \
 	../../src/main.cpp
 
@@ -42,7 +42,7 @@ HEADERS += \
 	../../src/Constants.h \
 	../../src/DWDData.h \
 	../../src/DWDDescriptonData.h \
-	../../src/DWD_CheckBox.h \
+	#../../src/DWD_CheckBox.h \
 	../../src/MainWindow.h
 
 
