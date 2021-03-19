@@ -15,6 +15,7 @@
 #include "DWDDescriptonData.h"
 
 
+
 namespace Ui {
 class MainWindow;
 }
@@ -27,22 +28,22 @@ class MainWindow : public QMainWindow
 
 public:
 
-
-
 	explicit MainWindow(QWidget *parent = nullptr);
 	~MainWindow();
 
 	void testFunc();
 
-private slots:
+	void update(int tableWidth);
 
+protected:
+	void resizeEvent(QResizeEvent *event) override;
+
+private slots:
+	void readData();
 
 	void on_tableWidget_itemChanged(QTableWidgetItem *item);
 
 private:
-
-	/*! Reads a decription file and adds all stations in stationDescription map. The dataType must be given. */
-	void readDescription(const IBK::Path &filepath, std::map<unsigned int, DWDDescriptonData> &stationDescription, const DWDDescriptonData::Data &dataType);
 
 	Ui::MainWindow						*m_ui;
 

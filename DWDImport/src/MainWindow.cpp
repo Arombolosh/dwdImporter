@@ -16,8 +16,11 @@
 #include <QPicture>
 #include <QProgressDialog>
 #include <QTableWidgetItem>
+#include <QResizeEvent>
 
 #include "DWDData.h"
+#include "DWDDownloader.h"
+
 #include "Constants.h"
 //#include "DWD_CheckBox.h"
 
@@ -78,8 +81,13 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_ui->tableWidget->horizontalHeader()->setMinimumHeight(40);
 	m_ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
 	m_ui->tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+	//m_ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+	//m_ui->tableWidget->setst
 
 	testFunc();
+
+	resize(1500,400);
+	update(1400);
 }
 
 
@@ -91,93 +99,19 @@ MainWindow::~MainWindow()
 void MainWindow::testFunc(){
 
 	//download all files
-	//DWDDescriptonData  descData;
+	DWDDescriptonData  descData;
 
 
-	//descData.downloadDescriptionFiles();
-
-	//read all decription files
-	DWDDescriptonData descData;
-	std::map<unsigned int, DWDDescriptonData> descDataMap;
-	descData.readAllDescriptions(descDataMap);
-
-	//fill table view with these data
-	//auto model = m_ui->tableView->model();
-	unsigned int counter =0;
-	QTableWidget &tw =  *m_ui->tableWidget;
-	tw.blockSignals(true);
-	for (std::map<unsigned int, DWDDescriptonData>::const_iterator	it = descDataMap.begin();
-																	it != descDataMap.end();
-																	++it){
-		tw.insertRow(counter);
-		tw.setItem(counter, 0, new QTableWidgetItem(QString::number(it->second.m_id)));
-
-		tw.setItem(counter, 0, new QTableWidgetItem(QString::number(it->second.m_id)));
-		tw.setItem(counter, 1, new QTableWidgetItem(QString::number(it->second.m_longitude)));
-		tw.setItem(counter, 2, new QTableWidgetItem(QString::number(it->second.m_latitude)));
-		tw.setItem(counter, 3, new QTableWidgetItem(QString::fromStdString(it->second.m_name)));
-		tw.setItem(counter, 4, new QTableWidgetItem(QString::fromStdString(it->second.m_country)));
-
-		for (unsigned int i=0;i<5 ; ++i)
-			tw.item(counter,i)->setFlags(Qt::ItemIsEnabled);
-
-		for (unsigned int i=0;i<4; ++i) {
-			bool checkable = false;
-			switch (i) {
-				case 0:{
-					if(it->second.m_data[DWDDescriptonData::D_TemperatureAndHumidity] != 0)
-						checkable = true;
-				}break;
-				case 1:{
-					if(it->second.m_data[DWDDescriptonData::D_Solar] != 0)
-						checkable = true;
-
-				}break;
-				case 2:{
-					if(it->second.m_data[DWDDescriptonData::D_Wind] != 0)
-						checkable = true;
-
-				}break;
-				case 3:{
-					if(it->second.m_data[DWDDescriptonData::D_Pressure] != 0)
-						checkable = true;
-
-				}break;
-
-			}
-
-			QTableWidgetItem *item = new QTableWidgetItem();
-			if(checkable){
-				item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable);
-				item->setCheckState(Qt::Unchecked);
-			}
-			else
-				item->setFlags(Qt::ItemIsEnabled);
-
-			tw.setItem(counter,5+i,item);
+	QStringList sl = descData.downloadDescriptionFiles();
+	DWDDownloader downloader(this);
+	downloader.append(sl);
 
 
+	readData();
+//	connect( &downloader, &DWDDownloader::finished, this, &MainWindow::readData );
+//	downloader.
 
-//			QStandardItem *item = new QStandardItem(true);
-//			CheckBoxHelper *cb = new CheckBoxHelper(counter, 5+i);
-//			QWidget *w = new QWidget();
 
-//			QHBoxLayout *lay = new QHBoxLayout();
-//			lay->addWidget(cb,0, Qt::AlignHCenter);
-//			lay->setMargin(0);
-//			w->setLayout(lay);
-//			tw.setCellWidget(counter,5+i, w);
-//			item->setCheckable(checkable);
-
-//			lay->setEnabled(checkable);
-
-//			connect( cb, &CheckBoxHelper::checkBoxChanged, this, &MainWindow::on_checkboxChecked );
-
-		}
-
-		++counter;
-	}
-	tw.blockSignals(false);
 
 
 
@@ -207,9 +141,123 @@ void MainWindow::testFunc(){
 	//	}
 }
 
+void MainWindow::update(int tableWidth) {
+	QTableWidget &tw = *m_ui->tableWidget;
+
+	// resize cols
+	tw.setColumnWidth(0, tableWidth / 18);
+	tw.setColumnWidth(1, tableWidth / 9);
+	tw.setColumnWidth(2, tableWidth / 9);
+	tw.setColumnWidth(3, tableWidth * 7 /18 );
+	tw.setColumnWidth(4, tableWidth / 9);
+	tw.setColumnWidth(5, tableWidth / 18);
+	tw.setColumnWidth(6, tableWidth / 18);
+	tw.setColumnWidth(7, tableWidth / 18);
+	tw.setColumnWidth(8, tableWidth / 18);
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event) {
+	// resize event is triggered
+	// get tablewidget width
+	int width = m_ui->tableWidget->width() - 80;
+
+	update(width);
+}
+
+void MainWindow::readData() {
+	//read all decription files
+	DWDDescriptonData descData;
+	std::map<unsigned int, DWDDescriptonData> descDataMap;
+	descData.readAllDescriptions(descDataMap);
+
+
+	//fill table view with these data
+	//auto model = m_ui->tableView->model();
+	unsigned int counter =0;
+	QTableWidget &tw =  *m_ui->tableWidget;
+	tw.blockSignals(true);
+
+	tw.setSelectionBehavior(QAbstractItemView::SelectRows);
+	tw.setSelectionMode(QAbstractItemView::SingleSelection);
+
+	for (std::map<unsigned int, DWDDescriptonData>::const_iterator	it = descDataMap.begin();
+																	it != descDataMap.end();
+																	++it){
+		tw.insertRow(counter);
+		tw.setItem(counter, 0, new QTableWidgetItem(QString::number(it->second.m_id)));
+
+		tw.setItem(counter, 0, new QTableWidgetItem(QString::number(it->second.m_id)));
+		tw.setItem(counter, 1, new QTableWidgetItem(QString::number(it->second.m_longitude)));
+		tw.setItem(counter, 2, new QTableWidgetItem(QString::number(it->second.m_latitude)));
+		tw.setItem(counter, 3, new QTableWidgetItem(QString::fromStdString(it->second.m_name)));
+		tw.setItem(counter, 4, new QTableWidgetItem(QString::fromStdString(it->second.m_country)));
+
+		for (unsigned int i=0;i<5 ; ++i)
+			tw.item(counter,i)->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+
+		for (unsigned int i=0;i<4; ++i) {
+			bool checkable = false;
+			switch (i) {
+				case 0:{
+					if(it->second.m_data[DWDDescriptonData::D_TemperatureAndHumidity] != 0)
+						checkable = true;
+				}break;
+				case 1:{
+					if(it->second.m_data[DWDDescriptonData::D_Solar] != 0)
+						checkable = true;
+
+				}break;
+				case 2:{
+					if(it->second.m_data[DWDDescriptonData::D_Wind] != 0)
+						checkable = true;
+
+				}break;
+				case 3:{
+					if(it->second.m_data[DWDDescriptonData::D_Pressure] != 0)
+						checkable = true;
+
+				}break;
+
+			}
+
+			QTableWidgetItem *item = new QTableWidgetItem();
+			if(checkable){
+				item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
+				item->setCheckState(Qt::Unchecked);
+			}
+			else
+				item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+
+			tw.setItem(counter,5+i,item);
+
+
+
+//			QStandardItem *item = new QStandardItem(true);
+//			CheckBoxHelper *cb = new CheckBoxHelper(counter, 5+i);
+//			QWidget *w = new QWidget();
+
+//			QHBoxLayout *lay = new QHBoxLayout();
+//			lay->addWidget(cb,0, Qt::AlignHCenter);
+//			lay->setMargin(0);
+//			w->setLayout(lay);
+//			tw.setCellWidget(counter,5+i, w);
+//			item->setCheckable(checkable);
+
+//			lay->setEnabled(checkable);
+
+//			connect( cb, &CheckBoxHelper::checkBoxChanged, this, &MainWindow::on_checkboxChecked );
+
+		}
+
+		++counter;
+	}
+	tw.blockSignals(false);
+}
+
 
 
 void MainWindow::on_tableWidget_itemChanged(QTableWidgetItem *item) {
+	m_ui->tableWidget->selectRow(item->row() );
 	if(item->column() >4){
 		// get checked stated, if item was checked, uncheck all others
 		if (item->checkState() == Qt::Checked) {
@@ -218,12 +266,10 @@ void MainWindow::on_tableWidget_itemChanged(QTableWidgetItem *item) {
 			for (int i=0; i<m_ui->tableWidget->rowCount(); ++i) {
 				QTableWidgetItem *newItem = m_ui->tableWidget->item(i, item->column());
 				bool isUserCheckable = newItem->flags().testFlag(Qt::ItemIsUserCheckable);
-				//QMessageBox::information(this, QString(), QString("i: %1 | col: %2 | bool: %3").arg(i).arg(item->column()).arg(test));
 
 				if (i == item->row() || !isUserCheckable)
 					continue;
 
-				//QMessageBox::information(this, QString(), QString("Da rein i: %1").arg(i));
 				m_ui->tableWidget->item(i, item->column())->setCheckState(Qt::Unchecked);
 			}
 			m_ui->tableWidget->blockSignals(false);
@@ -233,72 +279,6 @@ void MainWindow::on_tableWidget_itemChanged(QTableWidgetItem *item) {
 
 
 
-void MainWindow::readDescription(const IBK::Path &filepath, std::map<unsigned int, DWDDescriptonData> &stationDescription, const DWDDescriptonData::Data &dataType){
-//	IBK::Path filepath(QtExt::Directories::userDataDir().toStdString() + "filename.txt");
-
-	IBK::FileReader fileReader(filepath);
-
-	//check if file is valid
-	if(!fileReader.valid()){
-		QMessageBox::warning(this, QString(),QString("File '%1' is not valid").arg(QString::fromStdString(filepath.absolutePath().c_str())));
-		return;
-	}
-	std::vector<std::string> lines;
-	//fill lines vector
-	fileReader.readAll(filepath, lines,std::vector<std::string>{"\n"});
-
-	//parse each line
-	for (unsigned int i=2; i<lines.size(); ++i ) {
-		const std::string & line =lines[i];
-		if(line.empty())
-			break;
-		DWDDescriptonData dwd;
-		try {
-			//extract all informations
-			dwd.m_id = IBK::string2val<unsigned int>(line.substr(0,5));
-			dwd.m_data[dataType] = 1;
-
-			dwd.m_startDate.set( IBK::string2val<unsigned int>(line.substr(6,4)), IBK::string2val<unsigned int>(line.substr(10,2))-1,IBK::string2val<unsigned int>(line.substr(12,2))-1,0);
-			dwd.m_endDate.set( IBK::string2val<unsigned int>(line.substr(15,4)), IBK::string2val<unsigned int>(line.substr(19,2))-1,IBK::string2val<unsigned int>(line.substr(21,2))-1,0);
-			dwd.m_height = IBK::string2val<double>(line.substr(24,38-24));
-			dwd.m_latitude = IBK::string2val<double>(line.substr(39,50-39));
-			dwd.m_longitude = IBK::string2val<double>(line.substr(51,60-51));
-			dwd.m_name = IBK::trim_copy(line.substr(61,100-61));
-			dwd.m_country = IBK::trim_copy(line.substr(101,500));
-
-//			QMessageBox::warning(this, QString(),
-//								 QString("%1\n").arg(dwd.m_id)
-//								 + QString("%1\n").arg(QString::fromStdString(dwd.m_startDate.toDateTimeFormat()))
-//								 + QString("%1\n").arg(QString::fromStdString(dwd.m_endDate.toDateTimeFormat()))
-//								 + QString("%1\n").arg(dwd.m_height)
-//								 + QString("%1\n").arg(dwd.m_latitude)
-//								 + QString("%1\n").arg(dwd.m_longitude)
-//								 + QString("%1\n").arg(QString::fromStdString(dwd.m_name))
-//								 + QString("%1\n").arg(QString::fromStdString(dwd.m_country))
-//								 + QString("%1\n").arg(QString::fromStdString(line))
-//								 );
-			//add dwd object to map
-			///TODO check if other information are equal
-			if(stationDescription.find(dwd.m_id) != stationDescription.end())
-				stationDescription[dwd.m_id].m_data[dataType] = 1;
-			else
-				stationDescription[dwd.m_id] = dwd;
-		}  catch (IBK::Exception &ex) {
-			QMessageBox::warning(this, QString(), QString("Got an exception while reading lines. In line %1\n").arg(i)
-								 + QString("%1\n").arg(dwd.m_id)
-								 + QString("%1\n").arg(QString::fromStdString(dwd.m_startDate.toDateTimeFormat()))
-								 + QString("%1\n").arg(QString::fromStdString(dwd.m_endDate.toDateTimeFormat()))
-								 + QString("%1\n").arg(dwd.m_height)
-								 + QString("%1\n").arg(dwd.m_latitude)
-								 + QString("%1\n").arg(dwd.m_longitude)
-								 + QString("%1\n").arg(QString::fromStdString(dwd.m_name))
-								 + QString("%1\n").arg(QString::fromStdString(dwd.m_country))
-								 + QString("%1\n").arg(QString::fromStdString(line))
-								 );
-		}
-	}
-
-}
 
 
 
