@@ -216,10 +216,14 @@ void MainWindow::on_tableWidget_itemChanged(QTableWidgetItem *item) {
 			// prevent events to fire
 			m_ui->tableWidget->blockSignals(true);
 			for (int i=0; i<m_ui->tableWidget->rowCount(); ++i) {
-				bool test = item->flags() & Qt::ItemIsUserCheckable;
-				QMessageBox::information(this, QString(), QString("i: %1 | col: %2 | bool: %3").arg(i).arg(item->column()).arg(test));
+				QTableWidgetItem *newItem = m_ui->tableWidget->item(i, item->column());
+				bool isUserCheckable = newItem->flags().testFlag(Qt::ItemIsUserCheckable);
+				//QMessageBox::information(this, QString(), QString("i: %1 | col: %2 | bool: %3").arg(i).arg(item->column()).arg(test));
 
-				if (i == item->row() && item->flags() & Qt::ItemIsUserCheckable) continue;
+				if (i == item->row() || !isUserCheckable)
+					continue;
+
+				//QMessageBox::information(this, QString(), QString("Da rein i: %1").arg(i));
 				m_ui->tableWidget->item(i, item->column())->setCheckState(Qt::Unchecked);
 			}
 			m_ui->tableWidget->blockSignals(false);
