@@ -320,8 +320,8 @@ void MainWindow::on_pushButton_clicked(){
 			DWDDownloaderDirk dwdd;
 			dwdd.m_urlString = dwdData.urlFilename(types[i], QString::number(rows[i]).rightJustified(5,'0'));
 			QFileInfo fileInfo = QUrl(dwdd.m_urlString).path();
-			filenames.push_back(fileInfo.path());
-			QMessageBox::information(this, QString(), dwdd.m_urlString);
+			filenames.push_back(fileInfo.fileName());
+			//QMessageBox::information(this, QString(), dwdd.m_urlString);
 			dwdd.startDownload();
 			QTime dieTime= QTime::currentTime().addSecs(delayTime);
 			while (QTime::currentTime() < dieTime)
@@ -336,7 +336,7 @@ void MainWindow::on_pushButton_clicked(){
 	std::vector<IBK::Path>	checkedFiles(4);
 
 	for(unsigned int i=0; i<4; ++i){
-		IBK::Path checkfile("../data/Tests/" + filenames[i].toStdString());
+		IBK::Path checkfile("../../data/Tests/" + filenames[i].toStdString());
 		if(!checkfile.exists() && rows[i] != -1){
 			QString cat;
 			switch (types[i]) {
