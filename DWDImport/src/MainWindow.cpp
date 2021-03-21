@@ -84,6 +84,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	//m_ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 	//m_ui->tableWidget->setst
 
+	m_ui->lineEditYear->setup(1950,2023,tr("Year of interest."), true, true);
+
 	testFunc();
 
 	resize(1500,400);
@@ -307,7 +309,7 @@ void MainWindow::on_pushButton_clicked(){
 		}
 	}
 
-	std::vector<QString> filenames; //hold filenames for download
+	std::vector<QString> filenames(4); //hold filenames for download
 	std::vector<DWDData::DataType>	types{DWDData::DT_AirTemperature, DWDData::DT_RadiationDiffuse,
 									DWDData::DT_WindDirection,DWDData::DT_Pressure};
 
@@ -320,7 +322,7 @@ void MainWindow::on_pushButton_clicked(){
 			DWDDownloaderDirk dwdd;
 			dwdd.m_urlString = dwdData.urlFilename(types[i], QString::number(rows[i]).rightJustified(5,'0'));
 			QFileInfo fileInfo = QUrl(dwdd.m_urlString).path();
-			filenames.push_back(fileInfo.fileName());
+			filenames[i]= fileInfo.fileName();
 			//QMessageBox::information(this, QString(), dwdd.m_urlString);
 			dwdd.startDownload();
 			QTime dieTime= QTime::currentTime().addSecs(delayTime);
@@ -336,8 +338,10 @@ void MainWindow::on_pushButton_clicked(){
 	std::vector<IBK::Path>	checkedFiles(4);
 
 	for(unsigned int i=0; i<4; ++i){
+		if(rows[i] == -1)
+			continue;
 		IBK::Path checkfile("../../data/Tests/" + filenames[i].toStdString());
-		if(!checkfile.exists() && rows[i] != -1){
+		if(!checkfile.exists()){
 			QString cat;
 			switch (types[i]) {
 				case DWDData::DT_AirTemperature:	cat = "Temperature and relative Humidity";		break;
@@ -347,8 +351,6 @@ void MainWindow::on_pushButton_clicked(){
 			}
 			QMessageBox::warning(this, QString(), QString("Download of file '%1' was not successfull. Category: '%2'").arg(filenames[i]).arg(cat));
 		}
-		else if(rows[i] == -1)
-			continue;
 		else
 			checkedFiles[i] = checkfile;
 	}
@@ -357,7 +359,7 @@ void MainWindow::on_pushButton_clicked(){
 	//open the zip
 	//find file with name 'produkt_....'
 	///TODO Dirk nur zu Probe muss später ersetzt werden
-	productFiles[0] = IBK::Path("../../data/Tests/produkt_tu_stunde_20190917_20210319_00183.txt");
+	productFiles[0] = IBK::Path("../../data/Tests/produkt_tu_stunde_20190918_20210320_00183.txt");
 
 	//create extract folder
 
@@ -381,6 +383,7 @@ void MainWindow::on_pushButton_clicked(){
 	}
 	//read data
 	DWDData dwdData;
+	dwdData.m_startTime = IBK::Time(m_ui->lineEditYear->text().toInt(),0);
 	dwdData.createData(filenamesForReading);
 
 	//copy all data in range and create an epw
