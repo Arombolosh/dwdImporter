@@ -1,12 +1,31 @@
 #include "DWDData.h"
 
 #include <IBK_StringUtils.h>
+#include <IBK_FileReader.h>
 
 
-void DWDData::addDataLine(std::string &line, std::set<DataType> &dataType){
+void DWDData::createData(const std::map<IBK::Path, std::set<DWDData::DataType>> &filenames) {
+	FUNCID(createData);
+	for(std::map<IBK::Path, std::set<DWDData::DataType>>::const_iterator	it=filenames.begin();
+																			it!=filenames.end(); ++it){
+		//check if file exist
+		IBK::Path fileName = it->first;
+		if(!fileName.exists())
+			throw IBK::Exception(IBK::FormatString( "File '%1' does not exist. ").arg(fileName.filename()), FUNC_ID);
+
+		//read the file
+		IBK::FileReader fileReader(fileName);
+		std::vector<std::string> lines;
+		fileReader.readAll(fileName, lines, std::vector<std::string>{"\n"});
+
+		for(unsigned int i=1;i<lines.size(); ++i){
+			addDataLine(lines[i], it->second);
+		}
+	}
+}
+
+void DWDData::addDataLine(std::string &line, const std::set<DataType> &dataType){
 	std::vector<std::string> data;
-
-
 
 	//explode line
 	IBK::explode(line, data, ";", true);
@@ -68,9 +87,9 @@ void DWDData::addDataLine(std::string &line, std::set<DataType> &dataType){
 	}
 
 	//get timepoint
-
-
 }
+
+
 
 QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numberString, bool isRecent) const{
 	QString rec = "_akt", rec2 = "";

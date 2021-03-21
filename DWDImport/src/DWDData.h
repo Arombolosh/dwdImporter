@@ -8,6 +8,7 @@
 #include <QString>
 
 #include <IBK_Time.h>
+#include <IBK_Path.h>
 
 class DWDData
 {
@@ -55,18 +56,18 @@ public:
 
 	};
 
-	/*! Add a data line from dwd file.
-		map:
-		key		-> column
-		value	-> which interpretation
-	*/
-	void addDataLine(std::string &line, std::set<DataType> &dataType);
+	/*! Reads all given dwd files and creates the data. */
+	void createData(const std::map<IBK::Path, std::set<DWDData::DataType>> &filenames);
+
+	/*! Add a data line from dwd file.	*/
+	void addDataLine(std::string &line, const std::set<DataType> &dataType);
 
 	QString urlFilename(const DataType &type, const QString &numberString, bool isRecent=true) const;
 
 	IBK::Time					m_startTime;			///< Start time for the first interval data
 	unsigned int				m_intervalDuration;		///< Interval duration in sec
 	std::vector<IntervalData>	m_data;					///< Vector with interval data
+	IBK::Path					m_filenames[NUM_DT];	///< Filename
 
 private:
 	unsigned int getColumnDWD(const DataType &dt);
