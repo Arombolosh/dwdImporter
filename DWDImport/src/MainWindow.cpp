@@ -353,13 +353,35 @@ void MainWindow::on_pushButton_clicked(){
 			checkedFiles[i] = checkfile;
 	}
 
+	std::vector<IBK::Path>	productFiles(4);
 	//open the zip
+	//find file with name 'produkt_....'
+	///TODO Dirk nur zu Probe muss später ersetzt werden
+	productFiles[0] = IBK::Path("../../data/Tests/produkt_tu_stunde_20190917_20210319_00183.txt");
 
 	//create extract folder
 
 	//extract file from zip
 
+	//create the file path names and according data types for reading
+	std::map<IBK::Path, std::set<DWDData::DataType>> filenamesForReading;
+	for(unsigned int i=0; i<4; ++i){
+		if(productFiles[i] == IBK::Path())
+			continue;
+		switch (i) {
+			case 0:
+				filenamesForReading[productFiles[i]] = std::set<DWDData::DataType>{DWDData::DT_AirTemperature, DWDData::DT_RelativeHumidity}; break;
+			case 1:
+				filenamesForReading[productFiles[i]] = std::set<DWDData::DataType>{DWDData::DT_RadiationDiffuse,DWDData::DT_RadiationGlobal, DWDData::DT_RadiationLongWave}; break;
+			case 2:
+				filenamesForReading[productFiles[i]] = std::set<DWDData::DataType>{DWDData::DT_WindDirection,DWDData::DT_WindSpeed}; break;
+			case 3:
+				filenamesForReading[productFiles[i]] = std::set<DWDData::DataType>{DWDData::DT_Pressure}; break;
+		}
+	}
 	//read data
+	DWDData dwdData;
+	dwdData.createData(filenamesForReading);
 
 	//copy all data in range and create an epw
 }
