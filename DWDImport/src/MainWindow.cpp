@@ -307,40 +307,51 @@ void MainWindow::on_pushButton_clicked(){
 		}
 	}
 
+	std::vector<QString> filenames; //hold filenames for download
+	std::vector<DWDData::DataType>	types{DWDData::DT_AirTemperature, DWDData::DT_RadiationDiffuse,
+									DWDData::DT_WindDirection,DWDData::DT_Pressure};
+
+	int delayTime = 3; //sec to wait after download
+
 	//download the data (zip)
-	DWDData dwdData;
-	DWDDownloaderDirk dwdd;
-	if(rows[0] != -1){
-		dwdd.m_urlString = dwdData.urlFilename(DWDData::DT_AirTemperature, QString::number(rows[0]).rightJustified(5,'0'));
-		QMessageBox::information(this, QString(), dwdd.m_urlString);
-		dwdd.startDownload();
-		QTime dieTime= QTime::currentTime().addSecs(3);
-		while (QTime::currentTime() < dieTime)
-			QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
-	}
-	if(rows[1] != -1){
-		dwdd.m_urlString = dwdData.urlFilename(DWDData::DT_RadiationDiffuse, QString::number(rows[1]).rightJustified(5,'0'));
-		dwdd.startDownload();
-		QTime dieTime= QTime::currentTime().addSecs(3);
-		while (QTime::currentTime() < dieTime)
-			QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
-	}
-	if(rows[2] != -1){
-		dwdd.m_urlString = dwdData.urlFilename(DWDData::DT_WindDirection, QString::number(rows[2]).rightJustified(5,'0'));
-		dwdd.startDownload();
-		QTime dieTime= QTime::currentTime().addSecs(3);
-		while (QTime::currentTime() < dieTime)
-			QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
-	}
-	if(rows[3] != -1){
-		dwdd.m_urlString = dwdData.urlFilename(DWDData::DT_Pressure, QString::number(rows[3]).rightJustified(5,'0'));
-		dwdd.startDownload();
-		QTime dieTime= QTime::currentTime().addSecs(3);
-		while (QTime::currentTime() < dieTime)
-			QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+	for(unsigned int i=0; i<4; ++i){
+		if(rows[i] != -1){
+			DWDData dwdData;
+			DWDDownloaderDirk dwdd;
+			dwdd.m_urlString = dwdData.urlFilename(types[i], QString::number(rows[i]).rightJustified(5,'0'));
+			QFileInfo fileInfo = QUrl(dwdd.m_urlString).path();
+			filenames.push_back(fileInfo.path());
+			QMessageBox::information(this, QString(), dwdd.m_urlString);
+			dwdd.startDownload();
+			QTime dieTime= QTime::currentTime().addSecs(delayTime);
+			while (QTime::currentTime() < dieTime)
+				QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+		}
 	}
 
 	QMessageBox::information(this, QString(), "jetzt sollten die Daten da sein");
+
+	//Check if all downloads are valid
+	//create a vector with valid files
+	std::vector<IBK::Path>	checkedFiles(4);
+
+	for(unsigned int i=0; i<4; ++i){
+		IBK::Path checkfile("../data/Tests/" + filenames[i].toStdString());
+		if(!checkfile.exists() && rows[i] != -1){
+			QString cat;
+			switch (types[i]) {
+				case DWDData::DT_AirTemperature:	cat = "Temperature and relative Humidity";		break;
+				case DWDData::DT_RadiationDiffuse:	cat = "Radiation"						;		break;
+				case DWDData::DT_WindDirection:		cat = "Wind";									break;
+				case DWDData::DT_Pressure:			cat = "Pressure";								break;
+			}
+			QMessageBox::warning(this, QString(), QString("Download of file '%1' was not successfull. Category: '%2'").arg(filenames[i]).arg(cat));
+		}
+		else if(rows[i] == -1)
+			continue;
+		else
+			checkedFiles[i] = checkfile;
+	}
 
 	//open the zip
 
