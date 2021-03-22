@@ -4,6 +4,7 @@
 #include <IBK_NotificationHandler.h>
 #include <IBK_messages.h>
 #include <IBK_FileReader.h>
+
 #include <QtExt_Directories.h>
 #include <QtExt_ValidatingLineEdit.h>
 
@@ -17,6 +18,9 @@
 #include <QProgressDialog>
 #include <QTableWidgetItem>
 #include <QResizeEvent>
+#include <QTimer>
+
+#include <QThread>
 
 #include "DWDData.h"
 #include "DWDDownloader.h"
@@ -104,50 +108,23 @@ void MainWindow::testFunc(){
 	DWDDescriptonData  descData;
 
 
-	QStringList sl = descData.downloadDescriptionFiles();
+	QStringList urls = descData.downloadDescriptionFiles();
 //	DWDDownloader downloader(this);
 //	downloader.append(sl);
 
-	QMessageBox::information(this, QString(), "Please wait update description data from website.");
-
-	DWDDownloaderDirk dwdd;
-	for(const QString &s : sl){
-		dwdd.m_urlString = s;
-		dwdd.startDownload();
-		QTime dieTime= QTime::currentTime().addSecs(3);
-		while (QTime::currentTime() < dieTime)
-			QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
-	}
-
-//	QMessageBox::warning(this, QString(), "vor return");
-
-	readData();
 
 
-//	DWDData data;
-//	data.m_startTime = IBK::Time(1981,0,0,0);
-//	data.m_intervalDuration = 3600;
 
-//	filepath = IBK::Path("../../data/Tests/produkt_tu_stunde_20190912_20210314_00044.txt");
-//	IBK::FileReader fileReader(filepath);
+//	connect(dwdd, &DWDDownloaderDirk::fini, )
 
-//	//check if file is valid
-//	if(!fileReader.valid()){
-//		QMessageBox::warning(this, QString(),QString("File '%1' is not valid").arg(QString::fromStdString(filepath.absolutePath().c_str())));
-//		return;
-//	}
-//	std::vector<std::string> lines;
-//	//fill lines vector
-//	fileReader.readAll(filepath, lines,std::vector<std::string>{"\n"});
+	DWDDownloader manager(this);
+	manager.m_urls = urls;
+	connect( &manager, &DWDDownloader::finished, this, &MainWindow::readData );
 
-//	std::set<DWDData::DataType> dataSet;
+	QTimer::singleShot(0, &manager, SLOT(execute() ) );
 
-//	dataSet.insert(DWDData::DT_AirTemperature);
-//	dataSet.insert(DWDData::DT_RelativeHumidity);
-
-//	for (unsigned int i=1; i<lines.size(); ++i) {
-//		data.addDataLine(lines[i], dataSet);
-	//	}
+	while ( manager.m_isRunning ) // wait for data to be downloaded (the little bit dirty way)
+		QMessageBox::information(this, "Downloading", "Download is running" );
 }
 
 void MainWindow::update(int tableWidth) {
@@ -168,9 +145,14 @@ void MainWindow::update(int tableWidth) {
 void MainWindow::resizeEvent(QResizeEvent *event) {
 	// resize event is triggered
 	// get tablewidget width
-	int width = m_ui->tableWidget->width() - 80;
+	int width = m_ui->tableWidget->viewport()->width();
 
 	update(width);
+}
+
+void MainWindow::showEvent(QShowEvent * event) {
+	// update ui with table widget width
+	update(m_ui->tableWidget->viewport()->width() );
 }
 
 void MainWindow::readData() {
@@ -197,8 +179,8 @@ void MainWindow::readData() {
 		tw.setItem(counter, 0, new QTableWidgetItem(QString::number(it->second.m_id)));
 		tw.setItem(counter, 1, new QTableWidgetItem(QString::number(it->second.m_longitude)));
 		tw.setItem(counter, 2, new QTableWidgetItem(QString::number(it->second.m_latitude)));
-		tw.setItem(counter, 3, new QTableWidgetItem(QString::fromStdString(it->second.m_name)));
-		tw.setItem(counter, 4, new QTableWidgetItem(QString::fromStdString(it->second.m_country)));
+		tw.setItem(counter, 3, new QTableWidgetItem(QString::fromLatin1(it->second.m_name.c_str())));
+		tw.setItem(counter, 4, new QTableWidgetItem(QString::fromLatin1(it->second.m_country.c_str())));
 
 		for (unsigned int i=0;i<5 ; ++i)
 			tw.item(counter,i)->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
@@ -315,21 +297,17 @@ void MainWindow::on_pushButton_clicked(){
 
 	int delayTime = 3; //sec to wait after download
 
+	DWDDownloader manager(this);
+	connect( &manager, &DWDDownloader::finished, this, &MainWindow::readData );
 	//download the data (zip)
 	for(unsigned int i=0; i<4; ++i){
 		if(rows[i] != -1){
 			DWDData dwdData;
-			DWDDownloaderDirk dwdd;
-			dwdd.m_urlString = dwdData.urlFilename(types[i], QString::number(rows[i]).rightJustified(5,'0'));
-			QFileInfo fileInfo = QUrl(dwdd.m_urlString).path();
-			filenames[i]= fileInfo.fileName();
-			//QMessageBox::information(this, QString(), dwdd.m_urlString);
-			dwdd.startDownload();
-			QTime dieTime= QTime::currentTime().addSecs(delayTime);
-			while (QTime::currentTime() < dieTime)
-				QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+			manager.m_urls << dwdData.urlFilename(types[i], QString::number(rows[i]).rightJustified(5,'0'));
 		}
 	}
+	if(!manager.m_urls.empty())
+		QTimer::singleShot(0, &manager, SLOT(execute() ) );
 
 	QMessageBox::information(this, QString(), "jetzt sollten die Daten da sein");
 
@@ -359,7 +337,7 @@ void MainWindow::on_pushButton_clicked(){
 	//open the zip
 	//find file with name 'produkt_....'
 	///TODO Dirk nur zu Probe muss später ersetzt werden
-	productFiles[0] = IBK::Path("../../data/Tests/produkt_tu_stunde_20190918_20210320_00183.txt");
+//	productFiles[0] = IBK::Path("../../data/Tests/produkt_tu_stunde_20190918_20210320_00183.txt");
 
 	//create extract folder
 
