@@ -29,7 +29,7 @@ public:
 		D_Pressure,
 		NUM_D
 	};
-
+	/*! Read predefined (download dwd) description files. */
 	void readAllDescriptions(std::map<unsigned int, DWDDescriptonData> &stationDescription);
 
 

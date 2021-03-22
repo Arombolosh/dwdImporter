@@ -98,6 +98,17 @@ void DWDData::addDataLine(std::string &line, const std::set<DataType> &dataType)
 	//get timepoint
 }
 
+void DWDData::writeTSV(unsigned int year){
+	//first find the start timepoint
+	if(m_data.empty())
+		return;
+	//if(m_startTime < IBK::Time(year,0))
+
+	for(unsigned int i=0; i<m_data.size(); ++i){
+		//if()
+	}
+}
+
 
 
 QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numberString, bool isRecent) const{

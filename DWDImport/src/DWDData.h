@@ -62,6 +62,10 @@ public:
 	/*! Add a data line from dwd file.	*/
 	void addDataLine(std::string &line, const std::set<DataType> &dataType);
 
+	/*! Create a tsv-file for one year. */
+	void writeTSV(unsigned int year);
+
+	/*! Create a url filename as string for download. */
 	QString urlFilename(const DataType &type, const QString &numberString, bool isRecent=true) const;
 
 	IBK::Time					m_startTime;			///< Start time for the first interval data
@@ -70,6 +74,7 @@ public:
 	IBK::Path					m_filenames[NUM_DT];	///< Filename
 
 private:
+	/*! Returns the column for a given data type in the different dwd weather files. */
 	unsigned int getColumnDWD(const DataType &dt);
 };
 
