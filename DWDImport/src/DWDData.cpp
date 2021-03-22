@@ -4,8 +4,12 @@
 #include <IBK_FileReader.h>
 
 
-void DWDData::createData(const std::map<IBK::Path, std::set<DWDData::DataType>> &filenames) {
+void DWDData::createData(const std::map<IBK::Path, std::set<DWDData::DataType>> &filenames, unsigned int intervalDuration) {
+
 	FUNCID(createData);
+
+	m_intervalDuration = intervalDuration;
+
 	for(std::map<IBK::Path, std::set<DWDData::DataType>>::const_iterator	it=filenames.begin();
 																			it!=filenames.end(); ++it){
 		//check if file exist
@@ -80,8 +84,13 @@ void DWDData::addDataLine(std::string &line, const std::set<DataType> &dataType)
 	while(it!= dataType.end()) {
 
 		unsigned int col = getColumnDWD(*it);
+
+		double unitFactor = 1;
+		if(*it == DT_RadiationGlobal || *it == DT_RadiationDiffuse || *it == DT_RadiationLongWave)
+			unitFactor = 1/0.36;
+
 		if(col < data.size()){
-			m_data[newTimepoint].setVal(*it, IBK::string2val<double>(data[col]));
+			m_data[newTimepoint].setVal(*it, IBK::string2val<double>(data[col])*unitFactor);
 		}
 		++it;
 	}

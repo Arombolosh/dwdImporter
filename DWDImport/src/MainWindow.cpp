@@ -386,5 +386,7 @@ void MainWindow::on_pushButton_clicked(){
 	dwdData.m_startTime = IBK::Time(m_ui->lineEditYear->text().toInt(),0);
 	dwdData.createData(filenamesForReading);
 
+
+
 	//copy all data in range and create an epw
 }

@@ -57,7 +57,7 @@ public:
 	};
 
 	/*! Reads all given dwd files and creates the data. */
-	void createData(const std::map<IBK::Path, std::set<DWDData::DataType>> &filenames);
+	void createData(const std::map<IBK::Path, std::set<DWDData::DataType>> &filenames, unsigned int intervalDuration = 3600);
 
 	/*! Add a data line from dwd file.	*/
 	void addDataLine(std::string &line, const std::set<DataType> &dataType);
