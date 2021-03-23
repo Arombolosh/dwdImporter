@@ -1,0 +1,447 @@
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\begin_preamble
+% bring items closer together
+\newcommand{\narrowItem}{\vspace{-6pt}\item}
+
+% redefine used item in environment
+\author{Andreas Nicolai}
+\date{\small Institut für Bauklimatik (Institute of Building Climatology)  \\ Technische Universität Dresden \\  D-01062 Dresden, Germany \\ andreas.nicolai@tu-dresden.de }
+
+% colosr
+\definecolor{linkblue}{rgb}{0,0,0.4}
+\definecolor{light-gray}{gray}{0.98}
+\definecolor{dark-gray}{gray}{0.45}
+
+%\usepackage{dsfont}
+
+\usepackage{booktabs}
+\usepackage[font=small]{caption}
+
+\usepackage[a-1b]{pdfx}
+%\usepackage[useBOM]{xmpincl}
+\end_preamble
+\options useBOM
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding utf8
+\fontencoding global
+\font_roman "lmodern" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family rmdefault
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize 10
+\spacing single
+\use_hyperref true
+\pdf_title "C6B Climate Data Container File Specification"
+\pdf_author "Andreas Nicolai"
+\pdf_subject "Definition of climate data container binary format"
+\pdf_keywords "Climate data, file format"
+\pdf_bookmarks true
+\pdf_bookmarksnumbered false
+\pdf_bookmarksopen false
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder true
+\pdf_colorlinks true
+\pdf_backref false
+\pdf_pdfusetitle true
+\pdf_quoted_options "linkcolor=linkblue,citecolor=linkblue,linktocpage=true"
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 2cm
+\topmargin 2.5cm
+\rightmargin 2cm
+\bottommargin 2cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation skip
+\defskip smallskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\listings_params "basicstyle={\ttfamily\footnotesize},commentstyle={\ttfamily}"
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Climate Calculation Module (CCM)
+\begin_inset Newline newline
+\end_inset
+
+An open-source climate data calculation library
+\end_layout
+
+\begin_layout Title
+
+\size large
+Technical Report
+\end_layout
+
+\begin_layout Abstract
+The Climate Calculation Module contains functionality for interpolating
+ tabulated climate data and calculating solar radiation onto surfaces with
+ given orientation and inclination.
+ This report lists the equations implemented and the programming interface
+ of the library.
+ 
+\end_layout
+
+\begin_layout Abstract
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+Climatic data is needed for building physics and building energy simulation
+ software.
+ Besides the support for different climate data formats and reading of tabulated
+ values, simulation programs need to implement interpolation methods, support
+ for continuous (e.g.
+ measured) or cyclic data.
+ Further, solar radiation calculation is central to any building energy
+ simulation software, and the calculation of the direct and diffuse radiation
+ onto surfaces with arbitrary orienation and inclination.
+\end_layout
+
+\begin_layout Standard
+In order to avoid implementing the same functionality in several simulation
+ programs, this library has been developed.
+ It is currently being used by the simulation software DELPHIN, THERAKLES
+ and NANDRAD of the Institut für Bauklimatik of the Technische Universität
+ Dresden, Germany.
+ The library reads climate data files from weather files in C6B or EPW format.
+ A format description of the C6B format is given in ....
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Interpolation rules
+\end_layout
+
+\begin_layout Standard
+Climatic data is provided for measured time intervals, typically with hourly
+ frequency.
+ When a simulation program requests climate data between time points, the
+ climate data is interpolated between sampling points, using linear interpolatio
+n:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\alpha & =\frac{t-t_{i}}{t_{i+1}-t_{i}}\\
+v\left(t\right) & =\left(1-\alpha\right)v_{i}+\alpha v_{i+1}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Solar Radiation Calculation
+\end_layout
+
+\begin_layout Standard
+The solar short wave radiation calculation expects climatic data for the
+ direct radiation in the sun's normal direction and diffuse radiation onto
+ a horizontal surface.
+ 
+\end_layout
+
+\begin_layout Standard
+Note: Often, experimental data includes global radiation and diffuse radiation
+ onto horizontal surfaces, whereby diffuse radiation is measured using sun
+ blocking rings.
+ The direct radiation onto the horizontal surface is then computed as the
+ difference between global and diffuse radiation.
+ When storing the direct radiation in the sun's normal direction in weather
+ files, a sun position calculation is needed.
+ Hereby, differences parameters and model complexity can lead to different
+ normal radiation data.
+ When applying a different sun position and radiation calculation to compute
+ back the direct radiation on horizontal surfaces, it is possible that hereby
+ different direct solar radiation values are obtained.
+ 
+\end_layout
+
+\begin_layout Subsection
+Sun Position Calculation
+\end_layout
+
+\begin_layout Standard
+The first step in calculation solar radiation is the calculation of the
+ sun's position.
+ Hereby, it is important to remember that the solar radiation data was measured
+ at a specific longitude and latitude 
+\begin_inset Formula $L$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+True time correction/local mean time
+\end_layout
+
+\begin_layout Standard
+Since the location of the measurement location/building location can be
+ different from that of the local time zone's center, a correction has to
+ be applied such that 12 pm is indeed the time where the sun is in the zenit.
+ Equations are taken from Kologirou - Solar Engineering.
+ 
+\end_layout
+
+\begin_layout Standard
+Longitude of the selected time zone (tz):
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+l_{tz}=15\text{deg }tz
+\]
+
+\end_inset
+
+ and difference between this longitude and the longitude of the building:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\delta_{long}=l_{tz}-l_{ccm}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Time shift 
+\begin_inset Formula $\Delta t_{long}$
+\end_inset
+
+ to be applied is then the longitude difference times 4 minutes (24*60/360=4):
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\Delta t_{long}=-\delta_{long}4\text{min}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Local mean time (lmt) is then:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+t_{lmt}=t+\Delta t_{long}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+Example
+\shape default
+: Dresden, Germany, longitude 13.768°, time zone UIT+1, located west of the
+ reference meridian for UIT +1, hence solar noon will be a little bit later
+ than 12 pm:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+l_{tz} & =15\cdot1=15\\
+\delta_{long} & =15-13.768=1.232\text{°}\\
+\Delta t_{long} & =4\text{min}\cdot1.232=4.928\text{min}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Solar noon will be reached in Dresden around 5 minutes past 12 pm.
+\end_layout
+
+\begin_layout Subsubsection
+Apparent solar time calculation
+\end_layout
+
+\begin_layout Standard
+Correction of day length due to eccentricity and earth's orbit around sun,
+ using 
+\begin_inset Formula $t_{d}=t\cdot1\text{d}/\left(3600\cdot24\text{s}\right)$
+\end_inset
+
+ time in days:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+B & =2\pi\frac{t_{d}-81}{365}\\
+\Delta t_{exc} & =\left(9.87\sin2B-7.53\cos B-1.5\sin B\right)\text{min}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Declination and elevation angle of the sun
+\end_layout
+
+\begin_layout Standard
+The declination 
+\begin_inset Formula $\delta$
+\end_inset
+
+ of the sun is computed using the equations from ASHRAE handbook:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\delta=23.45\text{°}\sin2\pi\frac{t_{d}+284}{365}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Hour angle 
+\begin_inset Formula $\Omega\in\left[-180\text{°},180\text{°}\right]$
+\end_inset
+
+ is
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+t_{h} & =t_{d}-\left[t_{d}\right]\\
+\Omega & =2\pi\left(t_{d}-0.5\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+and elevation angle 
+\begin_inset Formula $h$
+\end_inset
+
+ is given by:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\sin h=\sin L\cdot\sin\delta+\cos L\cdot\cos\delta\cdot\cos\Omega
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Azimuth angle
+\end_layout
+
+\begin_layout Standard
+The azimuth angle is
+\begin_inset Formula 
+\[
+\tan a=\frac{\sin2\pi t_{d}\cdot\cos\delta}{\sin L\cdot\cos2\pi t_{d}\cdot\delta+\sin\delta\cdot\cos L}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

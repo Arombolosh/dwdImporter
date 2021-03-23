@@ -1,0 +1,8 @@
+\Title{DELPHIN 6 Climate Data File Specification, Version 1.0}
+\Author{Andreas Nicolai}
+\Subject{Abstract This paper describes the file format of the climate data container used by the DELPHIN, THERAKLES and NANDRAD simulation programs. The climate data container format holds a binary representation of annual and continuous climatic data needed for hygrothermal transport and building energy simulation models. The content of the C6B-Format is roughly equivalent to the epw-climate data format.}
+\Keywords{Specification \sep Climate Data Files \sep Delphin 6}
+\Copyright{Andreas Nicolai}
+\CopyrightURL{http://www.bauklimatik-dresden.de}
+\Creator{pdftex}
+\Publisher{Qucosa}

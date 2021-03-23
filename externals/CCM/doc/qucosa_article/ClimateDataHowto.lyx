@@ -1,0 +1,1694 @@
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
+\begin_document
+\begin_header
+\textclass article
+\begin_preamble
+\usepackage{color}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{listings}
+\usepackage{courier}
+\lstset{
+basicstyle=\footnotesize\ttfamily, % Standardschrift
+%numbers=left, % Ort der Zeilennummern
+%numberstyle=\tiny, % Stil der Zeilennummern
+%stepnumber=2, % Abstand zwischen den Zeilennummern
+numbersep=5pt, % Abstand der Nummern zum Text
+tabsize=4, % Groesse von Tabs
+extendedchars=true, %
+breaklines=true, % Zeilen werden Umgebrochen
+keywordstyle=\color{blue}\bfseries,
+frame=tb,
+% keywordstyle=[1]\textbf, % Stil der Keywords
+% keywordstyle=[2]\textbf, %
+% keywordstyle=[3]\textbf, %
+% keywordstyle=[4]\textbf, \sqrt{\sqrt{}} %
+stringstyle=\color{orange}\ttfamily, % Farbe der String
+showspaces=false, % Leerzeichen anzeigen ?
+showtabs=false, % Tabs anzeigen ?
+xleftmargin=17pt,
+framexleftmargin=17pt,
+framexrightmargin=5pt,
+framexbottommargin=4pt,
+commentstyle=\color{gray},
+%backgroundcolor=\color{grey},
+showstringspaces=false, % Leerzeichen in Strings anzeigen ?
+morekeywords={__global__} % CUDA specific keywords
+}
+\lstloadlanguages{% Check Dokumentation for further languages ...
+%[Visual]Basic
+%Pascal
+C,
+C++,
+Python,
+%XML
+%HTML
+Java
+}
+
+% colosr
+\definecolor{linkblue}{rgb}{0,0,0.4}
+\definecolor{light-gray}{gray}{0.98}
+\definecolor{dark-gray}{gray}{0.45}
+
+\usepackage{dsfont}
+
+\usepackage[format=hang,font={footnotesize},labelfont={bf},margin=1cm,aboveskip=5pt,position=bottom]{caption}
+\end_preamble
+\options fleqn
+\use_default_options true
+\maintain_unincluded_children false
+\language ngerman
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_math auto
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref true
+\pdf_title "Klimadatenunterstützung in IBK Simulationssoftware"
+\pdf_author "Andreas Nicolai"
+\pdf_keywords "CCM, Klimadaten, Dateiformate"
+\pdf_bookmarks true
+\pdf_bookmarksnumbered false
+\pdf_bookmarksopen false
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder true
+\pdf_colorlinks true
+\pdf_backref false
+\pdf_pdfusetitle true
+\pdf_quoted_options "linkcolor=linkblue,citecolor=linkblue,linktocpage=true"
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation skip
+\defskip smallskip
+\quotes_language german
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Behandlung von Klimadaten in IBK Simulationssoftware
+\end_layout
+
+\begin_layout Author
+Andreas Nicolai
+\end_layout
+
+\begin_layout Abstract
+Dieser Artikel beschreibt Dateiformate und Regeln für die Interpretation
+ von Klimadaten in den IBK Simulationsprogrammen THERAKLES, NANDRAD und
+ DELPHIN, welche intern die Funktionalität der CCM-Bibliothek (Climate Calculati
+on Module) verwenden.
+ Es wird die Verwendung zyklischer jährlicher Daten, aber auch die Behandlung
+ nicht-zyklischer Daten, z.B.
+ aus Messreihen beschrieben.
+\end_layout
+
+\begin_layout Abstract
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Grundlagen und Berechnungsregeln
+\end_layout
+
+\begin_layout Subsection
+Lineare Interpolation
+\end_layout
+
+\begin_layout Standard
+IBK Simulationsprogramme rechnen mit variablen Zeitschritten und müssen
+ daher zu verschiedenen Zeitpunkten auch unterhalb von Stunden Klimadaten
+ berechnen.
+ Dafür werden Klimadaten als Zeitpunkt-Werte-Paare definiert und zwischen
+ diesen linear interpoliert
+\begin_inset space ~
+\end_inset
+
+(Abbildung
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Lineare-Interpolation-des"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename linear_interpolation.png
+	lyxscale 50
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Lineare-Interpolation-des"
+
+\end_inset
+
+Lineare Interpolation des Wertes 
+\begin_inset Formula $v\left(t\right)$
+\end_inset
+
+ aus einer Datentabelle
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Es findet die folgende Berechnungsvorschrift Anwendung:
+\begin_inset Formula 
+\begin{align*}
+\alpha & =\frac{t-t_{i}}{t_{i+1}-t_{i}}\\
+v\left(t\right) & =\left(1-\alpha\right)v_{i}+\alpha v_{i+1}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Absolute Zeitpunkte und relative Simulationszeit
+\end_layout
+
+\begin_layout Standard
+Die 
+\shape italic
+Simulationszeit
+\shape default
+ beginnt bei Simulationsstart immer bei 0.
+ Bei einer fortgesetzten Simulation (restart) wird auch die Simulationszeit
+ fortgesetzt.
+ Sie ist als 
+\shape italic
+relative Zeit zum Beginn der Simulation
+\shape default
+ definiert.
+\end_layout
+
+\begin_layout Standard
+Der Bezug zur 
+\shape italic
+absoluten Zeit
+\shape default
+ bzw.
+ lokalen Zeit wird durch Addition der Simulationszeit auf den in lokaler
+ Zeit angegebenen 
+\shape italic
+Startzeitpunkt
+\shape default
+ herstellt.
+ Bei Berechnungen mit zyklischem Klima ist das meist Mitternacht am 1.
+ Januar.
+ Dies ist aber nicht verpflichtend so.
+ Absolute Zeitpunkte werden durch zwei Variablen ausgedrückt, dem Jahr (Integerz
+ahl) und dem Zeitabstand seit Beginn des Jahres (time within year), welcher
+ als Abstand zu Mitternacht am 1.
+ Januar des 
+\shape italic
+Startjahres
+\shape default
+ definiert ist.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "language={C++},basicstyle={\scriptsize\ttfamily},tabsize=4"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+// Beispielhafte Berechnung aus DELPHIN
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+t                           // Simulationszeit in [s]
+\end_layout
+
+\begin_layout Plain Layout
+
+t_startOffset               // Startdatum und -zeit in [s]
+\end_layout
+
+\begin_layout Plain Layout
+
+startYear                   // Jahr, in dem die Simulation startet
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+// Berechne Offset in [s] zum 1.
+ Januar 0 Uhr (Mitternacht)
+\end_layout
+
+\begin_layout Plain Layout
+
+t_year = t + t_startOffset; 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+// Berechne Klimadaten, wobei t_year > 365*24*3600 werden kann, 
+\end_layout
+
+\begin_layout Plain Layout
+
+// startYear wird aber nie verändert!
+\end_layout
+
+\begin_layout Plain Layout
+
+ccm->setTime(startYear, t_year)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Zyklische Daten für mehrjährige Simulationen
+\end_layout
+
+\begin_layout Standard
+Bei mehrjährigen Simulation können Klimadaten, z.B.
+ Testreferenzjahre zyklisch verwendet werden.
+ Dies impliziert einen 
+\shape italic
+jährlichen
+\shape default
+ Zyklus, sodass Zeitpunkte 
+\begin_inset Formula $\ge365\,\mbox{d}$
+\end_inset
+
+ solange um 365d reduziert werden, bis der Zeitpunkt wieder 
+\begin_inset Formula $<365\,\mbox{d}$
+\end_inset
+
+ ist.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "language={C++},basicstyle={\scriptsize\ttfamily},tabsize=4"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+// Beispielhafte Berechnung aus dem ClimateCalculationModule
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+void ClimateDataLoader::setTime(int startYear, double t_year) {
+\end_layout
+
+\begin_layout Plain Layout
+
+	// wenn zyklische Berechnung
+\end_layout
+
+\begin_layout Plain Layout
+
+	if (m_useCyclicClimateData) {
+\end_layout
+
+\begin_layout Plain Layout
+
+		// reduziere Zeit solange um 1 Jahr, bis t_year < 1 Jahr ist
+\end_layout
+
+\begin_layout Plain Layout
+
+		while (t_year >= SECONDS_PER_YEAR)   // SECONDS_PER_YEAR = 365*24*3600
+\end_layout
+
+\begin_layout Plain Layout
+
+			t_year -= SECONDS_PER_YEAR;
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	...
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Diese Prozedure impliziert eine konstanten Jahreslänge von 365 d, d.h.
+ Schaltjahre werden bei zyklischer Betrachtung ignoriert es gibt keinen
+ 29.
+ Februar.
+ Ein Klimadatensatz für mehrjährige Berechnungen sollte den gesamten Zeitraum
+ von 
+\begin_inset Formula $0\ge t>365\,\mbox{d}$
+\end_inset
+
+ definieren.
+ Zeitpunkte 
+\begin_inset Formula $\ge365\,\mbox{d}$
+\end_inset
+
+ sind nicht erlaubt.
+ Liegt der zu berechnende Zeitpunkt 
+\begin_inset Formula $t$
+\end_inset
+
+ vor dem ersten abgelegten Zeitpunkt 
+\begin_inset Formula $t_{1}$
+\end_inset
+
+, wird zwischen dem ersten und dem letzten Zeitpunkt 
+\begin_inset Formula $t_{n}$
+\end_inset
+
+ und den dazugehörigen Werten linear interpoliert
+\begin_inset space ~
+\end_inset
+
+(Abbildung
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Lineare-Interpolation-am-Ende"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename linear_interpolation_cyclic.png
+	lyxscale 50
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Lineare-Interpolation-am-Ende"
+
+\end_inset
+
+Lineare Interpolation des Wertes 
+\begin_inset Formula $v\left(t\right)$
+\end_inset
+
+ zwischen letztem und erstem Datenwert bei zyklischer Behandlung
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Die Interpolation zwischen erstem und letzten Zeitpunkt erfolgt über die
+ Gleichung:
+\begin_inset Formula 
+\begin{align*}
+t' & =t_{n}-365d\\
+\alpha & =\begin{cases}
+\frac{t-t_{n}}{t_{1}-t'} & ,\text{\,wenn }t\geq t_{n}\\
+\frac{t-t'}{t_{1}-t'} & ,\,\text{sonst}
+\end{cases}\\
+v\left(t\right) & =\left(1-\alpha\right)v_{n}+\alpha v_{1}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Kontinuierliche Datenreihen
+\end_layout
+
+\begin_layout Standard
+Beim Nachrechnen von eventuell mehrjährigen Messreihen werden keine zyklischen
+ Berechnungsregeln angewendet.
+ D.h.
+ das Simulationsprogramm muss in der Lage sein, zwischen zyklischer (jährlicher)
+ und kontinuierlicher Simulation umzuschalten.
+ Die Verwendung des 29.
+ Januars bei Schaltjahren wäre dann möglich, müsste aber auch konfigurierbar
+ sein (falls in den Klimadaten dieser Tag rausgefiltert wurde).
+\end_layout
+
+\begin_layout Standard
+Bei der Definition von Klimadaten für kontinuierliche Berechnung muss der
+ absolute Zeitbezug gegeben sein, d.h.
+ der Klimadatensatz muss entweder absolute Zeitstempel enthalten (siehe
+ Abschnitt
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:CSV-Dateien"
+
+\end_inset
+
+ zu CSV-Dateien), oder das Jahr, in dem die Klimadaten beginnen als Zusatzinform
+ation im Header (siehe Abschnitt
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:D6O-Dateien"
+
+\end_inset
+
+ zu D6O-Dateien).
+\end_layout
+
+\begin_layout Standard
+Wenn bei Verwendung nicht-zyklischer Daten der zu berechnende Zeitpunkt
+ 
+\begin_inset Formula $t$
+\end_inset
+
+ vor dem ersten oder nach dem letzten Datenzeitpunkt liegt, muss eine Fehlerbeha
+ndlung erfolgen (eventuell auch konfigurierbar - konstante Extrapolation,
+ siehe Abbildung
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Konstante-Extrapolation"
+
+\end_inset
+
+, oder Simulationsabbruch mit Fehler).
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename linear_interpolation_extrapolation.png
+	lyxscale 50
+	width 8cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Konstante-Extrapolation"
+
+\end_inset
+
+Konstante Extrapolation des Wertes 
+\begin_inset Formula $v\left(t\right)$
+\end_inset
+
+ wenn 
+\begin_inset Formula $t$
+\end_inset
+
+ außerhalb des Datenbereichs liegt, d.h.
+ 
+\begin_inset Formula $v\left(t\right)=v_{n}$
+\end_inset
+
+ für 
+\begin_inset Formula $t\ge t_{n}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Klimadatenquellen
+\end_layout
+
+\begin_layout Standard
+Klimadaten müssen nach dem Einlesen als Zeit-Werte-Tabelle entsprechend
+ der oben genannten Regeln interpretierbar sein.
+ Weiterhin muss die Einheit der abgelegten physikalischen Größe bekannt
+ sein, damit der Zahlenwert in die Basis-SI-Einheit zur Verwendung in den
+ Modellgleichungen umgerechnet werden kann.
+ Die physikalische Größe kann je nach Dateiformat über ein Schlüsselwort
+ im Header der Datei, oder den Dateinamen oder durch Spaltenposition gegeben
+ sein.
+\end_layout
+
+\begin_layout Standard
+Grundsätzlich gilt für alle unten aufgeführten Dateiformate, dass ausschließlich
+ 
+\series bold
+englische Zahlformatierungen
+\series default
+ (zum Beispiel 12.43) 
+\series bold
+ohne Tausendertrennzeichen 
+\series default
+unterstützt werden.
+\end_layout
+
+\begin_layout Subsection
+CCD Format
+\end_layout
+
+\begin_layout Standard
+Das CCD Format (Climate Condition Data) speichert stets nur eine Klimakomponente
+n, d.h.
+ eine Zeitreihe.
+ Es gibt optionale Kommentarzeilen ohne syntaktische Bedeutung.
+ Weiterhin gibt es oberhalb des Datenblocks eine verpflichtende Headerzeile,
+ welche ein Schlüsselwort zur Identifikation der physikalischen Größe und
+ die Werteeinheit (entsprechend der IBK Einheitenliste) beinhaltet.
+\end_layout
+
+\begin_layout Standard
+Zeitpunkte werden über den Tag des Jahres, beginnend mit 0, und der Zeit
+ im Format hh:mm:ss angegeben.
+ Zeitpunkte müssen streng monoton ansteigen.
+ Ein absoluter Zeitbezug ist in CCD-Dateien nicht vorgesehen.
+ Es steckt die implizite Annahme dahinter, dass die Klimadaten 
+\series bold
+stets im Startjahr der Simulation beginnen
+\series default
+.
+ Dieses deckt auch bei kontinuierlicher Berechnung die meisten Anwendungsfälle
+ ab.
+ Soll bei mehrjährigen Datenaufzeichnungen die Simulation erst zu einem
+ späteren Zeitpunkt (d.h.
+ späteres Jahr) beginnen, muss ein anderes Klimadatenformat (CSV bzw.
+ D6O) gewählt werden.
+\end_layout
+
+\begin_layout Standard
+In der Datensektion entspricht jede Zeile einem Zeit-Wert-Datenpunkt.
+ Tag, Zeit und Wert sind Whitespace-getrennt, d.h.
+ es sind beliebig viele Tabulatorzeichen bzw.
+ Leerzeichen dazwischen.
+ Leerzeilen in der Datei werden grundsätzlich ignoriert.
+\end_layout
+
+\begin_layout Standard
+Beispiel:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+# Climate Data File
+\end_layout
+
+\begin_layout Plain Layout
+
+# Potsdam
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+TEMPER   C
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+0 1:00:00 -2.6
+\end_layout
+
+\begin_layout Plain Layout
+
+0 2:00:00 -3.9
+\end_layout
+
+\begin_layout Plain Layout
+
+0 3:00:00 -4.6
+\end_layout
+
+\begin_layout Plain Layout
+
+0 4:00:00 -3.9
+\end_layout
+
+\begin_layout Plain Layout
+
+0 5:00:00 -3.3
+\end_layout
+
+\begin_layout Plain Layout
+
+0 6:00:00 -2.9
+\end_layout
+
+\begin_layout Plain Layout
+
+0 7:00:00 -2
+\end_layout
+
+\begin_layout Plain Layout
+
+0 8:00:00 -1.5
+\end_layout
+
+\begin_layout Plain Layout
+
+0 9:00:00 -1.2
+\end_layout
+
+\begin_layout Plain Layout
+
+0 10:00:00 -0.6
+\end_layout
+
+\begin_layout Plain Layout
+
+...
+\end_layout
+
+\begin_layout Plain Layout
+
+364 23:00:00 0.7
+\end_layout
+
+\begin_layout Plain Layout
+
+364 24:00:00 -0.8
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage pagebreak
+\end_inset
+
+Die Berechnung des Zeitpunktes erfolgt aus der Zeitangabe mittels folgender
+ Gleichung:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "language={C++},basicstyle={\scriptsize\ttfamily},tabsize=4"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+std::string line = "364 23:00:00 0.7";
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+// ersetze : mit Leerzeichen
+\end_layout
+
+\begin_layout Plain Layout
+
+std::replace(line.begin(), line.end(), ':', ' ');
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+int day, hour, min, sec;
+\end_layout
+
+\begin_layout Plain Layout
+
+double value;
+\end_layout
+
+\begin_layout Plain Layout
+
+// Lesen der Zahlen aus der Zeile
+\end_layout
+
+\begin_layout Plain Layout
+
+std::stringstream strm(line);
+\end_layout
+
+\begin_layout Plain Layout
+
+// Lesen und auf Fehler _und_ Vollständigkeit prüfen (wegen deutscher Zahlformat
+e "12,7")
+\end_layout
+
+\begin_layout Plain Layout
+
+if (!(strm >> day >> hour >> min >> sec >> value) || !strm.eof()) {
+\end_layout
+
+\begin_layout Plain Layout
+
+	// Fehlerbehandlung
+\end_layout
+
+\begin_layout Plain Layout
+
+	...
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+// Berechnung der Sekunden des Jahres
+\end_layout
+
+\begin_layout Plain Layout
+
+double sec = day * 24 * 3600  +  hour * 3600  +  min * 60  +  sec;
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Dadurch werden Zeitangaben von 00:00:00 bis 23:59:59 als auch Zeitangaben
+ von 01:00:00 bis 24:59:59 korrekt eingelesen.
+ Letztlich sind dadurch die Zeitstempel 
+\begin_inset Quotes gld
+\end_inset
+
+
+\family typewriter
+0 24:00:00
+\family default
+
+\begin_inset Quotes grd
+\end_inset
+
+ und 
+\begin_inset Quotes gld
+\end_inset
+
+
+\family typewriter
+1 00:00:00
+\family default
+
+\begin_inset Quotes grd
+\end_inset
+
+ identisch (und dürfen daher nicht gleichzeitig in einer CCD Datei vorkommen).
+\end_layout
+
+\begin_layout Subsubsection
+Verwendung von CCD Dateien für zyklische Berechnungen
+\end_layout
+
+\begin_layout Standard
+Bei der zyklischen jährlichen Berechnung dürfen Zeitpunkte 
+\begin_inset Formula $t\ge365\,\mbox{d}$
+\end_inset
+
+ nicht definiert sein.
+ Es ist aber möglich, den Zeitpunkt 
+\begin_inset Formula $t=365\,\mbox{d}$
+\end_inset
+
+ bzw.
+ 
+\begin_inset Quotes gld
+\end_inset
+
+
+\family typewriter
+364 24:00:00
+\family default
+
+\begin_inset Quotes grd
+\end_inset
+
+ oder alternativ 
+\begin_inset Quotes gld
+\end_inset
+
+
+\family typewriter
+365 00:00:00
+\family default
+
+\begin_inset Quotes grd
+\end_inset
+
+ in der CCD-Datei zu verwenden, 
+\series bold
+solange nicht gleichzeitig
+\series default
+ 
+\begin_inset Quotes gld
+\end_inset
+
+
+\family typewriter
+0 00:00:00
+\family default
+
+\begin_inset Quotes grd
+\end_inset
+
+ angegeben ist.
+ Bei der Berechnung wird der Zeitpunkt 
+\begin_inset Formula $t=365\,\mbox{d}$
+\end_inset
+
+ als Zeitpunkt 
+\begin_inset Formula $t=0\,\mbox{d}$
+\end_inset
+
+ interpretiert.
+ Beispiele für gültige Klimadateien mit stündlichem Raster sind:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+0    00:00:00 -10
+\end_layout
+
+\begin_layout Plain Layout
+
+0    01:00:00 -10.5
+\end_layout
+
+\begin_layout Plain Layout
+
+...
+\end_layout
+
+\begin_layout Plain Layout
+
+364  23:00:00 -8
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+oder beginnend mit dem Ende der ersten Stunde
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+0    01:00:00 -10.5
+\end_layout
+
+\begin_layout Plain Layout
+
+...
+\end_layout
+
+\begin_layout Plain Layout
+
+364  23:00:00 -8
+\end_layout
+
+\begin_layout Plain Layout
+
+365  00:00:00 -10
+\end_layout
+
+\end_inset
+
+oder alternativ mit 24 Stundenformatierung.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+0    01:00:00 -10.5
+\end_layout
+
+\begin_layout Plain Layout
+
+...
+\end_layout
+
+\begin_layout Plain Layout
+
+364  23:00:00 -8
+\end_layout
+
+\begin_layout Plain Layout
+
+364  24:00:00 -10
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Inhaltlich sind diese Angaben im Kontext der mehrjährigen zyklischen Simulation
+ identisch.
+\end_layout
+
+\begin_layout Subsubsection
+Komprimiertes Format
+\end_layout
+
+\begin_layout Standard
+Bei Klimadaten im CCD-Format müssen Bei jährlichen Klimadaten 
+\end_layout
+
+\begin_layout Subsection
+CLI Format
+\end_layout
+
+\begin_layout Standard
+Das in DELPHIN 4 verwendete CLI Format wird derzeit nicht vom CCM unterstützt.
+ CLI-Dateien können (nahezu verlustfrei) in CCD-Dateien konvertiert werden.
+ Verlustbehaftet ist die Konvertierung nur für Zeitstempel mit Auflösungen
+ unterhalb einer Sekunde.
+ Falls derartige Eingaben benötigt werden, muss das DATAIO-Format verwendet
+ werden (siehe D6O Formatbeschreibung in Abschnitt
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:D6O-Dateien"
+
+\end_inset
+
+).
+ Die Verwendungsinformation (zyklisch oder nicht, interpolieren oder nicht)
+ sind in den neueren Simulationsprogrammen nicht mehr Eigenschaft der Klimadatei
+en selbst, sondern der Datenstrukturen (z.B.
+ Climate Condition Definition), welche die Verwendung definieren.
+\end_layout
+
+\begin_layout Subsection
+EPW-Dateien
+\end_layout
+
+\begin_layout Standard
+Das CCM unterstützt EPW-Dateien mit jährlichen, stündlichen Daten.
+ Es müssen exakt 8760 Datensätze beginnend mit dem Zeitpunkt 
+\begin_inset Formula $t=1\,\mbox{h}$
+\end_inset
+
+ (bzw.
+ 
+\begin_inset Quotes gld
+\end_inset
+
+
+\family typewriter
+0 01:00:00
+\family default
+
+\begin_inset Quotes grd
+\end_inset
+
+ in CCD-Notation) definiert sein.
+ Ausgelesen werden alle Spalten bzw.
+ physikalischen Größen, die aktuell vom CCM unterstützt werden.
+ EPW-Dateien sind Klimadatenkontainer und liefern mehrere Klimadatensätze
+ pro Datei.
+ Das Startjahr bzw.
+ der absolute Zeitstempel wird bei EPW-Dateien ignoriert.
+ Bei nicht-zyklischer Anwendung (kontinuierliche Berechnung) wird das Simulation
+sstartjahr verwendet.
+\end_layout
+
+\begin_layout Subsection
+C6B-Dateien
+\end_layout
+
+\begin_layout Standard
+Das C6B-Dateiformat wurde aus lizenzrechtlichen Gründen eingeführt, sodass
+ wir Klimadaten 
+\begin_inset Quotes gld
+\end_inset
+
+nicht im Klartext
+\begin_inset Quotes grd
+\end_inset
+
+ weitergeben können.
+ Es enthält einen Header mit Standortinformationen und Beschreibungen und
+ Datenblock mit allen vom CCM unterstützten Klimakomponenten.
+ C6B-Dateien sind wie EPW-Dateien Klimadatenkontainer und liefern mehrere
+ Klimadatensätze pro Datei.
+ Bis auf die Header-Informationen der EPW-Datei, können die Daten aus einer
+ EPW-Datei direkt in eine C6B-Datei konvertiert werden.
+ Der Datenblock enthält ebenso 8760 Dateireihen, beginnt mit dem Zeitpunkt
+ 
+\begin_inset Formula $t=1\,\mbox{h}$
+\end_inset
+
+ und endet mit dem letzten Zeitpunkt 
+\begin_inset Formula $t=365\,\mbox{d}$
+\end_inset
+
+ (welcher bei der Berechnung wiederum als Zeitpunkt 
+\begin_inset Formula $t=0\,\mbox{d}$
+\end_inset
+
+ verwendet wird).
+\end_layout
+
+\begin_layout Subsection
+CSV-Dateien
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:CSV-Dateien"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Das ungewöhnliche Zeitstempelformat der CCD-Dateien (geeignet für Laborversuche/
+synthetische Klimadateien/Zeitreihen für Simulationsentwicklung) ist für
+ die praktische Anwendung ungeeignet.
+ Daher wird ein einfaches CSV-Format unterstützt, wobei der Zeitstempel
+ ein Format hat, welches durch Tabellenkalkulationsprogramme (Excel, LibreOffice
+, ...) oder Skriptsprachen (Python) direkt und ohne umständliche Konvertierung
+ lesbar und erstellbar ist.
+\end_layout
+
+\begin_layout Standard
+Beispiel für die Verwendung von CSV für eine einzelne Klimakomponente:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Comment,"Auch Kommentare werden als CSV-Zeichenketten abgelegt"
+\end_layout
+
+\begin_layout Plain Layout
+
+Unit,C
+\end_layout
+
+\begin_layout Plain Layout
+
+Quantity,Temperature
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+2016-01-01 01:00:00, -10.5
+\end_layout
+
+\begin_layout Plain Layout
+
+...
+\end_layout
+
+\begin_layout Plain Layout
+
+2016-31-12 23:00:00, -8
+\end_layout
+
+\begin_layout Plain Layout
+
+2016-31-12 24:00:00, -10
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Beispiel für die Verwendung von CSV für mehrere Klimakomponenten (Klimacontainer
+):
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "basicstyle={\tiny\ttfamily},breaklines=true,tabsize=4,frame=tb,xleftmargin=17pt,framexleftmargin=17pt,framexrightmargin=5pt,framexbottommargin=4pt,prebreak={\mbox{$\hookleftarrow$}},breakautoindent=true"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Comment,"Auch Kommentare werden als CSV-Zeichenketten abgelegt"
+\end_layout
+
+\begin_layout Plain Layout
+
+Unit,C
+\end_layout
+
+\begin_layout Plain Layout
+
+Quantity,Temperature, RelativeHumidity, DirectRadiationNormal, DiffuseRadiationH
+orizontal, WindDirection, WindVelocity, LongWaveCounterRadiation, AirPressure,
+ Rain 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+2000-01-01 01:00:00,	-3.6,	90,	0,			0,	200,	3.1,	206,	96910,	0
+\end_layout
+
+\begin_layout Plain Layout
+
+2000-01-01 02:00:00,	-3.6,	90,	0,			0,	200,	3.1,	206,	96910,	0
+\end_layout
+
+\begin_layout Plain Layout
+
+2000-01-01 03:00:00,	-4.8,	84,	0,			0,	160,	2.4,	206,	96660,	0
+\end_layout
+
+\begin_layout Plain Layout
+
+2000-01-01 04:00:00,	-5.8,	81,	0,			0,	160,	2.4,	204,	96450,	0
+\end_layout
+
+\begin_layout Plain Layout
+
+2000-01-01 05:00:00,	-5.7,	76,	0,			0,	190,	2.2,	207,	96380,	0
+\end_layout
+
+\begin_layout Plain Layout
+
+2000-01-01 06:00:00,	-5.7,	76,	0,			0,	130,	2.5,	202,	96300,	0
+\end_layout
+
+\begin_layout Plain Layout
+
+2000-01-01 07:00:00,	-5,		63,	0,			0,	170,	2,		216,	96220,	0
+\end_layout
+
+\begin_layout Plain Layout
+
+2000-01-01 08:00:00,	-5.2,	59,	0,			0,	160,	3,		221,	96150,	0
+\end_layout
+
+\begin_layout Plain Layout
+
+2000-01-01 09:00:00,	-3.5,	57,	0,			0,	170,	3,		223,	96100,	0
+\end_layout
+
+\begin_layout Plain Layout
+
+2000-01-01 10:00:00,	-2.7,	58,	15.9979,	36,	180,	5,		249,	96050,	0
+\end_layout
+
+\begin_layout Plain Layout
+
+2000-01-01 11:00:00,	-0.9,	46,	22.1223,	75,	190,	5,		239,	95990,	0
+\end_layout
+
+\begin_layout Plain Layout
+
+2000-01-01 12:00:00,	-0.3,	46,	169.561,	78,	160,	7,		238,	95920,	0
+\end_layout
+
+\begin_layout Plain Layout
+
+2000-01-01 13:00:00,	1.2,	36,	178.319,	97,	170,	6,		249,	95810,	0
+\end_layout
+
+\begin_layout Plain Layout
+
+...
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Headereinträge werden durch das erste CSV-Element (erste Spalte) definiert:
+\end_layout
+
+\begin_layout Description
+Comment jedwede Kommentare, müssen in Anführungszeichen eingeschlossen sein,
+ wenn sie mehrzeilig sind oder Kommata enthalten, mehrere Zeilen mit Comment-Ein
+trägen sind mögliche
+\end_layout
+
+\begin_layout Description
+Unit gefolgt in der zweiten Spalte von der Werteeinheit (entsprechend IBK
+ Einheiten-Liste)
+\end_layout
+
+\begin_layout Description
+Quantity gefolgt von Bezeichnern der physikalischen Größe (sollte eine aus
+ der IBK Quantity-Liste sein)
+\end_layout
+
+\begin_layout Standard
+Nur die Angabe der Unit ist verpflichtend.
+\end_layout
+
+\begin_layout Standard
+Die Zeitstempel beinhalten das Jahr, welches bei zyklischer Anwendung jedoch
+ ohne Bedeutung ist.
+ Zeitstempel sind 
+\series bold
+immer in Winterzeit
+\series default
+.
+ Es gelten die gleichen Regeln wie bei CCD-Dateien hinsichtlich der erlaubten
+ Zeitspanne (streng monoton, keine doppelten Zeitpunkte, Zeitpunkt 
+\begin_inset Formula $t=0\,\mbox{d}$
+\end_inset
+
+ und 
+\begin_inset Formula $t=365\,\mbox{d}$
+\end_inset
+
+ nicht gleichzeitig in einer Datei).
+\end_layout
+
+\begin_layout Standard
+Falls mehr als nur eine Datenspalte in der Datei ist, hängt es vom Kontext
+ ab, wie die Datei interpretiert wird.
+ Wird die CSV Datei z.B.
+ als einzelner Klimadatensatz referenziert, so wird ausschließlich die erste
+ Spalte verwendet.
+ Die physikalische Größe aus der Quantity-Kopfzeile kann zur Konsistenzprüfung
+ herangezogen werden.
+\end_layout
+
+\begin_layout Standard
+Wird eine CSV-Datei jedoch alternativ zu c6b oder epw als Klimacontainer
+ verwendet, so muss sie 
+\series bold
+alle vom CCM unterstützten Spalten in der richtigen Reihenfolge
+\series default
+ enthalten (siehe Beispiel oben und Dokumentation des CCM).
+ Damit ist das CSV-Format das einzige Format, welches für die Definition
+ von mehrjährigen Klimadaten, bzw.
+ detaillierten Klimadaten mit sub-stündlichen Intervallen mehrere Klimakomponent
+en in einer Datei vereint.
+\end_layout
+
+\begin_layout Subsection
+D6O Dateien
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:D6O-Dateien"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Ergebnisdateien der Simulation können als Eingangsdaten für die Klimasimulation
+ verwendet werden.
+ Gleichzeitig können nur mit diesem Format Zeitpunkt mit Abständen < 1 Sekunde
+ definiert werden.
+ Das grundlegende Dateiformat ist in der DATAIO-Spezifikation beschrieben.
+ Für die Verwendung im CCM ist jedoch nur eine Untermenge an Daten notwendig.
+ Es gilten weiterhin folgende Anforderungen:
+\end_layout
+
+\begin_layout Itemize
+QUANTITY_KW Schlüsselwort sollte Bezeichung der physikalischen Größe sein
+ (eine aus der IBK Quantity-Liste)
+\end_layout
+
+\begin_layout Itemize
+VALUE_UNIT muss die Werteeinheit angeben (entsprechend IBK Einheiten-Liste)
+\end_layout
+
+\begin_layout Itemize
+TIME_UNIT muss die Zeiteinheit angebene (entsprechend der IBK Einheiten-Liste)
+\end_layout
+
+\begin_layout Itemize
+START_YEAR gibt das Jahr an, in dem die Klimadaten beginnen (bei zyklischer
+ Anwendung wird das ignoriert, bei kontinuierlicher Anwendung muss das ein
+ gültiger Wert sein oder ein negativer Wert als ungültiges Startjahr.
+ In diesem Fall wird das Startjahr der Simulation verwendet.)
+\end_layout
+
+\begin_layout Itemize
+Ausschließlich die erste Spalte (erster Wert pro Datenzeile) wird eingelesen.
+\end_layout
+
+\begin_layout Standard
+Alle anderen Header-Daten sind optional und werden beim Einlesen durch das
+ CCM ignoriert.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage pagebreak
+\end_inset
+
+Ein minimalistisches D6O Beispiel wäre:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+VALUE_UNIT = C
+\end_layout
+
+\begin_layout Plain Layout
+
+TIME_UNIT = d
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+0.04167	-2.6
+\end_layout
+
+\begin_layout Plain Layout
+
+0.08333	-3.9
+\end_layout
+
+\begin_layout Plain Layout
+
+0.12500	-4.6
+\end_layout
+
+\begin_layout Plain Layout
+
+0.16667	-3.9
+\end_layout
+
+\begin_layout Plain Layout
+
+0.20833	-3.3
+\end_layout
+
+\begin_layout Plain Layout
+
+0.25000	-2.9
+\end_layout
+
+\begin_layout Plain Layout
+
+0.29167	-2
+\end_layout
+
+\begin_layout Plain Layout
+
+0.33333	-1.5
+\end_layout
+
+\begin_layout Plain Layout
+
+0.37500	-1.2
+\end_layout
+
+\begin_layout Plain Layout
+
+0.41667	-0.6
+\end_layout
+
+\begin_layout Plain Layout
+
+0.45833	0.1
+\end_layout
+
+\begin_layout Plain Layout
+
+0.50000	0.5
+\end_layout
+
+\begin_layout Plain Layout
+
+0.54167	0.4
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Es können jedoch auch beliebige andere D6O-Dateien (z.B.
+ Simulationsergebnisse) verwendet werden.
+\end_layout
+
+\begin_layout Standard
+Sollte das D6O-Format für zyklische Klimadaten verwendet werden, muss beim
+ Generieren der Zeitpunkte 
+\series bold
+auf Rundungsfehler geachtet werden
+\series default
+, sodass keine Zeitpunkten > 365d entstehen (Beispiel: 
+\begin_inset Quotes gld
+\end_inset
+
+365.00001
+\begin_inset Quotes grd
+\end_inset
+
+ bei Verwendung von Tagen bzw.
+ 
+\begin_inset Quotes gld
+\end_inset
+
+1.00000012
+\begin_inset Quotes grd
+\end_inset
+
+ bei Verwendung von Jahren als Zeiteinheit).
+\end_layout
+
+\end_body
+\end_document

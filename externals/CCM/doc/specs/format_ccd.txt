@@ -1,0 +1,53 @@
+File format ccd
+===============
+
+Format requirements
+-------------------
+File may contain comments. Lines with comments begin with a # character.
+
+First non-empty line in file is the header line, with format:
+
+<keyword> <unit>
+
+followed by an empty line. Afterwards, data section follows row based, each row contains 5 columns:
+<day of year>  <hour> <minutes> <seconds> <value>
+
+Alternatively, use : (colon) to separate hour, minutes and seconds.
+<day of year>  <hour>:<minutes>:<seconds> <value>
+
+Content requirements
+--------------------
+Value ranges:
+
+day of year >= 0   (integer value)
+0 <= hour <= 23    (integer value)
+0 <= minutes <= 59 (integer value)
+0 <= seconds <  60 (floating point value)
+
+When defining annual data, the file must start with 
+  0  1 0 0 <value>
+and end with
+365  0 0 0 <value> 
+
+Value interpretation
+--------------------
+A time-value pair is interpreted as point. Between points linear
+interpolation is used.
+
+
+Example
+-------
+
+---
+# CCD file example, temperature data type
+TEMPER C
+
+  0  1 0 0 -8
+  ...
+  more annual values
+  ...
+364 22 0 0 -3
+364 23 0 0 -4
+365  0 0 0 -7
+---
+
