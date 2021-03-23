@@ -13,13 +13,19 @@ CONFIG += console
 LIBS += -L../../../lib$${DIR_PREFIX} \
         #-lIBKMK \
         -lQtExt \
+        -lQuaZIP \
+        -lCCM \
+        -lTiCPP \
         -lIBK
 
 INCLUDEPATH = \
         ../../src \
         ../../../externals/IBK/src \
         #../../../externals/IBKMK/src \
-        ../../../externals/QtExt/src
+        ../../../externals/QtExt/src \
+        ../../../externals/CCM/src \
+        ../../../externals/TiCPP/src \
+        ../../../externals/QuaZIP/src
 
 #TRANSLATIONS += ../../resources/translations/GenBuiGui.ts
 CODECFORSRC = UTF-8
