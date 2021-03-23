@@ -24,6 +24,7 @@
 
 #include "DWDData.h"
 #include "DWDDownloader.h"
+#include "DWDMap.h"
 
 #include "Constants.h"
 //#include "DWD_CheckBox.h"
@@ -89,6 +90,19 @@ MainWindow::MainWindow(QWidget *parent) :
 	//m_ui->tableWidget->setst
 
 	m_ui->lineEditYear->setup(1950,2023,tr("Year of interest."), true, true);
+
+	m_ui->tableWidget->verticalHeader()->setDefaultSectionSize(19);
+	m_ui->tableWidget->verticalHeader()->setVisible(false);
+	m_ui->tableWidget->horizontalHeader()->setMinimumSectionSize(19);
+	m_ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+	m_ui->tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+	m_ui->tableWidget->setAlternatingRowColors(true);
+//	m_ui->tableWidget->setSortingEnabled(true);
+//	m_ui->tableWidget->sortByColumn(0, Qt::AscendingOrder);
+	QFont f;
+	f.setPointSizeF(f.pointSizeF()*0.8);
+	m_ui->tableWidget->setFont(f);
+	m_ui->tableWidget->horizontalHeader()->setFont(f); // Note: on Linux/Mac this won't work until Qt 5.11.1 - this was a bug between Qt 4.8...5.11.1
 
 	testFunc();
 
@@ -367,4 +381,14 @@ void MainWindow::on_pushButton_clicked(){
 
 
 	//copy all data in range and create an epw
+}
+
+void MainWindow::on_pushButtonMap_clicked() {
+	double latitude = m_ui->lineEditLatitude->text().toDouble();
+	double longitude = m_ui->lineEditLongitude->text().toDouble();
+
+	DWDMap::getLocation(latitude, longitude, this);
+
+	m_ui->lineEditLatitude->setText(QString::number(latitude) );
+	m_ui->lineEditLongitude->setText(QString::number(longitude) );
 }

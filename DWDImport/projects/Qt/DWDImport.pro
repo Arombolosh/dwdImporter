@@ -11,43 +11,47 @@ QT += xml core gui network printsupport widgets
 CONFIG += console
 
 LIBS += -L../../../lib$${DIR_PREFIX} \
-	#-lIBKMK \
-	-lQtExt \
-	-lIBK
+        #-lIBKMK \
+        -lQtExt \
+        -lIBK
 
 INCLUDEPATH = \
-	../../src \
-	../../../externals/IBK/src \
-	#../../../externals/IBKMK/src \
-	../../../externals/QtExt/src
+        ../../src \
+        ../../../externals/IBK/src \
+        #../../../externals/IBKMK/src \
+        ../../../externals/QtExt/src
 
 #TRANSLATIONS += ../../resources/translations/GenBuiGui.ts
 CODECFORSRC = UTF-8
 
-#RESOURCES += \
-#	../../resources/DWDImport.qrc
+RESOURCES += \
+        ../../resources/DWDImport.qrc \
+        ../../resources/DWDImport.qrc
 
 SOURCES += \
-	../../src/Constants.cpp \
-	../../src/DWDData.cpp \
-	../../src/DWDDescriptonData.cpp \
-	#../../src/DWD_CheckBox.cpp \
-	../../src/DWDDownloader.cpp \
-	../../src/DWDMap.cpp \
-	../../src/MainWindow.cpp \
-	../../src/main.cpp
+        ../../src/Constants.cpp \
+        ../../src/DWDData.cpp \
+        ../../src/DWDDescriptonData.cpp \
+        #../../src/DWD_CheckBox.cpp \
+        ../../src/DWDDownloader.cpp \
+        ../../src/DWDMap.cpp \
+        ../../src/MainWindow.cpp \
+        ../../src/main.cpp
 
 FORMS += \
-	../../src/DWDMap.ui \
-	../../src/MainWindow.ui
+        ../../src/DWDMap.ui \
+        ../../src/MainWindow.ui
 
 HEADERS += \
-	../../src/Constants.h \
-	../../src/DWDData.h \
-	../../src/DWDDescriptonData.h \
-	#../../src/DWD_CheckBox.h \
-	../../src/DWDDownloader.h \
-	../../src/DWDMap.h \
-	../../src/MainWindow.h
+        ../../src/Constants.h \
+        ../../src/DWDData.h \
+        ../../src/DWDDescriptonData.h \
+        #../../src/DWD_CheckBox.h \
+        ../../src/DWDDownloader.h \
+        ../../src/DWDMap.h \
+        ../../src/DWDScene.h \
+        ../../src/MainWindow.h
+
+DISTFILES +=
 
 

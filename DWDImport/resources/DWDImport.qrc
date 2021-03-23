@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>gfx/Karte_Deutschland.svg</file>
+    </qresource>
+</RCC>

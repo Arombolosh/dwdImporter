@@ -13,38 +13,35 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0,0,0">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0">
    <item>
-    <widget class="QLabel" name="labelPixmap">
-     <property name="text">
-      <string>TextLabel</string>
+    <widget class="QGraphicsView" name="graphicsViewMap">
+     <property name="viewportUpdateMode">
+      <enum>QGraphicsView::MinimalViewportUpdate</enum>
      </property>
     </widget>
-   </item>
-   <item>
-    <widget class="QGraphicsView" name="graphicsView"/>
    </item>
    <item>
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Azimut:</string>
+        <string>Latitude:</string>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QLineEdit" name="lineEdit"/>
+      <widget class="QLineEdit" name="lineEditLatitude"/>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Altitude:</string>
+        <string>Longitude:</string>
        </property>
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLineEdit" name="lineEdit_2"/>
+      <widget class="QLineEdit" name="lineEditLongitude"/>
      </item>
     </layout>
    </item>
