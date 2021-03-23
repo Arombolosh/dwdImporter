@@ -65,8 +65,14 @@ public:
 	/*! Create a tsv-file for one year. */
 	void writeTSV(unsigned int year);
 
-	/*! Create a url filename as string for download. */
+	/*! Create an epw-file for one year. */
+	void exportEPW(unsigned int year);
+
+	/*! Returns the complete url as QString needed for download. */
 	QString urlFilename(const DataType &type, const QString &numberString, bool isRecent=true) const;
+
+	/*! Returns the filename of the downloaded zip-archive */
+	QString filename(const DWDData::DataType &type, const QString &numberString, bool isRecent=true) const;
 
 	IBK::Time					m_startTime;			///< Start time for the first interval data
 	unsigned int				m_intervalDuration;		///< Interval duration in sec

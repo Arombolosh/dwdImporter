@@ -3,6 +3,7 @@
 #include <IBK_StringUtils.h>
 #include <IBK_FileReader.h>
 
+#include <CCM_ClimateDataLoader.h>
 
 void DWDData::createData(const std::map<IBK::Path, std::set<DWDData::DataType>> &filenames, unsigned int intervalDuration) {
 
@@ -53,7 +54,7 @@ void DWDData::addDataLine(std::string &line, const std::set<DataType> &dataType)
 			//get timepoint
 			std::string& s = data[1];
 			unsigned int year	= IBK::string2val<unsigned int>(s.substr(0,4));
-			unsigned int month	= IBK::string2val<unsigned int>(s.substr(4,2));
+			unsigned int month	= IBK::string2val<unsigned int>(s.substr(4,2))-1;
 			unsigned int day	= IBK::string2val<unsigned int>(s.substr(6,2));
 			unsigned int hour	= IBK::string2val<unsigned int>(s.substr(8,2));
 			time.set(year, month, day, hour*3600);
@@ -101,12 +102,48 @@ void DWDData::addDataLine(std::string &line, const std::set<DataType> &dataType)
 void DWDData::writeTSV(unsigned int year){
 	//first find the start timepoint
 	if(m_data.empty())
-		return;
-	//if(m_startTime < IBK::Time(year,0))
+		return; // no data :(
 
+	// we go through all data and compose a tsv table
 	for(unsigned int i=0; i<m_data.size(); ++i){
-		//if()
+		// time
+		// data
 	}
+}
+
+void DWDData::exportEPW(unsigned int year) {
+	FUNCID(exportEPW);
+
+	CCM::ClimateDataLoader loader;
+
+//	loader.m_data = std::vector<>(m_data.size())[CCM::ClimateDataLoader::NumClimateComponents]
+	// remove existing data
+	for (int i=0; i<CCM::ClimateDataLoader::NumClimateComponents; ++i) {
+		loader.m_data[i] = std::vector<double>(m_data.size(), -99);
+	}
+
+
+	for (int i=0; i<m_data.size();++i) {
+		loader.m_data[CCM::ClimateDataLoader::Temperature][i] = m_data[i].m_airTemp;
+		loader.m_data[CCM::ClimateDataLoader::WindDirection][i] = m_data[i].m_windDirection;
+		loader.m_data[CCM::ClimateDataLoader::WindVelocity][i] = m_data[i].m_windSpeed;
+		loader.m_data[CCM::ClimateDataLoader::RelativeHumidity][i] = m_data[i].m_relHum;
+		loader.m_data[CCM::ClimateDataLoader::DirectRadiationNormal][i] = m_data[i].m_globalRad;
+		loader.m_data[CCM::ClimateDataLoader::DiffuseRadiationHorizontal][i] = m_data[i].m_diffRad;
+		loader.m_data[CCM::ClimateDataLoader::LongWaveCounterRadiation][i] = m_data[i].m_counterRad;
+
+//		loader.m_startYear = m_startTime.year();
+
+//		loader.m_dataTimePoints
+	}
+
+	try {
+
+		loader.writeClimateDataEPW(IBK::Path("../../data/EPW"));
+	} catch (IBK::Exception &ex) {
+		throw IBK::Exception( "Could not write epw file", FUNC_ID);
+	}
+
 }
 
 
@@ -139,6 +176,30 @@ QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numbe
 		return base + "solar/" + "stundenwerte_ST_" + numberString + rec + ".zip";
 
 
+	}
+}
+
+QString DWDData::filename(const DWDData::DataType &type, const QString &numberString, bool isRecent) const{
+	QString rec = "_akt";
+	if(!isRecent)
+		rec = "_hist";
+
+	switch (type) {
+	case DT_AirTemperature:
+	case DT_RelativeHumidity:
+		return "stundenwerte_TU_" + numberString + rec;
+
+	case DT_Pressure:
+		return "stundenwerte_P0_" + numberString + rec;
+
+	case DT_WindSpeed:
+	case DT_WindDirection:
+		return "stundenwerte_FF_" + numberString + rec;
+
+	case DT_RadiationDiffuse:
+	case DT_RadiationGlobal:
+	case DT_RadiationLongWave:
+		return "stundenwerte_ST_" + numberString + rec;
 	}
 }
 

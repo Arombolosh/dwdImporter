@@ -19,8 +19,10 @@
 #include <QTableWidgetItem>
 #include <QResizeEvent>
 #include <QTimer>
-
 #include <QThread>
+#include <QMessageBox>
+
+#include <JlCompress.h>
 
 #include "DWDData.h"
 #include "DWDDownloader.h"
@@ -292,6 +294,7 @@ void MainWindow::on_tableWidget_itemChanged(QTableWidgetItem *item) {
 
 
 void MainWindow::on_pushButton_clicked(){
+
 	std::vector<int> rows(4,-1);
 	//find selected elements
 	QTableWidget & tw = *m_ui->tableWidget;
@@ -309,8 +312,6 @@ void MainWindow::on_pushButton_clicked(){
 	std::vector<DWDData::DataType>	types{DWDData::DT_AirTemperature, DWDData::DT_RadiationDiffuse,
 									DWDData::DT_WindDirection,DWDData::DT_Pressure};
 
-	int delayTime = 3; //sec to wait after download
-
 	DWDDownloader manager(this);
 	connect( &manager, &DWDDownloader::finished, this, &MainWindow::readData );
 	//download the data (zip)
@@ -318,12 +319,11 @@ void MainWindow::on_pushButton_clicked(){
 		if(rows[i] != -1){
 			DWDData dwdData;
 			manager.m_urls << dwdData.urlFilename(types[i], QString::number(rows[i]).rightJustified(5,'0'));
+			filenames[i] = dwdData.filename(types[i], QString::number(rows[i]).rightJustified(5,'0'));
 		}
 	}
 	if(!manager.m_urls.empty())
 		QTimer::singleShot(0, &manager, SLOT(execute() ) );
-
-	QMessageBox::information(this, QString(), "jetzt sollten die Daten da sein");
 
 	//Check if all downloads are valid
 	//create a vector with valid files
@@ -332,7 +332,7 @@ void MainWindow::on_pushButton_clicked(){
 	for(unsigned int i=0; i<4; ++i){
 		if(rows[i] == -1)
 			continue;
-		IBK::Path checkfile("../../data/Tests/" + filenames[i].toStdString());
+		IBK::Path checkfile("../../data/Tests/" + filenames[i].toStdString() + ".zip");
 		if(!checkfile.exists()){
 			QString cat;
 			switch (types[i]) {
@@ -341,36 +341,53 @@ void MainWindow::on_pushButton_clicked(){
 				case DWDData::DT_WindDirection:		cat = "Wind";									break;
 				case DWDData::DT_Pressure:			cat = "Pressure";								break;
 			}
-			QMessageBox::warning(this, QString(), QString("Download of file '%1' was not successfull. Category: '%2'").arg(filenames[i]).arg(cat));
+			QMessageBox::warning(this, QString(), QString("Download of file '%1' was not successfull. Category: '%2'").arg(filenames[i]+".zip").arg(cat));
 		}
 		else
 			checkedFiles[i] = checkfile;
 	}
 
-	std::vector<IBK::Path>	productFiles(4);
 	//open the zip
 	//find file with name 'produkt_....'
-	///TODO Dirk nur zu Probe muss später ersetzt werden
-//	productFiles[0] = IBK::Path("../../data/Tests/produkt_tu_stunde_20190918_20210320_00183.txt");
+	//create the file path names and according data types for reading
+	std::vector<IBK::Path>	checkedFileNames(4);
+	std::map<IBK::Path, std::set<DWDData::DataType>> filenamesForReading;
+	for (int i=0; i<filenames.size(); ++i) {
+		if ( filenames[i].isEmpty() )
+			continue;
+
+		QStringList filesInArchive = JlCompress::getFileList(checkedFiles[i].str().c_str());
+		QString searchedFile;
+		QStringList filesExtracted;
+		for ( QString fileName : filesInArchive ) {
+			if ( "produkt" == fileName.mid(0,7) ){ // we find the right file
+				// extract file
+				searchedFile = fileName;
+				filesExtracted << JlCompress::extractFile( checkedFiles[i].str().c_str(), fileName, "../../data/Tests/extractedFiles/" + searchedFile);
+				checkedFileNames[i] = IBK::Path("../../data/Tests/extractedFiles/" + searchedFile.toStdString() );
+			}
+		}
+
+		if ( filesExtracted.empty() )
+			QMessageBox::warning(this, QString(), QString("File %1 could not be extracted").arg(searchedFile));
+	}
 
 	//create extract folder
 
 	//extract file from zip
 
-	//create the file path names and according data types for reading
-	std::map<IBK::Path, std::set<DWDData::DataType>> filenamesForReading;
 	for(unsigned int i=0; i<4; ++i){
-		if(productFiles[i] == IBK::Path())
-			continue;
+		if(checkedFileNames[i] == IBK::Path())
+			continue; // skip empty states
 		switch (i) {
 			case 0:
-				filenamesForReading[productFiles[i]] = std::set<DWDData::DataType>{DWDData::DT_AirTemperature, DWDData::DT_RelativeHumidity}; break;
+				filenamesForReading[checkedFileNames[i]] = std::set<DWDData::DataType>{DWDData::DT_AirTemperature, DWDData::DT_RelativeHumidity}; break;
 			case 1:
-				filenamesForReading[productFiles[i]] = std::set<DWDData::DataType>{DWDData::DT_RadiationDiffuse,DWDData::DT_RadiationGlobal, DWDData::DT_RadiationLongWave}; break;
+				filenamesForReading[checkedFileNames[i]] = std::set<DWDData::DataType>{DWDData::DT_RadiationDiffuse,DWDData::DT_RadiationGlobal, DWDData::DT_RadiationLongWave}; break;
 			case 2:
-				filenamesForReading[productFiles[i]] = std::set<DWDData::DataType>{DWDData::DT_WindDirection,DWDData::DT_WindSpeed}; break;
+				filenamesForReading[checkedFileNames[i]] = std::set<DWDData::DataType>{DWDData::DT_WindDirection,DWDData::DT_WindSpeed}; break;
 			case 3:
-				filenamesForReading[productFiles[i]] = std::set<DWDData::DataType>{DWDData::DT_Pressure}; break;
+				filenamesForReading[checkedFileNames[i]] = std::set<DWDData::DataType>{DWDData::DT_Pressure}; break;
 		}
 	}
 	//read data
@@ -378,9 +395,10 @@ void MainWindow::on_pushButton_clicked(){
 	dwdData.m_startTime = IBK::Time(m_ui->lineEditYear->text().toInt(),0);
 	dwdData.createData(filenamesForReading);
 
-
+//	dwdData.writeTSV(2001);
 
 	//copy all data in range and create an epw
+	dwdData.exportEPW(2019);
 }
 
 void MainWindow::on_pushButtonMap_clicked() {
