@@ -31,7 +31,7 @@ public:
 	explicit MainWindow(QWidget *parent = nullptr);
 	~MainWindow();
 
-	void testFunc();
+	void loadData();
 
 	void update(int tableWidth);
 

@@ -21,12 +21,14 @@
 #include <QTimer>
 #include <QThread>
 #include <QMessageBox>
+#include <QItemDelegate>
 
 #include <JlCompress.h>
 
 #include "DWDData.h"
 #include "DWDDownloader.h"
 #include "DWDMap.h"
+#include "DWDDelegate.h"
 
 #include "Constants.h"
 //#include "DWD_CheckBox.h"
@@ -93,7 +95,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	m_ui->lineEditYear->setup(1950,2023,tr("Year of interest."), true, true);
 
-	m_ui->tableWidget->verticalHeader()->setDefaultSectionSize(19);
+	m_ui->tableWidget->verticalHeader()->setDefaultSectionSize(25);
 	m_ui->tableWidget->verticalHeader()->setVisible(false);
 	m_ui->tableWidget->horizontalHeader()->setMinimumSectionSize(19);
 	m_ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -106,7 +108,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_ui->tableWidget->setFont(f);
 	m_ui->tableWidget->horizontalHeader()->setFont(f); // Note: on Linux/Mac this won't work until Qt 5.11.1 - this was a bug between Qt 4.8...5.11.1
 
-	testFunc();
+	loadData();
 
 	resize(1500,400);
 	update(1400);
@@ -118,32 +120,30 @@ MainWindow::~MainWindow()
 	delete m_ui;
 }
 
-void MainWindow::testFunc(){
+void MainWindow::loadData(){
 
 	//download all files
 	DWDDescriptonData  descData;
 
-
+	// get download links for data
 	QStringList urls = descData.downloadDescriptionFiles();
-//	DWDDownloader downloader(this);
-//	downloader.append(sl);
 
-
-
-
-//	connect(dwdd, &DWDDownloaderDirk::fini, )
-
+	// initiate download manager
 	DWDDownloader manager(this);
 	manager.m_urls = urls;
 	connect( &manager, &DWDDownloader::finished, this, &MainWindow::readData );
 
+	// start download in singleshot
 	QTimer::singleShot(0, &manager, SLOT(execute() ) );
 
+	// dirty way to wait till asynchronous download is finished
 	while ( manager.m_isRunning ) // wait for data to be downloaded (the little bit dirty way)
 		QMessageBox::information(this, "Downloading", "Download is running" );
 }
 
 void MainWindow::update(int tableWidth) {
+
+	// resize tablewidget
 	QTableWidget &tw = *m_ui->tableWidget;
 
 	// resize cols
@@ -172,17 +172,18 @@ void MainWindow::showEvent(QShowEvent * event) {
 }
 
 void MainWindow::readData() {
-	//read all decription files
+	// read all decription files
 	DWDDescriptonData descData;
 	descData.readAllDescriptions(m_descDataMap);
 
 
-	//fill table view with these data
-	//auto model = m_ui->tableView->model();
+	// fill table view with these data
+	// auto model = m_ui->tableView->model();
 	unsigned int counter =0;
 	QTableWidget &tw =  *m_ui->tableWidget;
 	tw.blockSignals(true);
 
+	//
 	tw.setSelectionBehavior(QAbstractItemView::SelectRows);
 	tw.setSelectionMode(QAbstractItemView::SingleSelection);
 
@@ -190,8 +191,8 @@ void MainWindow::readData() {
 																	it != m_descDataMap.end();
 																	++it){
 		tw.insertRow(counter);
-		tw.setItem(counter, 0, new QTableWidgetItem(QString::number(it->second.m_id)));
 
+		tw.setItem(counter, 0, new QTableWidgetItem(QString::number(it->second.m_id)));
 		tw.setItem(counter, 0, new QTableWidgetItem(QString::number(it->second.m_id)));
 		tw.setItem(counter, 1, new QTableWidgetItem(QString::number(it->second.m_longitude)));
 		tw.setItem(counter, 2, new QTableWidgetItem(QString::number(it->second.m_latitude)));
@@ -223,10 +224,12 @@ void MainWindow::readData() {
 						checkable = true;
 
 				}break;
-
 			}
 
 			QTableWidgetItem *item = new QTableWidgetItem();
+			DWDDelegate *delegate = new DWDDelegate(this);
+			m_ui->tableWidget->setItemDelegateForColumn(5, delegate);
+
 			if(checkable){
 				item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
 				item->setCheckState(Qt::Unchecked);
@@ -235,15 +238,12 @@ void MainWindow::readData() {
 				item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
 
 			tw.setItem(counter,5+i,item);
-
 		}
 
 		++counter;
 	}
 	tw.blockSignals(false);
 }
-
-
 
 void MainWindow::on_tableWidget_itemChanged(QTableWidgetItem *item) {
 	m_ui->tableWidget->selectRow(item->row() );
@@ -265,11 +265,6 @@ void MainWindow::on_tableWidget_itemChanged(QTableWidgetItem *item) {
 		}
 	}
 }
-
-
-
-
-
 
 /// TODO
 /// Herunterladen der Beschreibungsdateien
@@ -295,14 +290,16 @@ void MainWindow::on_tableWidget_itemChanged(QTableWidgetItem *item) {
 
 void MainWindow::on_pushButton_clicked(){
 
-	std::vector<int> rows(4,-1);
+	/// 1. Tabelle --> welche Daten
+	/// 2.
+
+	std::vector<int> dataInRows(4,-1);
 	//find selected elements
 	QTableWidget & tw = *m_ui->tableWidget;
 	for (unsigned int row=0; row<tw.rowCount(); ++row) {
-		for(unsigned int col=5; col<tw.columnCount(); ++col){
-
-			if(tw.item(row,col)->checkState() == Qt::Checked){
-				rows[col-5] = IBK::string2val<int>(tw.item(row,0)->text().toStdString());
+		for(unsigned int col=5; col<tw.columnCount(); ++col) {
+			if(tw.item(row,col)->checkState() == Qt::Checked) {
+				dataInRows[col-5] = IBK::string2val<int>(tw.item(row,0)->text().toStdString());
 				//QMessageBox::information(this, QString(), "col: " + QString::number(col) + " | station id: " + QString::number(rows[col-5]) );
 			}
 		}
@@ -316,21 +313,20 @@ void MainWindow::on_pushButton_clicked(){
 	connect( &manager, &DWDDownloader::finished, this, &MainWindow::readData );
 	//download the data (zip)
 	for(unsigned int i=0; i<4; ++i){
-		if(rows[i] != -1){
+		if(dataInRows[i] != -1){
 			DWDData dwdData;
-			manager.m_urls << dwdData.urlFilename(types[i], QString::number(rows[i]).rightJustified(5,'0'));
-			filenames[i] = dwdData.filename(types[i], QString::number(rows[i]).rightJustified(5,'0'));
+			manager.m_urls << dwdData.urlFilename(types[i], QString::number(dataInRows[i]).rightJustified(5,'0'));
+			filenames[i] = dwdData.filename(types[i], QString::number(dataInRows[i]).rightJustified(5,'0'));
 		}
 	}
 	if(!manager.m_urls.empty())
 		QTimer::singleShot(0, &manager, SLOT(execute() ) );
 
-	//Check if all downloads are valid
+	//Check if all downloaded files are valid
 	//create a vector with valid files
-	std::vector<IBK::Path>	checkedFiles(4);
-
+	std::vector<IBK::Path>	validFiles(4);
 	for(unsigned int i=0; i<4; ++i){
-		if(rows[i] == -1)
+		if(dataInRows[i] == -1)
 			continue;
 		IBK::Path checkfile("../../data/Tests/" + filenames[i].toStdString() + ".zip");
 		if(!checkfile.exists()){
@@ -344,7 +340,7 @@ void MainWindow::on_pushButton_clicked(){
 			QMessageBox::warning(this, QString(), QString("Download of file '%1' was not successfull. Category: '%2'").arg(filenames[i]+".zip").arg(cat));
 		}
 		else
-			checkedFiles[i] = checkfile;
+			validFiles[i] = checkfile;
 	}
 
 	//open the zip
@@ -356,26 +352,26 @@ void MainWindow::on_pushButton_clicked(){
 		if ( filenames[i].isEmpty() )
 			continue;
 
-		QStringList filesInArchive = JlCompress::getFileList(checkedFiles[i].str().c_str());
-		QString searchedFile;
+		QStringList filesInArchive = JlCompress::getFileList(validFiles[i].str().c_str());
 		QStringList filesExtracted;
+
+		QString textFile;
+
 		for ( QString fileName : filesInArchive ) {
 			if ( "produkt" == fileName.mid(0,7) ){ // we find the right file
-				// extract file
-				searchedFile = fileName;
-				filesExtracted << JlCompress::extractFile( checkedFiles[i].str().c_str(), fileName, "../../data/Tests/extractedFiles/" + searchedFile);
-				checkedFileNames[i] = IBK::Path("../../data/Tests/extractedFiles/" + searchedFile.toStdString() );
+				// we found the file
+				textFile = fileName;
+				// we extract the file
+				filesExtracted << JlCompress::extractFile( validFiles[i].str().c_str(), fileName, "../../data/Tests/extractedFiles/" + textFile);
+				checkedFileNames[i] = IBK::Path("../../data/Tests/extractedFiles/" + textFile.toStdString() );
 			}
 		}
-
+		// was the exraction successful
 		if ( filesExtracted.empty() )
-			QMessageBox::warning(this, QString(), QString("File %1 could not be extracted").arg(searchedFile));
+			QMessageBox::warning(this, QString(), QString("File %1 could not be extracted").arg(textFile));
 	}
 
 	//create extract folder
-
-	//extract file from zip
-
 	for(unsigned int i=0; i<4; ++i){
 		if(checkedFileNames[i] == IBK::Path())
 			continue; // skip empty states
@@ -395,8 +391,7 @@ void MainWindow::on_pushButton_clicked(){
 	dwdData.m_startTime = IBK::Time(m_ui->lineEditYear->text().toInt(),0);
 	dwdData.createData(filenamesForReading);
 
-//	dwdData.writeTSV(2001);
-
+	//	dwdData.writeTSV(2001);
 	//copy all data in range and create an epw
 	dwdData.exportEPW(2019);
 }

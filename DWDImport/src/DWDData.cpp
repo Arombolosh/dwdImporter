@@ -116,7 +116,6 @@ void DWDData::exportEPW(unsigned int year) {
 
 	CCM::ClimateDataLoader loader;
 
-//	loader.m_data = std::vector<>(m_data.size())[CCM::ClimateDataLoader::NumClimateComponents]
 	// remove existing data
 	for (int i=0; i<CCM::ClimateDataLoader::NumClimateComponents; ++i) {
 		loader.m_data[i] = std::vector<double>(m_data.size(), -99);
@@ -124,22 +123,19 @@ void DWDData::exportEPW(unsigned int year) {
 
 
 	for (int i=0; i<m_data.size();++i) {
-		loader.m_data[CCM::ClimateDataLoader::Temperature][i] = m_data[i].m_airTemp;
+		loader.m_data[CCM::ClimateDataLoader::Temperature][i] = m_data[i].m_airTemp = -999 ? 0 : m_data[i].m_airTemp;
 		loader.m_data[CCM::ClimateDataLoader::WindDirection][i] = m_data[i].m_windDirection;
 		loader.m_data[CCM::ClimateDataLoader::WindVelocity][i] = m_data[i].m_windSpeed;
-		loader.m_data[CCM::ClimateDataLoader::RelativeHumidity][i] = m_data[i].m_relHum;
+		loader.m_data[CCM::ClimateDataLoader::RelativeHumidity][i] = m_data[i].m_relHum = -999 ? 80 : m_data[i].m_relHum;;
 		loader.m_data[CCM::ClimateDataLoader::DirectRadiationNormal][i] = m_data[i].m_globalRad;
 		loader.m_data[CCM::ClimateDataLoader::DiffuseRadiationHorizontal][i] = m_data[i].m_diffRad;
 		loader.m_data[CCM::ClimateDataLoader::LongWaveCounterRadiation][i] = m_data[i].m_counterRad;
 
-//		loader.m_startYear = m_startTime.year();
-
-//		loader.m_dataTimePoints
+		loader.m_startYear = m_startTime.year();
 	}
 
 	try {
-
-		loader.writeClimateDataEPW(IBK::Path("../../data/EPW"));
+		loader.writeClimateDataEPW(IBK::Path("../../data/export.epw"));
 	} catch (IBK::Exception &ex) {
 		throw IBK::Exception( "Could not write epw file", FUNC_ID);
 	}
