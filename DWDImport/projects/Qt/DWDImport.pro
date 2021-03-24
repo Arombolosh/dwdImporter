@@ -37,6 +37,7 @@ RESOURCES += \
 SOURCES += \
         ../../src/Constants.cpp \
         ../../src/DWDData.cpp \
+        ../../src/DWDDelegate.cpp \
         ../../src/DWDDescriptonData.cpp \
         #../../src/DWD_CheckBox.cpp \
         ../../src/DWDDownloader.cpp \
@@ -51,6 +52,7 @@ FORMS += \
 HEADERS += \
         ../../src/Constants.h \
         ../../src/DWDData.h \
+        ../../src/DWDDelegate.h \
         ../../src/DWDDescriptonData.h \
         #../../src/DWD_CheckBox.h \
         ../../src/DWDDownloader.h \
