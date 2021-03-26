@@ -66,7 +66,7 @@ public:
 	void writeTSV(unsigned int year);
 
 	/*! Create an epw-file for one year. */
-	void exportEPW(unsigned int year);
+	void exportEPW(unsigned int year, double latitudeDeg, double longitudeDeg);
 
 	/*! Returns the complete url as QString needed for download. */
 	QString urlFilename(const DataType &type, const QString &numberString, bool isRecent=true) const;

@@ -94,6 +94,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	//m_ui->tableWidget->setst
 
 	m_ui->lineEditYear->setup(1950,2023,tr("Year of interest."), true, true);
+	m_ui->lineEditYear->setText("2020");
+	m_ui->lineEditLatitude->setText("51");
+	m_ui->lineEditLongitude->setText("13");
 
 	m_ui->tableWidget->verticalHeader()->setDefaultSectionSize(25);
 	m_ui->tableWidget->verticalHeader()->setVisible(false);
@@ -393,7 +396,13 @@ void MainWindow::on_pushButton_clicked(){
 
 	//	dwdData.writeTSV(2001);
 	//copy all data in range and create an epw
-	dwdData.exportEPW(2019);
+	double latiDeg = m_ui->lineEditLatitude->text().toDouble();
+	double longiDeg = m_ui->lineEditLongitude->text().toDouble();
+
+	///TODO take coordinates from radiation if exists
+
+	dwdData.exportEPW(m_ui->lineEditYear->text().toInt(), latiDeg, longiDeg);
+	QMessageBox::information(this, QString(), "Export done.");
 }
 
 void MainWindow::on_pushButtonMap_clicked() {

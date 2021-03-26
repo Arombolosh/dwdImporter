@@ -3,6 +3,7 @@
 #include <IBK_StringUtils.h>
 #include <IBK_FileReader.h>
 
+#include <CCM_SolarRadiationModel.h>
 #include <CCM_ClimateDataLoader.h>
 #include "Constants.h"
 
@@ -67,15 +68,19 @@ void DWDData::addDataLine(std::string &line, const std::set<DataType> &dataType)
 	else
 		return;	//if no time point is given return
 
-	double timepoint = m_startTime.secondsUntil(time)/3600;
+	double timepoint = m_startTime.secondsUntil(time)/m_intervalDuration;
 	//shift all data because startpoint is later
 	unsigned int newTimepoint = static_cast<unsigned int>(timepoint);
 	if(timepoint<0){
-		timepoint *=-1;
-		std::vector<IntervalData> newData(newTimepoint);
-		m_data.insert( m_data.begin(), newData.begin(), newData.end() );
+		//adjust start date
+		double timeDiffSec = m_startTime.secondsUntil(time);
+		int yearDiff = (int)(std::abs(timeDiffSec) / (8760*60*60)+1);
+		m_startTime = IBK::Time(m_startTime.year()-yearDiff,0);
+		newTimepoint = m_startTime.secondsUntil(time)/m_intervalDuration;
+
 	}
-	else{
+	//start point is earlier or perfect
+	{
 		if(m_data.size()<=newTimepoint){
 			unsigned int aaa =newTimepoint-m_data.size()+1;
 			m_data.insert(m_data.end(), aaa, IntervalData());
@@ -112,27 +117,55 @@ void DWDData::writeTSV(unsigned int year){
 	}
 }
 
-void DWDData::exportEPW(unsigned int year) {
+void DWDData::exportEPW(unsigned int year, double latitudeDeg, double longitudeDeg) {
 	FUNCID(exportEPW);
 
 	CCM::ClimateDataLoader loader;
+	//all data is invalid initialized
+	loader.initDataWithDefault();
+	loader.m_city = "Generic Location";
+	loader.m_source = "DWDImporter";
+	loader.m_country = "Germany";
+	loader.m_timeZone = 1;
+	loader.m_elevation = 81;
+	loader.m_startYear = year;
+	loader.m_latitudeInDegree = latitudeDeg;
+	loader.m_longitudeInDegree = longitudeDeg;
+	loader.m_comment = "test";
+
+	CCM::SolarRadiationModel solMod;
+	solMod.m_climateDataLoader = loader;
 
 	// remove existing data
-	for (int i=0; i<CCM::ClimateDataLoader::NumClimateComponents; ++i) {
-		loader.m_data[i] = std::vector<double>(m_data.size(), -99);
-	}
+//	for (int i=0; i<CCM::ClimateDataLoader::NumClimateComponents; ++i) {
+//		loader.m_data[i] = std::vector<double>(8760, -99);
+//	}
 
+	int idx = m_startTime.secondsUntil(IBK::Time(year,0))/m_intervalDuration;
 
-	for (int i=0; i<m_data.size();++i) {
-		loader.m_data[CCM::ClimateDataLoader::Temperature][i] = m_data[i].m_airTemp = -999 ? 0 : m_data[i].m_airTemp;
-		loader.m_data[CCM::ClimateDataLoader::WindDirection][i] = m_data[i].m_windDirection;
-		loader.m_data[CCM::ClimateDataLoader::WindVelocity][i] = m_data[i].m_windSpeed;
-		loader.m_data[CCM::ClimateDataLoader::RelativeHumidity][i] = m_data[i].m_relHum = -999 ? 80 : m_data[i].m_relHum;;
-		loader.m_data[CCM::ClimateDataLoader::DirectRadiationNormal][i] = m_data[i].m_globalRad;
-		loader.m_data[CCM::ClimateDataLoader::DiffuseRadiationHorizontal][i] = m_data[i].m_diffRad;
-		loader.m_data[CCM::ClimateDataLoader::LongWaveCounterRadiation][i] = m_data[i].m_counterRad;
+	for (int i=0; i<8760;++i, ++idx) {
+		if(idx > m_data.size() || m_data.empty())
+			break;
+		if(idx < 0)
+			continue;
+		///TODO Fehlerbetrachtung muss dann woanders gemacht werden
+		IntervalData intVal = m_data[idx];
+		loader.m_data[CCM::ClimateDataLoader::Temperature][i] = (intVal.m_airTemp == -999 ? 0 : intVal.m_airTemp);
+		loader.m_data[CCM::ClimateDataLoader::RelativeHumidity][i] = intVal.m_relHum < 0 ? 0 : intVal.m_relHum;
 
-		loader.m_startYear = m_startTime.year();
+		loader.m_data[CCM::ClimateDataLoader::WindDirection][i] = intVal.m_windDirection;
+		loader.m_data[CCM::ClimateDataLoader::WindVelocity][i] = intVal.m_windSpeed;
+
+		loader.m_data[CCM::ClimateDataLoader::AirPressure][i] = intVal.m_pressure;
+
+		double dirH = intVal.m_globalRad - intVal.m_diffRad;
+		double dirN;
+		solMod.convertHorizontalToNormalRadiation(m_intervalDuration*idx, dirH, dirN);
+
+		loader.m_data[CCM::ClimateDataLoader::DirectRadiationNormal][i] = dirN;
+		loader.m_data[CCM::ClimateDataLoader::DiffuseRadiationHorizontal][i] = intVal.m_diffRad;
+		loader.m_data[CCM::ClimateDataLoader::LongWaveCounterRadiation][i] = intVal.m_counterRad;
+
 	}
 
 	try {
@@ -140,7 +173,6 @@ void DWDData::exportEPW(unsigned int year) {
 	} catch (IBK::Exception &ex) {
 		throw IBK::Exception( "Could not write epw file", FUNC_ID);
 	}
-
 }
 
 
