@@ -1403,10 +1403,13 @@ void ClimateDataLoader::writeClimateDataEPW(const IBK::Path & fname) {
 	// append commends
 	std::vector<std::string> lines;
 	IBK::explode(m_comment, lines, "\n", IBK::EF_NoFlags);
-	if (!lines.empty()) {
-		for (unsigned int i=0; i<lines.size(); ++i)
-			epwHeader += IBK::FormatString("\nCOMMENTS %1,%2").arg(i+1).arg((lines[i])).str();
+	epwHeader += "\nCOMMENTS 1,";
+	if (!m_comment.empty()) {
+		epwHeader += m_comment;
+//		for (unsigned int i=0; i<lines.size(); ++i)
+//			epwHeader += IBK::FormatString("\nCOMMENTS %1,%2").arg(i+1).arg((lines[i])).str();
 	}
+	epwHeader += "\nCOMMENTS 2,";
 	epwHeader += "\n" + IBK::FormatString("DATA PERIODS,%1,%2,%3,%4,%5,%6")
 			.arg(1)
 			.arg(1)
@@ -1460,7 +1463,8 @@ void ClimateDataLoader::writeClimateDataEPW(const IBK::Path & fname) {
 
 		// data columns
 		out << "," << m_data[Temperature][i];
-
+		double debugDirk = m_data[Temperature][i];
+		double debugDirk2 = m_data[RelativeHumidity][i];
 		double dewPTemp = IBK::f_dew_DIN1(m_data[Temperature][i] + 273.15, m_data[RelativeHumidity][i]/100.0);
 		out << "," << dewPTemp - 273.15;
 
