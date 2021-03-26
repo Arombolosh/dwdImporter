@@ -328,7 +328,7 @@ void MainWindow::on_pushButton_clicked(){
 	for(unsigned int i=0; i<4; ++i){
 		if(dataInRows[i] == -1)
 			continue;
-		IBK::Path checkfile("../../data/Tests/" + filenames[i].toStdString() + ".zip");
+		IBK::Path checkfile(std::string(DATA_DIR) + "Tests/" + filenames[i].toStdString() + ".zip");
 		if(!checkfile.exists()){
 			QString cat;
 			switch (types[i]) {
@@ -362,8 +362,8 @@ void MainWindow::on_pushButton_clicked(){
 				// we found the file
 				textFile = fileName;
 				// we extract the file
-				filesExtracted << JlCompress::extractFile( validFiles[i].str().c_str(), fileName, "../../data/Tests/extractedFiles/" + textFile);
-				checkedFileNames[i] = IBK::Path("../../data/Tests/extractedFiles/" + textFile.toStdString() );
+				filesExtracted << JlCompress::extractFile( validFiles[i].str().c_str(), fileName, QString(DATA_DIR) + "Tests/extractedFiles/" + textFile);
+				checkedFileNames[i] = IBK::Path(std::string(DATA_DIR) + "Tests/extractedFiles/" + textFile.toStdString() );
 			}
 		}
 		// was the exraction successful

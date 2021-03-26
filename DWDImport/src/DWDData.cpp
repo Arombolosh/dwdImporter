@@ -4,6 +4,7 @@
 #include <IBK_FileReader.h>
 
 #include <CCM_ClimateDataLoader.h>
+#include "Constants.h"
 
 void DWDData::createData(const std::map<IBK::Path, std::set<DWDData::DataType>> &filenames, unsigned int intervalDuration) {
 
@@ -135,7 +136,7 @@ void DWDData::exportEPW(unsigned int year) {
 	}
 
 	try {
-		loader.writeClimateDataEPW(IBK::Path("../../data/export.epw"));
+		loader.writeClimateDataEPW(IBK::Path(std::string(DATA_DIR)+ "export.epw"));
 	} catch (IBK::Exception &ex) {
 		throw IBK::Exception( "Could not write epw file", FUNC_ID);
 	}

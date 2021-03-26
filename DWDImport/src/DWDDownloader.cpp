@@ -1,6 +1,7 @@
 #include "DWDDownloader.h"
 
 #include <QMessageBox>
+#include "Constants.h"
 
 DWDDownloader::DWDDownloader(QWidget *parent) {
 	connect(&manager, SIGNAL(finished(QNetworkReply*)),
@@ -43,7 +44,7 @@ QString DWDDownloader::saveFileName(const QUrl &url) {
 }
 
 bool DWDDownloader::saveToDisk(const QString &filename, QIODevice *data) {
-	QFile file("../../data/Tests/" + filename);
+	QFile file(QString(DATA_DIR) + "Tests/" + filename);
 	if (!file.open(QIODevice::WriteOnly)) {
 		fprintf(stderr, "Could not open %s for writing: %s\n",
 				qPrintable(filename),
