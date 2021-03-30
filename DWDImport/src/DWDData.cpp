@@ -80,13 +80,13 @@ void DWDData::addDataLine(std::string &line, const std::set<DataType> &dataType)
 
 	}
 	//start point is earlier or perfect
-	{
-		if(m_data.size()<=newTimepoint){
-			unsigned int aaa =newTimepoint-m_data.size()+1;
-			m_data.insert(m_data.end(), aaa, IntervalData());
-		}
 
+	if(m_data.size()<=newTimepoint){
+		unsigned int aaa =newTimepoint-m_data.size()+1;
+		m_data.insert(m_data.end(), aaa, IntervalData());
 	}
+
+
 	//add data to interval data
 	while(it!= dataType.end()) {
 
@@ -202,7 +202,7 @@ QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numbe
 	case DT_RadiationDiffuse:
 	case DT_RadiationGlobal:
 	case DT_RadiationLongWave:
-		return base + "solar/" + "stundenwerte_ST_" + numberString + rec + ".zip";
+		return base + "solar/" + "stundenwerte_ST_" + numberString + "_row.zip";
 
 
 	}
@@ -228,7 +228,7 @@ QString DWDData::filename(const DWDData::DataType &type, const QString &numberSt
 	case DT_RadiationDiffuse:
 	case DT_RadiationGlobal:
 	case DT_RadiationLongWave:
-		return "stundenwerte_ST_" + numberString + rec;
+		return "stundenwerte_ST_" + numberString + "_row";
 	}
 }
 

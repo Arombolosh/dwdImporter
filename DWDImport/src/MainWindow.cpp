@@ -345,6 +345,7 @@ void MainWindow::on_pushButton_clicked(){
 			DWDData dwdData;
 			manager.m_urls << dwdData.urlFilename(types[i], QString::number(dataInRows[i]).rightJustified(5,'0'));
 			filenames[i] = dwdData.filename(types[i], QString::number(dataInRows[i]).rightJustified(5,'0'));
+			qDebug() << manager.m_urls[i];
 		}
 	}
 	if(!manager.m_urls.empty())
@@ -445,16 +446,19 @@ void MainWindow::on_lineEditYear_textChanged(const QString &arg1) {
 }
 
 void MainWindow::on_lineEditYear_editingFinished() {
+	return;
 	// sort
 	IBK::Time filterDate (m_ui->lineEditYear->text().toInt(), 0);
 
 	for (int i=0; i<m_ui->tableWidget->columnCount(); ++i) {
 
+		int id = m_ui->tableWidget->item(i, 0)->text().toInt();
+
 		/*! Start date. */
-		IBK::Time startDate = m_descDataMap[i].m_startDate;
+		IBK::Time startDate = m_descDataMap[id].m_startDate;
 
 		/*! End date. */
-		IBK::Time endDate = m_descDataMap[i].m_endDate;
+		IBK::Time endDate = m_descDataMap[id].m_endDate;
 
 		double secUntilStart = startDate.secondsUntil(filterDate);
 		double secUntilEnd = filterDate.secondsUntil(endDate);
