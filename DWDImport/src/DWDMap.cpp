@@ -64,15 +64,20 @@ void DWDMap::setLocation(const double &latitude, const double &longitude) {
 	m_latitude = latitude;
 	m_longitude = longitude;
 
-	int xPos;
-	int yPos;
+	double xPos;
+	double yPos;
 
-	yPos = 796 - ((m_latitude - 47.271679) / ( 55.05864 - 47.271679 ))*796;
-	xPos = 588 - ((m_longitude - 15.043611) / ( 5.866944 - 15.043611 ))*588;
+	QSize size = m_ui->graphicsViewMap->maximumViewportSize();
+
+	int width = size.width();
+	int height = size.height();
+
+	yPos = height - ((m_latitude - 47.271679) / ( 55.05864 - 47.271679 ))*height;
+	xPos = width + ((15.043611 - m_longitude) / ( 5.866944 - 15.043611 ))*width;
 
 	double rad = 5;
 
-	m_scene->addEllipse(xPos-rad-18, yPos-rad-18, rad*2.0, rad*2.0,
+	m_scene->addEllipse(xPos-rad, yPos-rad, rad*2.0, rad*2.0,
 							QPen(), QBrush(Qt::SolidPattern));
 
 	m_ui->lineEditLatitude->setText(QString::number(m_latitude));

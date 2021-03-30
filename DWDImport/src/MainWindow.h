@@ -49,6 +49,10 @@ private slots:
 
 	void on_pushButtonMap_clicked();
 
+	void on_lineEditYear_textChanged(const QString &arg1);
+
+	void on_lineEditYear_editingFinished();
+
 private:
 
 	Ui::MainWindow						*m_ui;

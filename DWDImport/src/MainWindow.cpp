@@ -76,16 +76,18 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	m_model = new QStandardItemModel();
 
-	m_ui->tableWidget->setColumnCount(9);
+	m_ui->tableWidget->setColumnCount(11);
 	m_ui->tableWidget->setHorizontalHeaderItem(0, new QTableWidgetItem("Station Id"));
-	m_ui->tableWidget->setHorizontalHeaderItem(1, new QTableWidgetItem("Location Longitude Deg"));
-	m_ui->tableWidget->setHorizontalHeaderItem(2, new QTableWidgetItem("Location Latitude Deg"));
-	m_ui->tableWidget->setHorizontalHeaderItem(3, new QTableWidgetItem("Name"));
-	m_ui->tableWidget->setHorizontalHeaderItem(4, new QTableWidgetItem("Country"));
-	m_ui->tableWidget->setHorizontalHeaderItem(5, new QTableWidgetItem("T_air + rH"));
-	m_ui->tableWidget->setHorizontalHeaderItem(6, new QTableWidgetItem("Radiation"));
-	m_ui->tableWidget->setHorizontalHeaderItem(7, new QTableWidgetItem("Wind"));
-	m_ui->tableWidget->setHorizontalHeaderItem(8, new QTableWidgetItem("Pressure"));
+	m_ui->tableWidget->setHorizontalHeaderItem(1, new QTableWidgetItem("Start Date"));
+	m_ui->tableWidget->setHorizontalHeaderItem(2, new QTableWidgetItem("End Date"));
+	m_ui->tableWidget->setHorizontalHeaderItem(3, new QTableWidgetItem("Location Longitude Deg"));
+	m_ui->tableWidget->setHorizontalHeaderItem(4, new QTableWidgetItem("Location Latitude Deg"));
+	m_ui->tableWidget->setHorizontalHeaderItem(5, new QTableWidgetItem("Name"));
+	m_ui->tableWidget->setHorizontalHeaderItem(6, new QTableWidgetItem("Country"));
+	m_ui->tableWidget->setHorizontalHeaderItem(7, new QTableWidgetItem("T_air + rH"));
+	m_ui->tableWidget->setHorizontalHeaderItem(8, new QTableWidgetItem("Radiation"));
+	m_ui->tableWidget->setHorizontalHeaderItem(9, new QTableWidgetItem("Wind"));
+	m_ui->tableWidget->setHorizontalHeaderItem(10, new QTableWidgetItem("Pressure"));
 	m_ui->tableWidget->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter | (Qt::Alignment)Qt::TextWordWrap);
 	m_ui->tableWidget->horizontalHeader()->setMinimumHeight(40);
 	m_ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -162,14 +164,16 @@ void MainWindow::update(int tableWidth) {
 
 	// resize cols
 	tw.setColumnWidth(0, tableWidth / 18);
-	tw.setColumnWidth(1, tableWidth / 9);
-	tw.setColumnWidth(2, tableWidth / 9);
-	tw.setColumnWidth(3, tableWidth * 7 /18 );
+	tw.setColumnWidth(1, tableWidth / 27);
+	tw.setColumnWidth(2, tableWidth / 27);
+	tw.setColumnWidth(3, tableWidth / 27);
 	tw.setColumnWidth(4, tableWidth / 9);
-	tw.setColumnWidth(5, tableWidth / 18);
-	tw.setColumnWidth(6, tableWidth / 18);
+	tw.setColumnWidth(5, tableWidth * 7 /18 );
+	tw.setColumnWidth(6, tableWidth / 9);
 	tw.setColumnWidth(7, tableWidth / 18);
 	tw.setColumnWidth(8, tableWidth / 18);
+	tw.setColumnWidth(9, tableWidth / 18);
+	tw.setColumnWidth(10, tableWidth / 18);
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event) {
@@ -207,11 +211,12 @@ void MainWindow::readData() {
 		tw.insertRow(counter);
 
 		tw.setItem(counter, 0, new QTableWidgetItem(QString::number(it->second.m_id)));
-		tw.setItem(counter, 0, new QTableWidgetItem(QString::number(it->second.m_id)));
-		tw.setItem(counter, 1, new QTableWidgetItem(QString::number(it->second.m_longitude)));
-		tw.setItem(counter, 2, new QTableWidgetItem(QString::number(it->second.m_latitude)));
-		tw.setItem(counter, 3, new QTableWidgetItem(QString::fromLatin1(it->second.m_name.c_str())));
-		tw.setItem(counter, 4, new QTableWidgetItem(QString::fromLatin1(it->second.m_country.c_str())));
+		tw.setItem(counter, 1, new QTableWidgetItem(it->second.m_startDate.toDateTimeFormat().c_str()));
+		tw.setItem(counter, 2, new QTableWidgetItem(it->second.m_endDate.toDateTimeFormat().c_str()));
+		tw.setItem(counter, 3, new QTableWidgetItem(QString::number(it->second.m_longitude)));
+		tw.setItem(counter, 4, new QTableWidgetItem(QString::number(it->second.m_latitude)));
+		tw.setItem(counter, 5, new QTableWidgetItem(QString::fromLatin1(it->second.m_name.c_str())));
+		tw.setItem(counter, 6, new QTableWidgetItem(QString::fromLatin1(it->second.m_country.c_str())));
 
 		for (unsigned int i=0;i<5 ; ++i)
 			tw.item(counter,i)->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
@@ -242,7 +247,7 @@ void MainWindow::readData() {
 
 			QTableWidgetItem *item = new QTableWidgetItem();
 			DWDDelegate *delegate = new DWDDelegate(this);
-			m_ui->tableWidget->setItemDelegateForColumn(5, delegate);
+			m_ui->tableWidget->setItemDelegateForColumn(7, delegate);
 
 			if(checkable){
 				item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
@@ -251,7 +256,7 @@ void MainWindow::readData() {
 			else
 				item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
 
-			tw.setItem(counter,5+i,item);
+			tw.setItem(counter,7+i,item);
 		}
 
 		++counter;
@@ -261,7 +266,7 @@ void MainWindow::readData() {
 
 void MainWindow::on_tableWidget_itemChanged(QTableWidgetItem *item) {
 	m_ui->tableWidget->selectRow(item->row() );
-	if(item->column() >4){
+	if(item->column() >6){
 		// get checked stated, if item was checked, uncheck all others
 		if (item->checkState() == Qt::Checked) {
 			// prevent events to fire
@@ -320,9 +325,9 @@ void MainWindow::on_pushButton_clicked(){
 	//find selected elements
 	QTableWidget & tw = *m_ui->tableWidget;
 	for (unsigned int row=0; row<tw.rowCount(); ++row) {
-		for(unsigned int col=5; col<tw.columnCount(); ++col) {
+		for(unsigned int col=7; col<tw.columnCount(); ++col) {
 			if(tw.item(row,col)->checkState() == Qt::Checked) {
-				dataInRows[col-5] = IBK::string2val<int>(tw.item(row,0)->text().toStdString());
+				dataInRows[col-7] = IBK::string2val<int>(tw.item(row,0)->text().toStdString());
 				//QMessageBox::information(this, QString(), "col: " + QString::number(col) + " | station id: " + QString::number(rows[col-5]) );
 			}
 		}
@@ -433,4 +438,29 @@ void MainWindow::on_pushButtonMap_clicked() {
 
 	m_ui->lineEditLatitude->setText(QString::number(latitude) );
 	m_ui->lineEditLongitude->setText(QString::number(longitude) );
+}
+
+void MainWindow::on_lineEditYear_textChanged(const QString &arg1) {
+
+}
+
+void MainWindow::on_lineEditYear_editingFinished() {
+	// sort
+	IBK::Time filterDate (m_ui->lineEditYear->text().toInt(), 0);
+
+	for (int i=0; i<m_ui->tableWidget->columnCount(); ++i) {
+
+		/*! Start date. */
+		IBK::Time startDate = m_descDataMap[i].m_startDate;
+
+		/*! End date. */
+		IBK::Time endDate = m_descDataMap[i].m_endDate;
+
+		double secUntilStart = startDate.secondsUntil(filterDate);
+		double secUntilEnd = filterDate.secondsUntil(endDate);
+
+		if ( secUntilStart<0 || secUntilEnd<0 )
+			m_ui->tableWidget->hideRow(i);
+
+	}
 }
