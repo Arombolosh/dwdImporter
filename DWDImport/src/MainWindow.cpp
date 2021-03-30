@@ -111,12 +111,23 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_ui->tableWidget->setFont(f);
 	m_ui->tableWidget->horizontalHeader()->setFont(f); // Note: on Linux/Mac this won't work until Qt 5.11.1 - this was a bug between Qt 4.8...5.11.1
 
+	m_ui->lineEditLatitude->setup(-90,90, "Latitude in Deg", true, true);
+	m_ui->lineEditLongitude->setup(-180,180, "Longitude in Deg", true, true);
+	m_ui->lineEditLatitude->setText("51.03");
+	m_ui->lineEditLongitude->setText("13.7");
+
 	loadData();
 
 	resize(1500,400);
 	update(1400);
 }
 
+/// TODO Stephan
+/// bitte noch die Spalten sortierbar gestalten
+/// und die checkboxen in allen spalten zurechrücken
+/// und die clicks auf die checkboxen setzen
+/// distance spalte einführen und berechnen
+/// danke
 
 MainWindow::~MainWindow()
 {
@@ -293,8 +304,17 @@ void MainWindow::on_tableWidget_itemChanged(QTableWidgetItem *item) {
 
 void MainWindow::on_pushButton_clicked(){
 
-	/// 1. Tabelle --> welche Daten
-	/// 2.
+	//check longitude and latitude
+	if(m_ui->lineEditLatitude->text().isEmpty()){
+		QMessageBox::critical(this, QString(), "Latitude is empty");
+		return;
+	}
+	if(m_ui->lineEditLongitude->text().isEmpty()){
+		QMessageBox::critical(this, QString(), "Longitude is empty");
+		return;
+	}
+
+
 
 	std::vector<int> dataInRows(4,-1);
 	//find selected elements
