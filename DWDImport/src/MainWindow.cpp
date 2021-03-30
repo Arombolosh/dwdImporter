@@ -96,7 +96,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 /// TODO Stephan
 /// bitte noch die Spalten sortierbar gestalten
-/// und die checkboxen in allen spalten zurechrücken
+/// und die checkboxen in allen spalten zurechtrücken
 /// und die clicks auf die checkboxen setzen
 /// distance spalte einführen und berechnen
 /// danke
