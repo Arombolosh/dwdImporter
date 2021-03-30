@@ -141,7 +141,7 @@ void DWDData::exportEPW(unsigned int year, double latitudeDeg, double longitudeD
 //		loader.m_data[i] = std::vector<double>(8760, -99);
 //	}
 
-	int idx = m_startTime.secondsUntil(IBK::Time(year,0))/m_intervalDuration;
+	int idx = m_startTime.secondsUntil(IBK::Time(year,24*60*60))/m_intervalDuration;
 
 	for (int i=0; i<8760;++i, ++idx) {
 		if(idx > m_data.size() || m_data.empty())

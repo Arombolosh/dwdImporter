@@ -319,8 +319,6 @@ void MainWindow::on_pushButton_clicked(){
 		return;
 	}
 
-
-
 	std::vector<int> dataInRows(4,-1);
 	//find selected elements
 	QTableWidget & tw = *m_ui->tableWidget;
@@ -350,6 +348,10 @@ void MainWindow::on_pushButton_clicked(){
 	}
 	if(!manager.m_urls.empty())
 		QTimer::singleShot(0, &manager, SLOT(execute() ) );
+
+	// dirty way to wait till asynchronous download is finished
+	while ( manager.m_isRunning ) // wait for data to be downloaded (the little bit dirty way)
+		QMessageBox::information(this, "Downloading", "Download is running" );
 
 	//Check if all downloaded files are valid
 	//create a vector with valid files
@@ -391,13 +393,14 @@ void MainWindow::on_pushButton_clicked(){
 				// we found the file
 				textFile = fileName;
 				// we extract the file
-				filesExtracted << JlCompress::extractFile( validFiles[i].str().c_str(), fileName, QString(DATA_DIR) + "Tests/extractedFiles/" + textFile);
+				QString fileExtracted = JlCompress::extractFile( validFiles[i].str().c_str(), fileName, QString(DATA_DIR) + "Tests/extractedFiles/" + textFile);
+				filesExtracted << fileExtracted;
 				checkedFileNames[i] = IBK::Path(std::string(DATA_DIR) + "Tests/extractedFiles/" + textFile.toStdString() );
+				// was the exraction successful
+				if ( fileExtracted.isEmpty() )
+					QMessageBox::warning(this, QString(), QString("File %1 could not be extracted").arg(textFile));
 			}
 		}
-		// was the exraction successful
-		if ( filesExtracted.empty() )
-			QMessageBox::warning(this, QString(), QString("File %1 could not be extracted").arg(textFile));
 	}
 
 	//create extract folder
