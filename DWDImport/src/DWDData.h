@@ -6,12 +6,15 @@
 #include <set>
 
 #include <QString>
+#include <QProgressDialog>
 
 #include <IBK_Time.h>
 #include <IBK_Path.h>
 
-class DWDData
+class DWDData : public QObject
 {
+Q_OBJECT
+
 public:
 
 	enum DataType{
@@ -20,6 +23,7 @@ public:
 		DT_RadiationLongWave,
 		DT_RadiationDiffuse,
 		DT_RadiationGlobal,
+		DT_ZenithAngle,
 		DT_SunElevation,
 		DT_WindSpeed,
 		DT_WindDirection,
@@ -36,6 +40,7 @@ public:
 				case DT_RadiationDiffuse:					m_diffRad= val;			break;
 				case DT_RadiationGlobal:					m_globalRad= val;		break;
 				case DT_RadiationLongWave:					m_counterRad= val;		break;
+				case DT_ZenithAngle:						m_zenithAngle= val;		break;
 				case DT_WindDirection:						m_windDirection= val;	break;
 				case DT_WindSpeed:							m_windSpeed= val;		break;
 				case DT_Pressure:							m_pressure= val;		break;
@@ -48,6 +53,7 @@ public:
 		double				m_counterRad	= -999;		///< Long wave counter radiation in W/m2
 		double				m_diffRad		= -999;		///< Diffuse radiation W/m2
 		double				m_globalRad		= -999;		///< Globale radiation W/m2
+		double				m_zenithAngle	= -999;		///< ZenithAngle in Deg
 		double				m_sunElevation	= -999;		///< Sun elavation angle in Deg
 		double				m_windSpeed		= -999;		///< Wind speed in m/s
 		double				m_windDirection	= -999;		///< Wind direction in Deg
@@ -74,10 +80,15 @@ public:
 	/*! Returns the filename of the downloaded zip-archive */
 	QString filename(const DWDData::DataType &type, const QString &numberString, bool isRecent=true) const;
 
+
 	IBK::Time					m_startTime;			///< Start time for the first interval data
 	unsigned int				m_intervalDuration;		///< Interval duration in sec
 	std::vector<IntervalData>	m_data;					///< Vector with interval data
 	IBK::Path					m_filenames[NUM_DT];	///< Filename
+
+
+signals:
+	void progress(int min, int max, int val);
 
 private:
 	/*! Returns the column for a given data type in the different dwd weather files. */

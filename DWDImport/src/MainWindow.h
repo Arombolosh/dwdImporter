@@ -6,13 +6,14 @@
 #include <QMainWindow>
 #include <QWidget>
 #include <QProcess>
-#include <QTimer>
+#include <QElapsedTimer>
 #include <QStandardItemModel>
 
 #include <IBK_Time.h>
 #include <IBK_Path.h>
 
 #include "DWDDescriptonData.h"
+#include "DWDData.h"
 
 
 
@@ -55,6 +56,8 @@ private slots:
 
 	void on_pushButtonUpdate_clicked();
 
+	void setProgress(int min, int max, int val);
+
 private:
 
 	Ui::MainWindow						*m_ui;
@@ -62,11 +65,12 @@ private:
 	/*! Description input of all stations.
 		key of map is station id
 	*/
-	std::map<unsigned int, DWDDescriptonData> m_descDataMap;
+	std::map<unsigned int, DWDDescriptonData>	m_descDataMap;
+	DWDData										m_dwdData;
 
 	QStandardItemModel					*m_model;
 	QProgressDialog						*m_progressDlg;
-	QTimer								m_progressTimer;
+	QElapsedTimer						m_progressTimer;
 
 };
 

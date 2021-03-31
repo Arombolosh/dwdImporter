@@ -1,7 +1,11 @@
 #include "DWDData.h"
 
+#include <QTimer>
+#include <QDebug>
+
 #include <IBK_StringUtils.h>
 #include <IBK_FileReader.h>
+#include <IBK_physics.h>
 
 #include <CCM_SolarRadiationModel.h>
 #include <CCM_ClimateDataLoader.h>
@@ -21,18 +25,27 @@ void DWDData::createData(const std::map<IBK::Path, std::set<DWDData::DataType>> 
 			throw IBK::Exception(IBK::FormatString( "File '%1' does not exist. ").arg(fileName.filename()), FUNC_ID);
 
 		//read the file
-		IBK::FileReader fileReader(fileName);
+		IBK::FileReader fileReader(fileName, 40960);
 		std::vector<std::string> lines;
+		qDebug() << "Start reading files ------------------";
 		fileReader.readAll(fileName, lines, std::vector<std::string>{"\n"});
 
+		qDebug() << "Get data of files ------------------";
 		for(unsigned int i=1;i<lines.size(); ++i){
 			addDataLine(lines[i], it->second);
+			emit progress(0, lines.size(), i);
 		}
 	}
 }
 
+
 void DWDData::addDataLine(std::string &line, const std::set<DataType> &dataType){
 	std::vector<std::string> data;
+
+	/*! Mind the time zone. In DWD Data the time zone is set to UTC+0 whereas in our exported epw file
+		the time zone is set to UTC+1 thus we have to shift the time stamp for one hour (+1)
+		-> DWD: 01012020 00:00 --> EPW: 01012020 01:00
+	*/
 
 	//explode line
 	IBK::explode(line, data, ";", true);
@@ -41,7 +54,7 @@ void DWDData::addDataLine(std::string &line, const std::set<DataType> &dataType)
 		return;
 
 	std::set<DataType>::const_iterator it = dataType.begin();
-	IBK::Time time;
+	IBK::Time time, timeNextYear;
 
 	//check startdate
 	if(!m_startTime.isValid()){
@@ -50,17 +63,22 @@ void DWDData::addDataLine(std::string &line, const std::set<DataType> &dataType)
 
 	if(data.size()>2){
 		try {
+			unsigned int idx = 1;
 			//station code
+			if (dataType.find(DT_RadiationGlobal) != dataType.end() || dataType.find(DT_RadiationDiffuse) != dataType.end()
+					|| dataType.find(DT_RadiationLongWave) != dataType.end() || dataType.find(DT_ZenithAngle) != dataType.end() )
+				idx = 8;
+
 			unsigned int stationId = IBK::string2val<unsigned int>(data[0]);		//not used yet
 
 			//get timepoint
-			std::string& s = data[1];
+			std::string& s = data[idx];
 			unsigned int year	= IBK::string2val<unsigned int>(s.substr(0,4));
 			unsigned int month	= IBK::string2val<unsigned int>(s.substr(4,2))-1;
-			unsigned int day	= IBK::string2val<unsigned int>(s.substr(6,2));
+			unsigned int day	= IBK::string2val<unsigned int>(s.substr(6,2))-1;
 			unsigned int hour	= IBK::string2val<unsigned int>(s.substr(8,2));
 			time.set(year, month, day, hour*3600);
-		}  catch (IBK::Exception &ex) {
+		} catch (IBK::Exception &ex) {
 
 		}
 
@@ -69,9 +87,12 @@ void DWDData::addDataLine(std::string &line, const std::set<DataType> &dataType)
 		return;	//if no time point is given return
 
 	double timepoint = m_startTime.secondsUntil(time)/m_intervalDuration;
+	timeNextYear.set(m_startTime.year()+1, 0);
+	double timepointNextYear = timeNextYear.secondsUntil(time)/m_intervalDuration;
 	//shift all data because startpoint is later
 	unsigned int newTimepoint = static_cast<unsigned int>(timepoint);
-	if(timepoint<0){
+	if(timepoint<0 || timepointNextYear > 0){
+		return; // data should not be added
 		//adjust start date
 		double timeDiffSec = m_startTime.secondsUntil(time);
 		int yearDiff = (int)(std::abs(timeDiffSec) / (8760*60*60)+1);
@@ -120,6 +141,11 @@ void DWDData::writeTSV(unsigned int year){
 void DWDData::exportEPW(unsigned int year, double latitudeDeg, double longitudeDeg) {
 	FUNCID(exportEPW);
 
+	/*! Mind the time zone. In DWD Data the time zone is set to UTC+0 whereas in our exported epw file
+		the time zone is set to UTC+1 thus we have to shift the time stamp for one hour (+1)
+		-> DWD: 01012020 00:00 --> EPW: 01012020 01:00
+	*/
+
 	CCM::ClimateDataLoader loader;
 	//all data is invalid initialized
 	loader.initDataWithDefault();
@@ -141,31 +167,36 @@ void DWDData::exportEPW(unsigned int year, double latitudeDeg, double longitudeD
 //		loader.m_data[i] = std::vector<double>(8760, -99);
 //	}
 
-	int idx = m_startTime.secondsUntil(IBK::Time(year,24*60*60))/m_intervalDuration;
+	int idx = m_startTime.secondsUntil(IBK::Time(year, 0))/m_intervalDuration;
 
 	for (int i=0; i<8760;++i, ++idx) {
-		if(idx > m_data.size() || m_data.empty())
-			break;
-		if(idx < 0)
-			continue;
+//		if(idx > m_data.size() || m_data.empty())
+//			break;
+//		if(idx < 0)
+//			continue;
 		///TODO Fehlerbetrachtung muss dann woanders gemacht werden
-		IntervalData intVal = m_data[idx];
+		IntervalData intVal = m_data[i];
 		loader.m_data[CCM::ClimateDataLoader::Temperature][i] = (intVal.m_airTemp == -999 ? 0 : intVal.m_airTemp);
 		loader.m_data[CCM::ClimateDataLoader::RelativeHumidity][i] = intVal.m_relHum < 0 ? 0 : intVal.m_relHum;
 
-		loader.m_data[CCM::ClimateDataLoader::WindDirection][i] = intVal.m_windDirection;
 		loader.m_data[CCM::ClimateDataLoader::WindVelocity][i] = intVal.m_windSpeed;
+		loader.m_data[CCM::ClimateDataLoader::WindDirection][i] = intVal.m_windDirection;
 
 		loader.m_data[CCM::ClimateDataLoader::AirPressure][i] = intVal.m_pressure;
 
 		double dirH = intVal.m_globalRad - intVal.m_diffRad;
 		double dirN;
-		solMod.convertHorizontalToNormalRadiation(m_intervalDuration*(idx-0.5), dirH, dirN); ///ToDo Janek -> check timestamp interpretation of dwd by cross checking zenit angles
+		solMod.convertHorizontalToNormalRadiation(m_intervalDuration*(idx-0.5), dirH, dirN);
 
 		loader.m_data[CCM::ClimateDataLoader::DirectRadiationNormal][i] = dirN;
 		loader.m_data[CCM::ClimateDataLoader::DiffuseRadiationHorizontal][i] = intVal.m_diffRad;
 		loader.m_data[CCM::ClimateDataLoader::LongWaveCounterRadiation][i] = intVal.m_counterRad;
 
+#if 0
+		loader.m_data[CCM::ClimateDataLoader::WindVelocity][i] = std::max<double>( 90.0 - intVal.m_zenithAngle, 0);
+		loader.m_data[CCM::ClimateDataLoader::LongWaveCounterRadiation][i] = dirH/ ( std::cos(intVal.m_zenithAngle*IBK::DEG2RAD)< 1e-04 ? 1 : std::cos(intVal.m_zenithAngle*IBK::DEG2RAD) );
+		loader.m_data[CCM::ClimateDataLoader::WindDirection][i] = std::max<double>(solMod.m_sunPositionModel.m_elevation/IBK::DEG2RAD, 0);
+#endif
 	}
 
 	try {
@@ -202,6 +233,7 @@ QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numbe
 	case DT_RadiationDiffuse:
 	case DT_RadiationGlobal:
 	case DT_RadiationLongWave:
+	case DT_ZenithAngle:
 		return base + "solar/" + "stundenwerte_ST_" + numberString + "_row.zip";
 
 
@@ -228,6 +260,7 @@ QString DWDData::filename(const DWDData::DataType &type, const QString &numberSt
 	case DT_RadiationDiffuse:
 	case DT_RadiationGlobal:
 	case DT_RadiationLongWave:
+	case DT_ZenithAngle:
 		return "stundenwerte_ST_" + numberString + "_row";
 	}
 }
@@ -239,6 +272,7 @@ unsigned int DWDData::getColumnDWD(const DataType &dt){
 		case DT_RadiationLongWave:				return 3;
 		case DT_RadiationDiffuse:				return 4;
 		case DT_RadiationGlobal:				return 5;
+		case DT_ZenithAngle:					return 7;
 		case DT_WindSpeed:						return 3;
 		case DT_WindDirection:					return 4;
 		case DT_Pressure:						return 4;

@@ -25,7 +25,6 @@
 
 #include <JlCompress.h>
 
-#include "DWDData.h"
 #include "DWDDownloader.h"
 #include "DWDMap.h"
 #include "DWDDelegate.h"
@@ -87,7 +86,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	setTableHeader();
 	loadData();
 
+	m_progressTimer.start();
 
+	connect( &m_dwdData, &DWDData::progress, this, &MainWindow::setProgress );
 
 	resize(1500,400);
 	update(1400);
@@ -166,8 +167,10 @@ void MainWindow::updateTable(const IBK::Time &filterDate) {
 			/*! End date. */
 			IBK::Time endDate = it->second.m_endDate[i];
 
+			IBK::Time filterDateNextYear ( filterDate.year()+1, 0 );
+
 			double secUntilStart = startDate.secondsUntil(filterDate);
-			double secUntilEnd = filterDate.secondsUntil(endDate);
+			double secUntilEnd = filterDateNextYear.secondsUntil(endDate);
 
 			if ( secUntilStart<0 || secUntilEnd<0 )
 				continue;
@@ -468,7 +471,7 @@ void MainWindow::on_pushButton_clicked(){
 			case 0:
 				filenamesForReading[checkedFileNames[i]] = std::set<DWDData::DataType>{DWDData::DT_AirTemperature, DWDData::DT_RelativeHumidity}; break;
 			case 1:
-				filenamesForReading[checkedFileNames[i]] = std::set<DWDData::DataType>{DWDData::DT_RadiationDiffuse,DWDData::DT_RadiationGlobal, DWDData::DT_RadiationLongWave}; break;
+				filenamesForReading[checkedFileNames[i]] = std::set<DWDData::DataType>{DWDData::DT_RadiationDiffuse,DWDData::DT_RadiationGlobal, DWDData::DT_RadiationLongWave, DWDData::DT_ZenithAngle}; break;
 			case 2:
 				filenamesForReading[checkedFileNames[i]] = std::set<DWDData::DataType>{DWDData::DT_WindDirection,DWDData::DT_WindSpeed}; break;
 			case 3:
@@ -476,9 +479,18 @@ void MainWindow::on_pushButton_clicked(){
 		}
 	}
 	//read data
-	DWDData dwdData;
-	dwdData.m_startTime = IBK::Time(m_ui->lineEditYear->text().toInt(),0);
-	dwdData.createData(filenamesForReading);
+
+	m_dwdData.m_startTime = IBK::Time(m_ui->lineEditYear->text().toInt(),0);
+
+	m_progressDlg = new QProgressDialog( tr("Progress"), tr("Abort"), 0, 100, this);
+	m_progressDlg->setWindowModality(Qt::WindowModal);
+	m_progressDlg->setValue(0);
+	m_progressDlg->hide();
+	qApp->processEvents();
+
+	m_progressDlg->show();
+	m_dwdData.createData(filenamesForReading);
+	m_progressDlg->hide();
 
 	//	dwdData.writeTSV(2001);
 	//copy all data in range and create an epw
@@ -487,7 +499,7 @@ void MainWindow::on_pushButton_clicked(){
 
 	///TODO take coordinates from radiation if exists
 
-	dwdData.exportEPW(m_ui->lineEditYear->text().toInt(), latiDeg, longiDeg);
+	m_dwdData.exportEPW(m_ui->lineEditYear->text().toInt(), latiDeg, longiDeg);
 	QMessageBox::information(this, QString(), "Export done.");
 }
 
@@ -507,4 +519,17 @@ void MainWindow::on_pushButtonUpdate_clicked() {
 	IBK::Time filterDate (m_ui->lineEditYear->text().toInt(), 0);
 	updateTable(filterDate);
 	m_ui->tableWidget->blockSignals(false);
+}
+
+void MainWindow::setProgress(int min, int max, int val) {
+	FUNCID(setProgress);
+	if (m_progressTimer.elapsed() > 100) {
+		m_progressDlg->setMaximum(max);
+		m_progressDlg->setMaximum(min);
+		m_progressDlg->setValue(val);
+//		if (m_progressDlg->wasCanceled())
+//			throw IBK::Exception("Import canceled.", FUNC_ID);
+		m_progressTimer.start();
+	}
+
 }
