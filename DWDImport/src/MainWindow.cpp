@@ -76,49 +76,18 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	m_model = new QStandardItemModel();
 
-	m_ui->tableWidget->setColumnCount(11);
-	m_ui->tableWidget->setHorizontalHeaderItem(0, new QTableWidgetItem("Station Id"));
-	m_ui->tableWidget->setHorizontalHeaderItem(1, new QTableWidgetItem("Start Date"));
-	m_ui->tableWidget->setHorizontalHeaderItem(2, new QTableWidgetItem("End Date"));
-	m_ui->tableWidget->setHorizontalHeaderItem(3, new QTableWidgetItem("Location Longitude Deg"));
-	m_ui->tableWidget->setHorizontalHeaderItem(4, new QTableWidgetItem("Location Latitude Deg"));
-	m_ui->tableWidget->setHorizontalHeaderItem(5, new QTableWidgetItem("Name"));
-	m_ui->tableWidget->setHorizontalHeaderItem(6, new QTableWidgetItem("Country"));
-	m_ui->tableWidget->setHorizontalHeaderItem(7, new QTableWidgetItem("T_air + rH"));
-	m_ui->tableWidget->setHorizontalHeaderItem(8, new QTableWidgetItem("Radiation"));
-	m_ui->tableWidget->setHorizontalHeaderItem(9, new QTableWidgetItem("Wind"));
-	m_ui->tableWidget->setHorizontalHeaderItem(10, new QTableWidgetItem("Pressure"));
-	m_ui->tableWidget->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter | (Qt::Alignment)Qt::TextWordWrap);
-	m_ui->tableWidget->horizontalHeader()->setMinimumHeight(40);
-	m_ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-	m_ui->tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
-	//m_ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-	//m_ui->tableWidget->setst
-
-	m_ui->lineEditYear->setup(1950,2023,tr("Year of interest."), true, true);
-	m_ui->lineEditYear->setText("2020");
-	m_ui->lineEditLatitude->setText("51");
-	m_ui->lineEditLongitude->setText("13");
-
-	m_ui->tableWidget->verticalHeader()->setDefaultSectionSize(25);
-	m_ui->tableWidget->verticalHeader()->setVisible(false);
-	m_ui->tableWidget->horizontalHeader()->setMinimumSectionSize(19);
-	m_ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-	m_ui->tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
-	m_ui->tableWidget->setAlternatingRowColors(true);
-//	m_ui->tableWidget->setSortingEnabled(true);
-//	m_ui->tableWidget->sortByColumn(0, Qt::AscendingOrder);
-	QFont f;
-	f.setPointSizeF(f.pointSizeF()*0.8);
-	m_ui->tableWidget->setFont(f);
-	m_ui->tableWidget->horizontalHeader()->setFont(f); // Note: on Linux/Mac this won't work until Qt 5.11.1 - this was a bug between Qt 4.8...5.11.1
-
 	m_ui->lineEditLatitude->setup(-90,90, "Latitude in Deg", true, true);
 	m_ui->lineEditLongitude->setup(-180,180, "Longitude in Deg", true, true);
 	m_ui->lineEditLatitude->setText("51.03");
 	m_ui->lineEditLongitude->setText("13.7");
 
+	m_ui->lineEditYear->setup(1950,2023,tr("Year of interest."), true, true);
+	m_ui->lineEditYear->setText("2020");
+
+	setTableHeader();
 	loadData();
+
+
 
 	resize(1500,400);
 	update(1400);
@@ -131,8 +100,7 @@ MainWindow::MainWindow(QWidget *parent) :
 /// distance spalte einführen und berechnen
 /// danke
 
-MainWindow::~MainWindow()
-{
+MainWindow::~MainWindow() {
 	delete m_ui;
 }
 
@@ -164,65 +132,51 @@ void MainWindow::update(int tableWidth) {
 
 	// resize cols
 	tw.setColumnWidth(0, tableWidth / 18);
-	tw.setColumnWidth(1, tableWidth / 27);
-	tw.setColumnWidth(2, tableWidth / 27);
-	tw.setColumnWidth(3, tableWidth / 27);
+	tw.setColumnWidth(1, tableWidth / 9);
+	tw.setColumnWidth(2, tableWidth / 9);
+	tw.setColumnWidth(3, tableWidth * 7 /18 );
 	tw.setColumnWidth(4, tableWidth / 9);
-	tw.setColumnWidth(5, tableWidth * 7 /18 );
-	tw.setColumnWidth(6, tableWidth / 9);
+	tw.setColumnWidth(5, tableWidth / 18);
+	tw.setColumnWidth(6, tableWidth / 18);
 	tw.setColumnWidth(7, tableWidth / 18);
 	tw.setColumnWidth(8, tableWidth / 18);
-	tw.setColumnWidth(9, tableWidth / 18);
-	tw.setColumnWidth(10, tableWidth / 18);
 }
 
-void MainWindow::resizeEvent(QResizeEvent *event) {
-	// resize event is triggered
-	// get tablewidget width
-	int width = m_ui->tableWidget->viewport()->width();
-
-	update(width);
-}
-
-void MainWindow::showEvent(QShowEvent * event) {
-	// update ui with table widget width
-	update(m_ui->tableWidget->viewport()->width() );
-}
-
-void MainWindow::readData() {
-	// read all decription files
-	DWDDescriptonData descData;
-	descData.readAllDescriptions(m_descDataMap);
-
-
-	// fill table view with these data
-	// auto model = m_ui->tableView->model();
+void MainWindow::updateTable(const IBK::Time &filterDate) {
+	// take year and check for each data type (rad, wind, temp,..) if data is available
+	// sort data
 	unsigned int counter =0;
 	QTableWidget &tw =  *m_ui->tableWidget;
-	tw.blockSignals(true);
 
-	//
-	tw.setSelectionBehavior(QAbstractItemView::SelectRows);
-	tw.setSelectionMode(QAbstractItemView::SingleSelection);
+	// reset table
+	tw.clearContents();
+	tw.setRowCount(0);
 
 	for (std::map<unsigned int, DWDDescriptonData>::const_iterator	it = m_descDataMap.begin();
 																	it != m_descDataMap.end();
 																	++it){
-		tw.insertRow(counter);
 
-		tw.setItem(counter, 0, new QTableWidgetItem(QString::number(it->second.m_id)));
-		tw.setItem(counter, 1, new QTableWidgetItem(it->second.m_startDate.toDateTimeFormat().c_str()));
-		tw.setItem(counter, 2, new QTableWidgetItem(it->second.m_endDate.toDateTimeFormat().c_str()));
-		tw.setItem(counter, 3, new QTableWidgetItem(QString::number(it->second.m_longitude)));
-		tw.setItem(counter, 4, new QTableWidgetItem(QString::number(it->second.m_latitude)));
-		tw.setItem(counter, 5, new QTableWidgetItem(QString::fromLatin1(it->second.m_name.c_str())));
-		tw.setItem(counter, 6, new QTableWidgetItem(QString::fromLatin1(it->second.m_country.c_str())));
-
-		for (unsigned int i=0;i<5 ; ++i)
-			tw.item(counter,i)->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+		bool isItemVisible = false;
 
 		for (unsigned int i=0;i<4; ++i) {
 			bool checkable = false;
+			/*! Start date. */
+			IBK::Time startDate = it->second.m_startDate[i];
+
+			/*! End date. */
+			IBK::Time endDate = it->second.m_endDate[i];
+
+			double secUntilStart = startDate.secondsUntil(filterDate);
+			double secUntilEnd = filterDate.secondsUntil(endDate);
+
+			if ( secUntilStart<0 || secUntilEnd<0 )
+				continue;
+
+			if (!isItemVisible) {
+				tw.insertRow(counter);
+				isItemVisible = true;
+			}
+
 			switch (i) {
 				case 0:{
 					if(it->second.m_data[DWDDescriptonData::D_TemperatureAndHumidity] != 0)
@@ -247,7 +201,7 @@ void MainWindow::readData() {
 
 			QTableWidgetItem *item = new QTableWidgetItem();
 			DWDDelegate *delegate = new DWDDelegate(this);
-			m_ui->tableWidget->setItemDelegateForColumn(7, delegate);
+//			m_ui->tableWidget->setItemDelegateForColumn(5, delegate);
 
 			if(checkable){
 				item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
@@ -256,23 +210,124 @@ void MainWindow::readData() {
 			else
 				item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
 
-			tw.setItem(counter,7+i,item);
+			tw.setItem(counter,6+i,item);
 		}
+
+		if ( !isItemVisible )
+			continue;
+
+		tw.setItem(counter, 0, new QTableWidgetItem(QString::number(it->second.m_id)));
+
+		double lat1 = m_ui->lineEditLatitude->text().toDouble();
+		double lon1 = m_ui->lineEditLongitude->text().toDouble();
+
+		double lat2 = it->second.m_latitude;
+		double lon2 = it->second.m_longitude;
+
+		double lat = (lat1 + lat2) / 2 * 0.01745;
+		double dx = 111.3 * cos(lat) * (lon1 - lon2);
+		double dy = 111.3 * (lat1 - lat2);
+
+		// calc distance
+		double distance = std::sqrt( std::pow( dx, 2 ) + std::pow( dy, 2 ) );
+
+		QTableWidgetItem *newItem = new QTableWidgetItem();
+		newItem->setData(Qt::DisplayRole, distance);
+
+		tw.setItem(counter, 1, newItem );
+		tw.setItem(counter, 2, new QTableWidgetItem(QString::number(it->second.m_longitude)));
+		tw.setItem(counter, 3, new QTableWidgetItem(QString::number(it->second.m_latitude)));
+		tw.setItem(counter, 4, new QTableWidgetItem(QString::fromLatin1(it->second.m_name.c_str())));
+		tw.setItem(counter, 5, new QTableWidgetItem(QString::fromLatin1(it->second.m_country.c_str())));
+
+		for (unsigned int i=0;i<6 ; ++i)
+			tw.item(counter,i)->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
 
 		++counter;
 	}
+
+//	tw.setSortingEnabled(true);
+	tw.sortByColumn(1, Qt::AscendingOrder );
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event) {
+	// resize event is triggered
+	// get tablewidget width
+	int width = m_ui->tableWidget->viewport()->width();
+
+	update(width);
+}
+
+void MainWindow::showEvent(QShowEvent * event) {
+	// update ui with table widget width
+	update(m_ui->tableWidget->viewport()->width() );
+}
+
+void MainWindow::readData() {
+	// read all decription files
+	DWDDescriptonData descData;
+	descData.readAllDescriptions(m_descDataMap);
+
+	// fill table view with these data
+	// auto model = m_ui->tableView->model();
+	unsigned int counter =0;
+	QTableWidget &tw =  *m_ui->tableWidget;
+	tw.blockSignals(true);
+
+	tw.setSelectionBehavior(QAbstractItemView::SelectRows);
+	tw.setSelectionMode(QAbstractItemView::SingleSelection);
+
+	updateTable( IBK::Time (m_ui->lineEditYear->text().toInt(), 0 ) );
 	tw.blockSignals(false);
+}
+
+void MainWindow::setTableHeader() {
+	m_ui->tableWidget->setColumnCount(10);
+	m_ui->tableWidget->setHorizontalHeaderItem(0, new QTableWidgetItem("Station Id"));
+	m_ui->tableWidget->setHorizontalHeaderItem(1, new QTableWidgetItem("Distance"));
+	m_ui->tableWidget->setHorizontalHeaderItem(2, new QTableWidgetItem("Location Longitude Deg"));
+	m_ui->tableWidget->setHorizontalHeaderItem(3, new QTableWidgetItem("Location Latitude Deg"));
+	m_ui->tableWidget->setHorizontalHeaderItem(4, new QTableWidgetItem("Name"));
+	m_ui->tableWidget->setHorizontalHeaderItem(5, new QTableWidgetItem("Country"));
+	m_ui->tableWidget->setHorizontalHeaderItem(6, new QTableWidgetItem("T_air + rH"));
+	m_ui->tableWidget->setHorizontalHeaderItem(7, new QTableWidgetItem("Radiation"));
+	m_ui->tableWidget->setHorizontalHeaderItem(8, new QTableWidgetItem("Wind"));
+	m_ui->tableWidget->setHorizontalHeaderItem(9, new QTableWidgetItem("Pressure"));
+	m_ui->tableWidget->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter | (Qt::Alignment)Qt::TextWordWrap);
+	m_ui->tableWidget->horizontalHeader()->setMinimumHeight(40);
+	m_ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+	m_ui->tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+	//m_ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+	//m_ui->tableWidget->setst
+
+	m_ui->tableWidget->verticalHeader()->setDefaultSectionSize(25);
+	m_ui->tableWidget->verticalHeader()->setVisible(false);
+	m_ui->tableWidget->horizontalHeader()->setMinimumSectionSize(19);
+	m_ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+	m_ui->tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+	m_ui->tableWidget->setAlternatingRowColors(true);
+//	m_ui->tableWidget->setSortingEnabled(true);
+//	m_ui->tableWidget->sortByColumn(0, Qt::AscendingOrder);
+	QFont f;
+	f.setPointSizeF(f.pointSizeF()*0.8);
+	m_ui->tableWidget->setFont(f);
+	m_ui->tableWidget->horizontalHeader()->setFont(f); // Note: on Linux/Mac this won't work until Qt 5.11.1 - this was a bug between Qt 4.8...5.11.1
 }
 
 void MainWindow::on_tableWidget_itemChanged(QTableWidgetItem *item) {
 	m_ui->tableWidget->selectRow(item->row() );
-	if(item->column() >6){
+	if(item->column() >4){
 		// get checked stated, if item was checked, uncheck all others
 		if (item->checkState() == Qt::Checked) {
 			// prevent events to fire
 			m_ui->tableWidget->blockSignals(true);
 			for (int i=0; i<m_ui->tableWidget->rowCount(); ++i) {
-				QTableWidgetItem *newItem = m_ui->tableWidget->item(i, item->column());
+				int col = item->column();
+				QTableWidgetItem *newItem = m_ui->tableWidget->item(i, col);
+
+				if ( newItem == nullptr )
+					continue;
+
 				bool isUserCheckable = newItem->flags().testFlag(Qt::ItemIsUserCheckable);
 
 				if (i == item->row() || !isUserCheckable)
@@ -323,9 +378,11 @@ void MainWindow::on_pushButton_clicked(){
 	//find selected elements
 	QTableWidget & tw = *m_ui->tableWidget;
 	for (unsigned int row=0; row<tw.rowCount(); ++row) {
-		for(unsigned int col=7; col<tw.columnCount(); ++col) {
+		for(unsigned int col=6; col<tw.columnCount(); ++col) {
+			if(tw.item(row,col) == nullptr)
+				continue;
 			if(tw.item(row,col)->checkState() == Qt::Checked) {
-				dataInRows[col-7] = IBK::string2val<int>(tw.item(row,0)->text().toStdString());
+				dataInRows[col-6] = IBK::string2val<int>(tw.item(row,0)->text().toStdString());
 				//QMessageBox::information(this, QString(), "col: " + QString::number(col) + " | station id: " + QString::number(rows[col-5]) );
 			}
 		}
@@ -342,8 +399,8 @@ void MainWindow::on_pushButton_clicked(){
 		if(dataInRows[i] != -1){
 			DWDData dwdData;
 			manager.m_urls << dwdData.urlFilename(types[i], QString::number(dataInRows[i]).rightJustified(5,'0'));
+			qDebug() << manager.m_urls.back();
 			filenames[i] = dwdData.filename(types[i], QString::number(dataInRows[i]).rightJustified(5,'0'));
-			qDebug() << manager.m_urls[i];
 		}
 	}
 	if(!manager.m_urls.empty())
@@ -444,30 +501,10 @@ void MainWindow::on_pushButtonMap_clicked() {
 	m_ui->lineEditLongitude->setText(QString::number(longitude) );
 }
 
-void MainWindow::on_lineEditYear_textChanged(const QString &arg1) {
 
-}
-
-void MainWindow::on_lineEditYear_editingFinished() {
-	return;
-	// sort
+void MainWindow::on_pushButtonUpdate_clicked() {
+	m_ui->tableWidget->blockSignals(true);
 	IBK::Time filterDate (m_ui->lineEditYear->text().toInt(), 0);
-
-	for (int i=0; i<m_ui->tableWidget->columnCount(); ++i) {
-
-		int id = m_ui->tableWidget->item(i, 0)->text().toInt();
-
-		/*! Start date. */
-		IBK::Time startDate = m_descDataMap[id].m_startDate;
-
-		/*! End date. */
-		IBK::Time endDate = m_descDataMap[id].m_endDate;
-
-		double secUntilStart = startDate.secondsUntil(filterDate);
-		double secUntilEnd = filterDate.secondsUntil(endDate);
-
-		if ( secUntilStart<0 || secUntilEnd<0 )
-			m_ui->tableWidget->hideRow(i);
-
-	}
+	updateTable(filterDate);
+	m_ui->tableWidget->blockSignals(false);
 }

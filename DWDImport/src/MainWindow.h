@@ -35,6 +35,8 @@ public:
 
 	void update(int tableWidth);
 
+	void updateTable(const IBK::Time &filterDate);
+
 protected:
 	void resizeEvent(QResizeEvent *event) override;
 
@@ -43,21 +45,23 @@ protected:
 private slots:
 	void readData();
 
+	void setTableHeader();
+
 	void on_tableWidget_itemChanged(QTableWidgetItem *item);
 
 	void on_pushButton_clicked();
 
 	void on_pushButtonMap_clicked();
 
-	void on_lineEditYear_textChanged(const QString &arg1);
-
-	void on_lineEditYear_editingFinished();
+	void on_pushButtonUpdate_clicked();
 
 private:
 
 	Ui::MainWindow						*m_ui;
 
-	/*! Description input of all stations. */
+	/*! Description input of all stations.
+		key of map is station id
+	*/
 	std::map<unsigned int, DWDDescriptonData> m_descDataMap;
 
 	QStandardItemModel					*m_model;

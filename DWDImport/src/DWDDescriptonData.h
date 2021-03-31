@@ -36,11 +36,11 @@ public:
 	/*! Station id. */
 	unsigned int				m_id;
 
-	/*! Start date. */
-	IBK::Time					m_startDate;
+	/*! Start date of data type. */
+	IBK::Time					m_startDate[NUM_D];
 
-	/*! End date. */
-	IBK::Time					m_endDate;
+	/*! End date of data type. */
+	IBK::Time					m_endDate[NUM_D];
 
 	/*! Station height in m. */
 	double						m_height;
@@ -57,7 +57,11 @@ public:
 	/*! Station country. */
 	std::string					m_country;
 
+	/*! data container. */
 	unsigned int				m_data[NUM_D];
+
+	/*! show database entry in table */
+	bool						m_isVisible;
 
 private:
 	void readDescription(const IBK::Path &filepath, std::map<unsigned int, DWDDescriptonData> &stationDescription, const Data &dataType);

@@ -42,11 +42,13 @@ SOURCES += \
         #../../src/DWD_CheckBox.cpp \
         ../../src/DWDDownloader.cpp \
         ../../src/DWDMap.cpp \
+        ../../src/DWDTableView.cpp \
         ../../src/MainWindow.cpp \
         ../../src/main.cpp
 
 FORMS += \
         ../../src/DWDMap.ui \
+        ../../src/DWDTableView.ui \
         ../../src/MainWindow.ui
 
 HEADERS += \
@@ -58,6 +60,7 @@ HEADERS += \
         ../../src/DWDDownloader.h \
         ../../src/DWDMap.h \
         ../../src/DWDScene.h \
+        ../../src/DWDTableView.h \
         ../../src/MainWindow.h
 
 DISTFILES +=

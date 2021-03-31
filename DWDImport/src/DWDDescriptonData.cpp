@@ -58,14 +58,20 @@ void DWDDescriptonData::readDescription(const IBK::Path &filepath, std::map<unsi
 		const std::string & line =lines[i];
 		if(line.empty())
 			continue;
-		DWDDescriptonData dwd;
+		unsigned int id = IBK::string2val<unsigned int>(line.substr(0,5));
+		DWDDescriptonData & dwd = stationDescription[id];
+
 		try {
 			//extract all informations
-			dwd.m_id = IBK::string2val<unsigned int>(line.substr(0,5));
+			dwd.m_id = id;
 			dwd.m_data[dataType] = 1;
 
-			dwd.m_startDate.set( IBK::string2val<unsigned int>(line.substr(6,4)), IBK::string2val<unsigned int>(line.substr(10,2))-1,IBK::string2val<unsigned int>(line.substr(12,2))-1,0);
-			dwd.m_endDate.set( IBK::string2val<unsigned int>(line.substr(15,4)), IBK::string2val<unsigned int>(line.substr(19,2))-1,IBK::string2val<unsigned int>(line.substr(21,2))-1,0);
+			dwd.m_startDate[dataType].set( IBK::string2val<unsigned int>(line.substr(6,4)),
+										   IBK::string2val<unsigned int>(line.substr(10,2))-1,
+										   IBK::string2val<unsigned int>(line.substr(12,2))-1,0);
+			dwd.m_endDate[dataType].set( IBK::string2val<unsigned int>(line.substr(15,4)),
+										 IBK::string2val<unsigned int>(line.substr(19,2))-1,
+										 IBK::string2val<unsigned int>(line.substr(21,2))-1,0);
 			dwd.m_height = IBK::string2val<double>(line.substr(24,38-24));
 			dwd.m_latitude = IBK::string2val<double>(line.substr(39,50-39));
 			dwd.m_longitude = IBK::string2val<double>(line.substr(51,60-51));
@@ -85,15 +91,12 @@ void DWDDescriptonData::readDescription(const IBK::Path &filepath, std::map<unsi
 //								 );
 			//add dwd object to map
 			///TODO check if other information are equal
-			if(stationDescription.find(dwd.m_id) != stationDescription.end())
-				stationDescription[dwd.m_id].m_data[dataType] = 1;
-			else
-				stationDescription[dwd.m_id] = dwd;
+
 		}  catch (IBK::Exception &ex) {
 			QMessageBox::warning(nullptr, QString(), QString("Got an exception while reading lines. In line %1\n").arg(i)
 								 + QString("%1\n").arg(dwd.m_id)
-								 + QString("%1\n").arg(QString::fromStdString(dwd.m_startDate.toDateTimeFormat()))
-								 + QString("%1\n").arg(QString::fromStdString(dwd.m_endDate.toDateTimeFormat()))
+								 + QString("%1\n").arg(QString::fromStdString(dwd.m_startDate[dataType].toDateTimeFormat()))
+								 + QString("%1\n").arg(QString::fromStdString(dwd.m_endDate[dataType].toDateTimeFormat()))
 								 + QString("%1\n").arg(dwd.m_height)
 								 + QString("%1\n").arg(dwd.m_latitude)
 								 + QString("%1\n").arg(dwd.m_longitude)

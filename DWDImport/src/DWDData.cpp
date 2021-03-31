@@ -160,7 +160,7 @@ void DWDData::exportEPW(unsigned int year, double latitudeDeg, double longitudeD
 
 		double dirH = intVal.m_globalRad - intVal.m_diffRad;
 		double dirN;
-		solMod.convertHorizontalToNormalRadiation(m_intervalDuration*idx, dirH, dirN);
+		solMod.convertHorizontalToNormalRadiation(m_intervalDuration*(idx-0.5), dirH, dirN); ///ToDo Janek -> check timestamp interpretation of dwd by cross checking zenit angles
 
 		loader.m_data[CCM::ClimateDataLoader::DirectRadiationNormal][i] = dirN;
 		loader.m_data[CCM::ClimateDataLoader::DiffuseRadiationHorizontal][i] = intVal.m_diffRad;
@@ -177,7 +177,7 @@ void DWDData::exportEPW(unsigned int year, double latitudeDeg, double longitudeD
 
 
 
-QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numberString, bool isRecent) const{
+QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numberString, bool isRecent) const {
 	QString rec = "_akt", rec2 = "";
 	if(!isRecent)
 		rec = "_hist";
