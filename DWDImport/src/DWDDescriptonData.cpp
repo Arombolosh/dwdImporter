@@ -12,11 +12,11 @@ QStringList DWDDescriptonData::downloadDescriptionFiles(bool isRecent){
 	QString type = "recent/";
 
 	if(!isRecent)
-	type = "historical/";
+		type = "historical/";
 
 	QStringList sl;
 	sl << baseDirFTP + "air_temperature/" + type + "TU_Stundenwerte_Beschreibung_Stationen.txt";
-	sl << baseDirFTP + "solar/ST_Stundenwerte_Beschreibung_Stationen.txt";
+	sl << baseDirFTP + "solar/ST_Stundenwerte_Beschreibung_Stationen.txt";					//no difference between historical or recent
 	sl << baseDirFTP + "wind/" + type +"FF_Stundenwerte_Beschreibung_Stationen.txt";
 	sl << baseDirFTP + "pressure/" + type + "P0_Stundenwerte_Beschreibung_Stationen.txt";
 
@@ -65,13 +65,15 @@ void DWDDescriptonData::readDescription(const IBK::Path &filepath, std::map<unsi
 			//extract all informations
 			dwd.m_id = id;
 			dwd.m_data[dataType] = 1;
-
+//00071 20091201 20191231            759     48.2156    8.9784 Albstadt-Badkap                          Baden-Württemberg
 			dwd.m_startDate[dataType].set( IBK::string2val<unsigned int>(line.substr(6,4)),
 										   IBK::string2val<unsigned int>(line.substr(10,2))-1,
 										   IBK::string2val<unsigned int>(line.substr(12,2))-1,0);
 			dwd.m_endDate[dataType].set( IBK::string2val<unsigned int>(line.substr(15,4)),
 										 IBK::string2val<unsigned int>(line.substr(19,2))-1,
 										 IBK::string2val<unsigned int>(line.substr(21,2))-1,0);
+			dwd.m_startDateString = line.substr(6,8);
+			dwd.m_endDateString = line.substr(15,8);
 			dwd.m_height = IBK::string2val<double>(line.substr(24,38-24));
 			dwd.m_latitude = IBK::string2val<double>(line.substr(39,50-39));
 			dwd.m_longitude = IBK::string2val<double>(line.substr(51,60-51));

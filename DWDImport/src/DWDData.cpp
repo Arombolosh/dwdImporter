@@ -208,10 +208,13 @@ void DWDData::exportEPW(unsigned int year, double latitudeDeg, double longitudeD
 
 
 
-QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numberString, bool isRecent) const {
+QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numberString, const std::string &dateString, bool isRecent) const {
 	QString rec = "_akt", rec2 = "";
-	if(!isRecent)
+	QString dateStringNew = "";
+	if(!isRecent){
 		rec = "_hist";
+		dateStringNew = QString::fromStdString(dateString);
+	}
 
 	QString base = "ftp://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/";
 
@@ -221,14 +224,17 @@ QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numbe
 	switch (type) {
 	case DT_AirTemperature:
 	case DT_RelativeHumidity:
-		return base + "air_temperature/" + rec2 + "stundenwerte_TU_" + numberString + rec + ".zip";
+		return base + "air_temperature/" + rec2 + "stundenwerte_TU_" + numberString + dateStringNew + rec + ".zip";
+		// recent --> stundenwerte_TU_00142_akt.zip
+		// historical --> stundenwerte_TU_00078_20041101_20201231_hist.zip
+		// neu hinzu "_20041101_20201231" >> dateString
 
 	case DT_Pressure:
-		return base + "pressure/" + rec2 + "stundenwerte_P0_" + numberString + rec + ".zip";
+		return base + "pressure/" + rec2 + "stundenwerte_P0_" + numberString + dateStringNew + rec + ".zip";
 
 	case DT_WindSpeed:
 	case DT_WindDirection:
-		return base + "wind/" + rec2 + "stundenwerte_FF_" + numberString + rec + ".zip";
+		return base + "wind/" + rec2 + "stundenwerte_FF_" + numberString + dateStringNew + rec + ".zip";
 
 	case DT_RadiationDiffuse:
 	case DT_RadiationGlobal:
@@ -240,22 +246,25 @@ QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numbe
 	}
 }
 
-QString DWDData::filename(const DWDData::DataType &type, const QString &numberString, bool isRecent) const{
+QString DWDData::filename(const DWDData::DataType &type, const QString &numberString, const std::string &dateString, bool isRecent) const{
 	QString rec = "_akt";
-	if(!isRecent)
+	QString dateStringNew = "";
+	if(!isRecent){
 		rec = "_hist";
+		dateStringNew = QString::fromStdString(dateString);
+	}
 
 	switch (type) {
 	case DT_AirTemperature:
 	case DT_RelativeHumidity:
-		return "stundenwerte_TU_" + numberString + rec;
+		return "stundenwerte_TU_" + numberString + dateStringNew + rec;
 
 	case DT_Pressure:
-		return "stundenwerte_P0_" + numberString + rec;
+		return "stundenwerte_P0_" + numberString + dateStringNew + rec;
 
 	case DT_WindSpeed:
 	case DT_WindDirection:
-		return "stundenwerte_FF_" + numberString + rec;
+		return "stundenwerte_FF_" + numberString + dateStringNew + rec;
 
 	case DT_RadiationDiffuse:
 	case DT_RadiationGlobal:

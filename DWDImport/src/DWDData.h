@@ -75,10 +75,10 @@ public:
 	void exportEPW(unsigned int year, double latitudeDeg, double longitudeDeg);
 
 	/*! Returns the complete url as QString needed for download. */
-	QString urlFilename(const DataType &type, const QString &numberString, bool isRecent=true) const;
+	QString urlFilename(const DataType &type, const QString &numberString,const std::string &dateString, bool isRecent=true) const;
 
 	/*! Returns the filename of the downloaded zip-archive */
-	QString filename(const DWDData::DataType &type, const QString &numberString, bool isRecent=true) const;
+	QString filename(const DWDData::DataType &type, const QString &numberString, const std::string &dateString, bool isRecent=true) const;
 
 
 	IBK::Time					m_startTime;			///< Start time for the first interval data

@@ -58,6 +58,8 @@ private slots:
 
 	void setProgress(int min, int max, int val);
 
+	void on_radioButtonHistorical_toggled(bool checked);
+
 private:
 
 	Ui::MainWindow						*m_ui;

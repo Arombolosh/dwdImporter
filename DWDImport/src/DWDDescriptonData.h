@@ -8,6 +8,7 @@
 
 class QStringList;
 
+
 class DWDDescriptonData
 {
 public:
@@ -41,6 +42,13 @@ public:
 
 	/*! End date of data type. */
 	IBK::Time					m_endDate[NUM_D];
+
+	/*! End date string.*/
+	std::string					m_endDateString;
+
+	/*! Start date string.*/
+	std::string					m_startDateString;
+
 
 	/*! Station height in m. */
 	double						m_height;

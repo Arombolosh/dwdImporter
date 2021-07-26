@@ -74,6 +74,10 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_ui->setupUi(this);
 
 	m_model = new QStandardItemModel();
+	m_ui->radioButtonRecent->blockSignals(true);
+	m_ui->radioButtonRecent->setChecked(true);
+	m_ui->radioButtonRecent->blockSignals(false);
+
 
 	m_ui->lineEditLatitude->setup(-90,90, "Latitude in Deg", true, true);
 	m_ui->lineEditLongitude->setup(-180,180, "Longitude in Deg", true, true);
@@ -84,6 +88,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_ui->lineEditYear->setText("2020");
 
 	setTableHeader();
+
 	loadData();
 
 	m_progressTimer.start();
@@ -111,7 +116,7 @@ void MainWindow::loadData(){
 	DWDDescriptonData  descData;
 
 	// get download links for data
-	QStringList urls = descData.downloadDescriptionFiles();
+	QStringList urls = descData.downloadDescriptionFiles(m_ui->radioButtonRecent->isChecked());
 
 	// initiate download manager
 	DWDDownloader manager(this);
@@ -269,6 +274,7 @@ void MainWindow::showEvent(QShowEvent * event) {
 void MainWindow::readData() {
 	// read all decription files
 	DWDDescriptonData descData;
+	m_descDataMap.clear();
 	descData.readAllDescriptions(m_descDataMap);
 
 	// fill table view with these data
@@ -401,9 +407,12 @@ void MainWindow::on_pushButton_clicked(){
 	for(unsigned int i=0; i<4; ++i){
 		if(dataInRows[i] != -1){
 			DWDData dwdData;
-			manager.m_urls << dwdData.urlFilename(types[i], QString::number(dataInRows[i]).rightJustified(5,'0'));
+			std::string dateString;
+			unsigned int stationId = QString::number(dataInRows[i]).rightJustified(5,'0').toUInt();
+			dateString = "_" + m_descDataMap[stationId].m_startDateString + "_" + m_descDataMap[stationId].m_endDateString;
+			manager.m_urls << dwdData.urlFilename(types[i], QString::number(dataInRows[i]).rightJustified(5,'0'), dateString, m_ui->radioButtonRecent->isChecked());
 			qDebug() << manager.m_urls.back();
-			filenames[i] = dwdData.filename(types[i], QString::number(dataInRows[i]).rightJustified(5,'0'));
+			filenames[i] = dwdData.filename(types[i], QString::number(dataInRows[i]).rightJustified(5,'0'),dateString, m_ui->radioButtonRecent->isChecked());
 		}
 	}
 	if(!manager.m_urls.empty())
@@ -532,4 +541,9 @@ void MainWindow::setProgress(int min, int max, int val) {
 		m_progressTimer.start();
 	}
 
+}
+
+void MainWindow::on_radioButtonHistorical_toggled(bool checked) {
+	loadData();
+	QMessageBox::warning(this, "jetzt gehts los","sdfsadd");
 }
