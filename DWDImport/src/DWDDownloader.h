@@ -25,7 +25,7 @@ public:
 	qint64					m_bytesReceived;
 	qint64					m_bytesTotal;
 	bool					m_isRunning = true;
-//	QProgressBar			*m_progress;
+	QProgressBar			*m_progress;
 
 signals:
 	void finished();

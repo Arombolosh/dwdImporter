@@ -11,57 +11,59 @@ QT += xml core gui network printsupport widgets
 CONFIG += console
 
 LIBS += -L../../../lib$${DIR_PREFIX} \
-        #-lIBKMK \
-        -lQtExt \
-        -lQuaZIP \
-        -lCCM \
-        -lTiCPP \
-        -lIBK
+		#-lIBKMK \
+		-lQtExt \
+		-lQuaZIP \
+		-lCCM \
+		-lTiCPP \
+		-lIBK \
+		-lqftp
 
 INCLUDEPATH = \
-        ../../src \
-        ../../../externals/IBK/src \
-        #../../../externals/IBKMK/src \
-        ../../../externals/QtExt/src \
-        ../../../externals/CCM/src \
-        ../../../externals/TiCPP/src \
-        ../../../externals/QuaZIP/src
+		../../src \
+		../../../externals/IBK/src \
+		#../../../externals/IBKMK/src \
+		../../../externals/QtExt/src \
+		../../../externals/CCM/src \
+		../../../externals/TiCPP/src \
+		../../../externals/QuaZIP/src \
+		../../../externals/qftp/src
 
 #TRANSLATIONS += ../../resources/translations/GenBuiGui.ts
 CODECFORSRC = UTF-8
 
 RESOURCES += \
-        ../../resources/DWDImport.qrc \
-        ../../resources/DWDImport.qrc
+		../../resources/DWDImport.qrc \
+		../../resources/DWDImport.qrc
 
 SOURCES += \
-        ../../src/Constants.cpp \
-        ../../src/DWDData.cpp \
-        ../../src/DWDDelegate.cpp \
-        ../../src/DWDDescriptonData.cpp \
-        #../../src/DWD_CheckBox.cpp \
-        ../../src/DWDDownloader.cpp \
-        ../../src/DWDMap.cpp \
-        ../../src/DWDTableView.cpp \
-        ../../src/MainWindow.cpp \
-        ../../src/main.cpp
+		../../src/Constants.cpp \
+		../../src/DWDData.cpp \
+		../../src/DWDDelegate.cpp \
+		../../src/DWDDescriptonData.cpp \
+		#../../src/DWD_CheckBox.cpp \
+		../../src/DWDDownloader.cpp \
+		../../src/DWDMainWindow.cpp \
+		../../src/DWDMap.cpp \
+		../../src/DWDTableView.cpp \
+		../../src/main.cpp
 
 FORMS += \
-        ../../src/DWDMap.ui \
-        ../../src/DWDTableView.ui \
-        ../../src/MainWindow.ui
+		../../src/DWDMainWindow.ui \
+		../../src/DWDMap.ui \
+		../../src/DWDTableView.ui
 
 HEADERS += \
-        ../../src/Constants.h \
-        ../../src/DWDData.h \
-        ../../src/DWDDelegate.h \
-        ../../src/DWDDescriptonData.h \
-        #../../src/DWD_CheckBox.h \
-        ../../src/DWDDownloader.h \
-        ../../src/DWDMap.h \
-        ../../src/DWDScene.h \
-        ../../src/DWDTableView.h \
-        ../../src/MainWindow.h
+		../../src/Constants.h \
+		../../src/DWDData.h \
+		../../src/DWDDelegate.h \
+		../../src/DWDDescriptonData.h \
+		#../../src/DWD_CheckBox.h \
+		../../src/DWDDownloader.h \
+		../../src/DWDMainWindow.h \
+		../../src/DWDMap.h \
+		../../src/DWDScene.h \
+		../../src/DWDTableView.h
 
 DISTFILES +=
 

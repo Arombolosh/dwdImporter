@@ -6,6 +6,8 @@
 DWDDownloader::DWDDownloader(QWidget *parent) {
 	connect(&manager, SIGNAL(finished(QNetworkReply*)),
 			SLOT(downloadFinished(QNetworkReply*)));
+
+	m_progress = new QProgressBar();
 }
 
 void DWDDownloader::doDownload(const QUrl &url) {
@@ -74,7 +76,7 @@ void DWDDownloader::execute() {
 void DWDDownloader::downloadProgress(qint64 bytesReceived, qint64 bytesTotal) {
 	m_bytesReceived += bytesReceived;
 	m_bytesTotal += bytesTotal;
-//	m_progress->setValue(m_bytesReceived/m_bytesTotal);
+	m_progress->setValue(m_bytesReceived/m_bytesTotal);
 }
 
 void DWDDownloader::sslErrors(const QList<QSslError> &sslErrors) {
@@ -111,6 +113,6 @@ void DWDDownloader::downloadFinished(QNetworkReply *reply) {
 		// all downloads finished
 		emit finished();
 		m_isRunning = false;
-		QCoreApplication::instance()->quit();
+//		QCoreApplication::instance()->quit();
 	}
 }

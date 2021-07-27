@@ -6,7 +6,7 @@
 
 #include <QtExt_Directories.h>
 
-#include "MainWindow.h"
+#include "DWDMainWindow.h"
 
 #include "Constants.h"
 
@@ -32,6 +32,8 @@ int main(int argc, char* argv[]) {
 
 		MainWindow w;
 
+		// we set the data to the tableWidget
+		w.loadData();
 		// add user settings related window resize at program start
 #if defined(Q_OS_WIN)
 		//w.showMaximized();
@@ -46,6 +48,9 @@ int main(int argc, char* argv[]) {
 	} // here our mainwindow dies, main window goes out of scope and UI goes down -> destructor does ui and thread cleanup
 	catch (IBK::Exception & ex) {
 		ex.writeMsgStackToError();
+		return EXIT_FAILURE;
+	}
+	catch (...) {
 		return EXIT_FAILURE;
 	}
 

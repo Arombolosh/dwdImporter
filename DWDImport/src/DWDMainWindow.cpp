@@ -1,5 +1,5 @@
-#include "MainWindow.h"
-#include "ui_MainWindow.h"
+#include "DWDMainWindow.h"
+#include "ui_DWDMainWindow.h"
 
 #include <IBK_NotificationHandler.h>
 #include <IBK_messages.h>
@@ -22,6 +22,8 @@
 #include <QThread>
 #include <QMessageBox>
 #include <QItemDelegate>
+
+#include <qftp.h>
 
 #include <JlCompress.h>
 
@@ -89,14 +91,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	setTableHeader();
 
-	loadData();
-
 	m_progressTimer.start();
 
 	connect( &m_dwdData, &DWDData::progress, this, &MainWindow::setProgress );
 
 	resize(1500,400);
-	update(1400);
+	update(1300);
 }
 
 /// TODO Stephan
@@ -140,12 +140,13 @@ void MainWindow::update(int tableWidth) {
 	tw.setColumnWidth(0, tableWidth / 18);
 	tw.setColumnWidth(1, tableWidth / 9);
 	tw.setColumnWidth(2, tableWidth / 9);
-	tw.setColumnWidth(3, tableWidth * 7 /18 );
+	tw.setColumnWidth(3, tableWidth * 6 /18 );
 	tw.setColumnWidth(4, tableWidth / 9);
 	tw.setColumnWidth(5, tableWidth / 18);
 	tw.setColumnWidth(6, tableWidth / 18);
 	tw.setColumnWidth(7, tableWidth / 18);
 	tw.setColumnWidth(8, tableWidth / 18);
+	tw.setColumnWidth(9, tableWidth / 18);
 }
 
 void MainWindow::updateTable(const IBK::Time &filterDate) {
@@ -214,6 +215,7 @@ void MainWindow::updateTable(const IBK::Time &filterDate) {
 			if(checkable){
 				item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
 				item->setCheckState(Qt::Unchecked);
+				item->setTextAlignment(Qt::AlignHCenter); // change the alignment
 			}
 			else
 				item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
@@ -371,7 +373,7 @@ void MainWindow::on_tableWidget_itemChanged(QTableWidgetItem *item) {
 /// fertigstellen für CCM (epw) oder ccd (nicht jahresscheiben)
 
 
-void MainWindow::on_pushButton_clicked(){
+void MainWindow::on_pushButtonDownload_clicked(){
 
 	//check longitude and latitude
 	if(m_ui->lineEditLatitude->text().isEmpty()){
@@ -404,14 +406,38 @@ void MainWindow::on_pushButton_clicked(){
 	DWDDownloader manager(this);
 	connect( &manager, &DWDDownloader::finished, this, &MainWindow::readData );
 	//download the data (zip)
+
 	for(unsigned int i=0; i<4; ++i){
 		if(dataInRows[i] != -1){
 			DWDData dwdData;
 			std::string dateString;
 			unsigned int stationId = QString::number(dataInRows[i]).rightJustified(5,'0').toUInt();
 			dateString = "_" + m_descDataMap[stationId].m_startDateString + "_" + m_descDataMap[stationId].m_endDateString;
+
+			QFtp *ftp = new QFtp;
+
+			connect(ftp, &QFtp::listInfo, &dwdData, &DWDData::findFile );
+
+			ftp->connectToHost("opendata.dwd.de", 21);
+			ftp->login("anonymous", "anonymous@opendata.dwd.de");
+			ftp->cd("climate_environment");
+			ftp->cd("CDC");
+			ftp->cd("observations_germany");
+			ftp->cd("climate");
+			ftp->cd("hourly");
+			ftp->cd("air_temperature");
+			ftp->cd("historical");
+			ftp->list();
+
+			while(ftp->hasPendingCommands() || ftp->currentCommand()!=QFtp::None)
+				qApp->processEvents();
+
+			while( dwdData.m_urls.empty() )
+				qApp->processEvents();
+
 			manager.m_urls << dwdData.urlFilename(types[i], QString::number(dataInRows[i]).rightJustified(5,'0'), dateString, m_ui->radioButtonRecent->isChecked());
 			qDebug() << manager.m_urls.back();
+
 			filenames[i] = dwdData.filename(types[i], QString::number(dataInRows[i]).rightJustified(5,'0'),dateString, m_ui->radioButtonRecent->isChecked());
 		}
 	}

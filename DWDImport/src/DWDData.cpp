@@ -7,6 +7,8 @@
 #include <IBK_FileReader.h>
 #include <IBK_physics.h>
 
+#include <qftp.h>
+
 #include <CCM_SolarRadiationModel.h>
 #include <CCM_ClimateDataLoader.h>
 #include "Constants.h"
@@ -221,26 +223,58 @@ QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numbe
 	if(!(type == DT_RadiationDiffuse || type == DT_RadiationGlobal || type == DT_RadiationLongWave))
 		rec2 = isRecent ? "recent/" : "historical/";
 
-	switch (type) {
-	case DT_AirTemperature:
-	case DT_RelativeHumidity:
-		return base + "air_temperature/" + rec2 + "stundenwerte_TU_" + numberString + dateStringNew + rec + ".zip";
-		// recent --> stundenwerte_TU_00142_akt.zip
-		// historical --> stundenwerte_TU_00078_20041101_20201231_hist.zip
-		// neu hinzu "_20041101_20201231" >> dateString
+	if( isRecent ) {
 
-	case DT_Pressure:
-		return base + "pressure/" + rec2 + "stundenwerte_P0_" + numberString + dateStringNew + rec + ".zip";
+		switch (type) {
+			case DT_AirTemperature:
+			case DT_RelativeHumidity:
+				return base + "air_temperature/" + rec2 + "stundenwerte_TU_" + numberString + dateStringNew + rec + ".zip";
+				// recent --> stundenwerte_TU_00142_akt.zip
+				// historical --> stundenwerte_TU_00078_20041101_20201231_hist.zip
+				// neu hinzu "_20041101_20201231" >> dateString
 
-	case DT_WindSpeed:
-	case DT_WindDirection:
-		return base + "wind/" + rec2 + "stundenwerte_FF_" + numberString + dateStringNew + rec + ".zip";
+			case DT_Pressure:
+				return base + "pressure/" + rec2 + "stundenwerte_P0_" + numberString + dateStringNew + rec + ".zip";
 
-	case DT_RadiationDiffuse:
-	case DT_RadiationGlobal:
-	case DT_RadiationLongWave:
-	case DT_ZenithAngle:
-		return base + "solar/" + "stundenwerte_ST_" + numberString + "_row.zip";
+			case DT_WindSpeed:
+			case DT_WindDirection:
+				return base + "wind/" + rec2 + "stundenwerte_FF_" + numberString + dateStringNew + rec + ".zip";
+
+			case DT_RadiationDiffuse:
+			case DT_RadiationGlobal:
+			case DT_RadiationLongWave:
+			case DT_ZenithAngle:
+				return base + "solar/" + "stundenwerte_ST_" + numberString + "_row.zip";
+		}
+
+	} else {
+
+		QString baseSearch;
+
+		switch (type) {
+			case DT_AirTemperature:
+			case DT_RelativeHumidity:
+				baseSearch = base + "air_temperature/";
+				// recent --> stundenwerte_TU_00142_akt.zip
+				// historical --> stundenwerte_TU_00078_20041101_20201231_hist.zip
+				// neu hinzu "_20041101_20201231" >> dateString
+
+			break;
+			case DT_Pressure:
+				baseSearch = base + "pressure/";
+
+			break;
+			case DT_WindSpeed:
+			case DT_WindDirection:
+				baseSearch = base + "wind/";
+
+			break;
+			case DT_RadiationDiffuse:
+			case DT_RadiationGlobal:
+			case DT_RadiationLongWave:
+			case DT_ZenithAngle:
+				baseSearch = base + "solar/";
+		}
 
 
 	}
@@ -272,6 +306,11 @@ QString DWDData::filename(const DWDData::DataType &type, const QString &numberSt
 	case DT_ZenithAngle:
 		return "stundenwerte_ST_" + numberString + "_row";
 	}
+}
+
+void DWDData::findFile(const QUrlInfo &url) {
+	qDebug() << url.name();
+	m_urls.push_back(url);
 }
 
 unsigned int DWDData::getColumnDWD(const DataType &dt){

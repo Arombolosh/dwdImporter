@@ -50,7 +50,7 @@ private slots:
 
 	void on_tableWidget_itemChanged(QTableWidgetItem *item);
 
-	void on_pushButton_clicked();
+	void on_pushButtonDownload_clicked();
 
 	void on_pushButtonMap_clicked();
 

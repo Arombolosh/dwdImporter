@@ -8,6 +8,8 @@
 #include <QString>
 #include <QProgressDialog>
 
+#include <qurlinfo.h>
+
 #include <IBK_Time.h>
 #include <IBK_Path.h>
 
@@ -81,14 +83,20 @@ public:
 	QString filename(const DWDData::DataType &type, const QString &numberString, const std::string &dateString, bool isRecent=true) const;
 
 
-	IBK::Time					m_startTime;			///< Start time for the first interval data
-	unsigned int				m_intervalDuration;		///< Interval duration in sec
-	std::vector<IntervalData>	m_data;					///< Vector with interval data
-	IBK::Path					m_filenames[NUM_DT];	///< Filename
 
+
+
+	IBK::Time						m_startTime;			///< Start time for the first interval data
+	unsigned int					m_intervalDuration;		///< Interval duration in sec
+	std::vector<IntervalData>		m_data;					///< Vector with interval data
+	IBK::Path						m_filenames[NUM_DT];	///< Filename
+	std::vector<QUrlInfo>			m_urls;					///< urls in ftp directory
 
 signals:
 	void progress(int min, int max, int val);
+
+public slots:
+	void findFile(const QUrlInfo&);
 
 private:
 	/*! Returns the column for a given data type in the different dwd weather files. */
