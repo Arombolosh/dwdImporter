@@ -32,8 +32,6 @@ int main(int argc, char* argv[]) {
 
 		MainWindow w;
 
-		// we set the data to the tableWidget
-		w.loadData();
 		// add user settings related window resize at program start
 #if defined(Q_OS_WIN)
 		//w.showMaximized();
@@ -43,6 +41,9 @@ int main(int argc, char* argv[]) {
 #else
 		w.show();
 #endif
+		// we set the data to the tableWidget
+		w.loadData();
+
 		// start event loop
 		res = a.exec();
 	} // here our mainwindow dies, main window goes out of scope and UI goes down -> destructor does ui and thread cleanup

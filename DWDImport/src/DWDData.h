@@ -12,6 +12,8 @@
 
 #include <IBK_Time.h>
 #include <IBK_Path.h>
+#include <IBK_NotificationHandler.h>
+
 
 class DWDData : public QObject
 {
@@ -65,7 +67,7 @@ public:
 	};
 
 	/*! Reads all given dwd files and creates the data. */
-	void createData(const std::map<IBK::Path, std::set<DWDData::DataType>> &filenames, unsigned int intervalDuration = 3600);
+	void createData(IBK::NotificationHandler * notify, const std::map<IBK::Path, std::set<DWDData::DataType>> &filenames, unsigned int intervalDuration = 3600);
 
 	/*! Add a data line from dwd file.	*/
 	void addDataLine(std::string &line, const std::set<DataType> &dataType);
@@ -92,6 +94,7 @@ public:
 	std::vector<IntervalData>		m_data;					///< Vector with interval data
 	IBK::Path						m_filenames[NUM_DT];	///< Filename
 	std::vector<QUrlInfo>			m_urls;					///< urls in ftp directory
+	QLabel							*m_label = nullptr;		///< pointer to label
 
 signals:
 	void progress(int min, int max, int val);

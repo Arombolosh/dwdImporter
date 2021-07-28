@@ -31,14 +31,15 @@
 #include "DWDDownloader.h"
 #include "DWDMap.h"
 #include "DWDDelegate.h"
+#include "DWDData.h"
 
 #include "Constants.h"
 //#include "DWD_CheckBox.h"
 
 class ProgressNotify : public IBK::NotificationHandler{
 public:
-	ProgressNotify( QProgressDialog *dlg):
-		m_dlg(dlg)
+	ProgressNotify( QProgressBar *bar):
+		m_bar(bar)
 	{}
 
 	/*! Reimplement this function in derived child 'notification' objects
@@ -46,13 +47,13 @@ public:
 	*/
 	virtual void notify() {
 		FUNCID(notify);
-		if(m_dlg->value() == m_value)
+		if(m_bar->value() == m_value)
 			return;
-		m_dlg->setValue(m_value);
+		m_bar->setValue(m_value);
 		qApp->processEvents();
-		if(m_dlg->wasCanceled()){
-			throw IBK::Exception("Canceled", FUNC_ID);
-		}
+//		if(m_bar->wasCanceled()){
+//			throw IBK::Exception("Canceled", FUNC_ID);
+//		}
 	}
 
 	/*! Reimplement this function in derived child 'notification' objects
@@ -65,7 +66,7 @@ public:
 		notify();
 	}
 
-	QProgressDialog			*m_dlg;
+	QProgressBar			*m_bar;
 	int						m_value;
 };
 
@@ -122,6 +123,8 @@ void MainWindow::loadData(){
 	// initiate download manager
 	DWDDownloader manager(this);
 	manager.m_urls = urls;
+	manager.m_progress = m_ui->progressBar; // bisschen quatsch
+	manager.m_label = m_ui->labelDownload; // bisschen quatsch
 	connect( &manager, &DWDDownloader::finished, this, &MainWindow::readData );
 
 	// start download in singleshot
@@ -129,7 +132,7 @@ void MainWindow::loadData(){
 
 	// dirty way to wait till asynchronous download is finished
 	while ( manager.m_isRunning ) // wait for data to be downloaded (the little bit dirty way)
-		QMessageBox::information(this, "Downloading", "Download is running" );
+		qApp->processEvents();
 }
 
 void MainWindow::update(int tableWidth) {
@@ -410,6 +413,10 @@ void MainWindow::on_pushButtonDownload_clicked(){
 									DWDData::DT_WindDirection,DWDData::DT_Pressure};
 
 	DWDDownloader manager(this);
+
+	manager.m_progress = m_ui->progressBar;
+	manager.m_label = m_ui->labelDownload;
+
 	connect( &manager, &DWDDownloader::finished, this, &MainWindow::readData );
 	//download the data (zip)
 
@@ -478,7 +485,7 @@ void MainWindow::on_pushButtonDownload_clicked(){
 
 	// dirty way to wait till asynchronous download is finished
 	while ( manager.m_isRunning ) // wait for data to be downloaded (the little bit dirty way)
-		QMessageBox::information(this, "Downloading", "Download is running" );
+		qApp->processEvents();
 
 	//Check if all downloaded files are valid
 	//create a vector with valid files
@@ -549,15 +556,20 @@ void MainWindow::on_pushButtonDownload_clicked(){
 
 	m_dwdData.m_startTime = IBK::Time(m_ui->lineEditYear->text().toInt(),0);
 
-	m_progressDlg = new QProgressDialog( tr("Progress"), tr("Abort"), 0, 100, this);
-	m_progressDlg->setWindowModality(Qt::WindowModal);
-	m_progressDlg->setValue(0);
-	m_progressDlg->hide();
-	qApp->processEvents();
+//	m_progressDlg = new QProgressDialog( tr("Progress"), tr("Abort"), 0, 100, this);
+//	m_progressDlg->setWindowModality(Qt::WindowModal);
+//	m_progressDlg->setValue(0);
+//	m_progressDlg->hide();
+//	qApp->processEvents();
 
-	m_progressDlg->show();
-	m_dwdData.createData(filenamesForReading);
-	m_progressDlg->hide();
+//	m_progressDlg->show();
+
+	m_ui->progressBar->setRange(0,100);
+	ProgressNotify progressNotify(m_ui->progressBar);
+
+	m_dwdData.m_label = m_ui->labelDownload;
+	m_dwdData.createData(&progressNotify, filenamesForReading);
+//	m_progressDlg->hide();
 
 	//	dwdData.writeTSV(2001);
 	//copy all data in range and create an epw

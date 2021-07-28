@@ -4,15 +4,14 @@
 #include "Constants.h"
 
 DWDDownloader::DWDDownloader(QWidget *parent) {
-	connect(&manager, SIGNAL(finished(QNetworkReply*)),
+	connect(&m_manager, SIGNAL(finished(QNetworkReply*)),
 			SLOT(downloadFinished(QNetworkReply*)));
 
-	m_progress = new QProgressBar();
 }
 
 void DWDDownloader::doDownload(const QUrl &url) {
 	QNetworkRequest request(url);
-	QNetworkReply *reply = manager.get(request);
+	QNetworkReply *reply = m_manager.get(request);
 
 #if QT_CONFIG(ssl)
 	connect(reply, SIGNAL(sslErrors(QList<QSslError>)),
@@ -22,7 +21,9 @@ void DWDDownloader::doDownload(const QUrl &url) {
 	connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
 			SLOT(downloadProgress(qint64,qint64)));
 
-	currentDownloads.append(reply);
+
+	m_currentDownloads.append(reply);
+
 }
 
 QString DWDDownloader::saveFileName(const QUrl &url) {
@@ -76,7 +77,10 @@ void DWDDownloader::execute() {
 void DWDDownloader::downloadProgress(qint64 bytesReceived, qint64 bytesTotal) {
 	m_bytesReceived += bytesReceived;
 	m_bytesTotal += bytesTotal;
-	m_progress->setValue(m_bytesReceived/m_bytesTotal);
+
+	m_progress->setRange(0,bytesTotal);
+	m_progress->setValue(bytesReceived);
+
 }
 
 void DWDDownloader::sslErrors(const QList<QSslError> &sslErrors) {
@@ -90,6 +94,7 @@ void DWDDownloader::sslErrors(const QList<QSslError> &sslErrors) {
 
 void DWDDownloader::downloadFinished(QNetworkReply *reply) {
 	QUrl url = reply->url();
+
 	if (reply->error()) {
 		fprintf(stderr, "Download of %s failed: %s\n",
 				url.toEncoded().constData(),
@@ -102,14 +107,17 @@ void DWDDownloader::downloadFinished(QNetworkReply *reply) {
 			if (saveToDisk(filename, reply)) {
 				printf("Download of %s succeeded (saved to %s)\n",
 					   url.toEncoded().constData(), qPrintable(filename));
+
+				m_label->setText( QString("Downloaded succesfully ") + url.url() );
+
 			}
 		}
 	}
 
-	currentDownloads.removeAll(reply);
+	m_currentDownloads.removeAll(reply);
 	reply->deleteLater();
 
-	if (currentDownloads.isEmpty()) {
+	if (m_currentDownloads.isEmpty()) {
 		// all downloads finished
 		emit finished();
 		m_isRunning = false;

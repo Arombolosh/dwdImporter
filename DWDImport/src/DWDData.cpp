@@ -2,10 +2,13 @@
 
 #include <QTimer>
 #include <QDebug>
+#include <QLabel>
+#include <QApplication>
 
 #include <IBK_StringUtils.h>
 #include <IBK_FileReader.h>
 #include <IBK_physics.h>
+#include <IBK_NotificationHandler.h>
 
 #include <qftp.h>
 
@@ -13,7 +16,10 @@
 #include <CCM_ClimateDataLoader.h>
 #include "Constants.h"
 
-void DWDData::createData(const std::map<IBK::Path, std::set<DWDData::DataType>> &filenames, unsigned int intervalDuration) {
+
+
+
+void DWDData::createData(IBK::NotificationHandler * notify, const std::map<IBK::Path, std::set<DWDData::DataType>> &filenames, unsigned int intervalDuration) {
 
 	FUNCID(createData);
 
@@ -30,12 +36,15 @@ void DWDData::createData(const std::map<IBK::Path, std::set<DWDData::DataType>> 
 		IBK::FileReader fileReader(fileName, 40960);
 		std::vector<std::string> lines;
 		qDebug() << "Start reading files ------------------";
-		fileReader.readAll(fileName, lines, std::vector<std::string>{"\n"});
+		m_label->setText( QString("Reading file ") + QString::fromStdString(fileName.str() ) );
+		fileReader.readAll(fileName, lines, std::vector<std::string>{"\n"}, 0, notify);
 
 		qDebug() << "Get data of files ------------------";
+
+		m_label->setText( QString("Extract data of file ") + QString::fromStdString(fileName.str() ) );
 		for(unsigned int i=1;i<lines.size(); ++i){
 			addDataLine(lines[i], it->second);
-			emit progress(0, lines.size(), i);
+			notify->notify((double)i/lines.size() );
 		}
 	}
 }
