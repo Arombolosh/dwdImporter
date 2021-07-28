@@ -170,6 +170,7 @@ void DWDData::exportEPW(unsigned int year, double latitudeDeg, double longitudeD
 //	}
 
 	int idx = m_startTime.secondsUntil(IBK::Time(year, 0))/m_intervalDuration;
+	Q_ASSERT(m_data.size() >= 8760);
 
 	for (int i=0; i<8760;++i, ++idx) {
 //		if(idx > m_data.size() || m_data.empty())
@@ -210,7 +211,8 @@ void DWDData::exportEPW(unsigned int year, double latitudeDeg, double longitudeD
 
 
 
-QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numberString, const std::string &dateString, bool isRecent) const {
+QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numberString, const std::string &dateString,
+							 bool isRecent,const QString &filename) const {
 	QString rec = "_akt", rec2 = "";
 	QString dateStringNew = "";
 	if(!isRecent){
@@ -223,7 +225,7 @@ QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numbe
 	if(!(type == DT_RadiationDiffuse || type == DT_RadiationGlobal || type == DT_RadiationLongWave))
 		rec2 = isRecent ? "recent/" : "historical/";
 
-	if( isRecent ) {
+	if( isRecent || (type == DT_RadiationDiffuse || type == DT_RadiationGlobal || type == DT_RadiationLongWave)) {
 
 		switch (type) {
 			case DT_AirTemperature:
@@ -269,13 +271,13 @@ QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numbe
 				baseSearch = base + "wind/";
 
 			break;
-			case DT_RadiationDiffuse:
-			case DT_RadiationGlobal:
-			case DT_RadiationLongWave:
-			case DT_ZenithAngle:
-				baseSearch = base + "solar/";
+//			case DT_RadiationDiffuse:
+//			case DT_RadiationGlobal:
+//			case DT_RadiationLongWave:
+//			case DT_ZenithAngle:
+//				baseSearch = base + "solar/";
 		}
-
+		return baseSearch + rec2 + filename;
 
 	}
 }
@@ -283,7 +285,7 @@ QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numbe
 QString DWDData::filename(const DWDData::DataType &type, const QString &numberString, const std::string &dateString, bool isRecent) const{
 	QString rec = "_akt";
 	QString dateStringNew = "";
-	if(!isRecent){
+	if(!isRecent && !(type == DT_RadiationDiffuse || type == DT_RadiationGlobal || type == DT_RadiationLongWave)){
 		rec = "_hist";
 		dateStringNew = QString::fromStdString(dateString);
 	}

@@ -22,6 +22,7 @@
 #include <QThread>
 #include <QMessageBox>
 #include <QItemDelegate>
+#include <QtNumeric>
 
 #include <qftp.h>
 
@@ -399,6 +400,11 @@ void MainWindow::on_pushButtonDownload_clicked(){
 		}
 	}
 
+	if(dataInRows == std::vector<int>(4,-1)){
+		QMessageBox::information(this, "Download Error.", "Download aborted. Please select at least one climate entry e.g. temperature, radiation, ... ");
+		return;
+	}
+
 	std::vector<QString> filenames(4); //hold filenames for download
 	std::vector<DWDData::DataType>	types{DWDData::DT_AirTemperature, DWDData::DT_RadiationDiffuse,
 									DWDData::DT_WindDirection,DWDData::DT_Pressure};
@@ -414,31 +420,57 @@ void MainWindow::on_pushButtonDownload_clicked(){
 			unsigned int stationId = QString::number(dataInRows[i]).rightJustified(5,'0').toUInt();
 			dateString = "_" + m_descDataMap[stationId].m_startDateString + "_" + m_descDataMap[stationId].m_endDateString;
 
-			QFtp *ftp = new QFtp;
+			bool isRecent = m_ui->radioButtonRecent->isChecked();
+			QString filename = ""; //only needed by historical
 
-			connect(ftp, &QFtp::listInfo, &dwdData, &DWDData::findFile );
+			//only find urls for historical and NO solar data (this is in dataInRows on position 1
+			if(!isRecent && i != 1){
+				QFtp *ftp = new QFtp;
 
-			ftp->connectToHost("opendata.dwd.de", 21);
-			ftp->login("anonymous", "anonymous@opendata.dwd.de");
-			ftp->cd("climate_environment");
-			ftp->cd("CDC");
-			ftp->cd("observations_germany");
-			ftp->cd("climate");
-			ftp->cd("hourly");
-			ftp->cd("air_temperature");
-			ftp->cd("historical");
-			ftp->list();
+				connect(ftp, &QFtp::listInfo, &dwdData, &DWDData::findFile );
 
-			while(ftp->hasPendingCommands() || ftp->currentCommand()!=QFtp::None)
-				qApp->processEvents();
+				ftp->connectToHost("opendata.dwd.de", 21);
+				ftp->login("anonymous", "anonymous@opendata.dwd.de");
+				ftp->cd("climate_environment");
+				ftp->cd("CDC");
+				ftp->cd("observations_germany");
+				ftp->cd("climate");
+				ftp->cd("hourly");
 
-			while( dwdData.m_urls.empty() )
-				qApp->processEvents();
 
-			manager.m_urls << dwdData.urlFilename(types[i], QString::number(dataInRows[i]).rightJustified(5,'0'), dateString, m_ui->radioButtonRecent->isChecked());
+				switch(i){
+					case 0:	ftp->cd("air_temperature"); break;
+					case 2:	ftp->cd("wind"); break;
+					case 3:	ftp->cd("pressure"); break;
+				}
+				ftp->cd("historical");
+				ftp->list();
+
+				while(ftp->hasPendingCommands() || ftp->currentCommand()!=QFtp::None)
+					qApp->processEvents();
+
+				while( dwdData.m_urls.empty() )
+					qApp->processEvents();
+
+				//now search through all urls for the right file
+				for(unsigned int j=0; j<dwdData.m_urls.size(); ++j){
+					filename = dwdData.m_urls[j].name();
+					//stundenwerte_ST_00183_row.zip
+					if((filename.mid(QString("stundenwerte_ST_").length(),5)).toUInt() == stationId){
+						qDebug() << "Gefunden: " << filename;
+						break;
+					}
+				}
+				dwdData.m_urls.clear();
+				qDebug() << "\nclear\n";
+			}
+			manager.m_urls << dwdData.urlFilename(types[i], QString::number(dataInRows[i]).rightJustified(5,'0'), dateString, isRecent, filename);
 			qDebug() << manager.m_urls.back();
 
-			filenames[i] = dwdData.filename(types[i], QString::number(dataInRows[i]).rightJustified(5,'0'),dateString, m_ui->radioButtonRecent->isChecked());
+			if(isRecent || i==1)
+				filenames[i] = dwdData.filename(types[i], QString::number(dataInRows[i]).rightJustified(5,'0'),dateString, isRecent);
+			else
+				filenames[i] = filename.mid(0, filename.length()-4);
 		}
 	}
 	if(!manager.m_urls.empty())
@@ -538,6 +570,10 @@ void MainWindow::on_pushButtonDownload_clicked(){
 	QMessageBox::information(this, QString(), "Export done.");
 }
 
+void MainWindow::addToList(const QUrlInfo qUrlI){
+	m_filelist << qUrlI.name();
+}
+
 void MainWindow::on_pushButtonMap_clicked() {
 	double latitude = m_ui->lineEditLatitude->text().toDouble();
 	double longitude = m_ui->lineEditLongitude->text().toDouble();
@@ -571,5 +607,4 @@ void MainWindow::setProgress(int min, int max, int val) {
 
 void MainWindow::on_radioButtonHistorical_toggled(bool checked) {
 	loadData();
-	QMessageBox::warning(this, "jetzt gehts los","sdfsadd");
 }

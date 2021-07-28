@@ -38,6 +38,7 @@ public:
 
 	void updateTable(const IBK::Time &filterDate);
 
+	void addToList(const QUrlInfo qUrlI);
 protected:
 	void resizeEvent(QResizeEvent *event) override;
 
@@ -69,6 +70,8 @@ private:
 	*/
 	std::map<unsigned int, DWDDescriptonData>	m_descDataMap;
 	DWDData										m_dwdData;
+
+	QStringList									m_filelist;
 
 	QStandardItemModel					*m_model;
 	QProgressDialog						*m_progressDlg;
