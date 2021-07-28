@@ -153,7 +153,10 @@ void MainWindow::update(int tableWidth) {
 	tw.setColumnWidth(9, tableWidth / 18);
 }
 
-void MainWindow::updateTable(const IBK::Time &filterDate) {
+void MainWindow::updateTable() {
+
+	m_ui->tableWidget->blockSignals(true);
+	IBK::Time filterDate (m_ui->lineEditYear->text().toInt(), 0);
 	// take year and check for each data type (rad, wind, temp,..) if data is available
 	// sort data
 	unsigned int counter =0;
@@ -262,6 +265,8 @@ void MainWindow::updateTable(const IBK::Time &filterDate) {
 
 //	tw.setSortingEnabled(true);
 	tw.sortByColumn(1, Qt::AscendingOrder );
+
+	m_ui->tableWidget->blockSignals(false);
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event) {
@@ -292,7 +297,7 @@ void MainWindow::readData() {
 	tw.setSelectionBehavior(QAbstractItemView::SelectRows);
 	tw.setSelectionMode(QAbstractItemView::SingleSelection);
 
-	updateTable( IBK::Time (m_ui->lineEditYear->text().toInt(), 0 ) );
+	updateTable();
 	tw.blockSignals(false);
 }
 
@@ -583,8 +588,6 @@ void MainWindow::on_pushButtonDownload_clicked(){
 	for(unsigned int i=0; i<m_dwdData.m_data.size(); ++i){
 		DWDData::IntervalData &intVal = m_dwdData.m_data[i];
 
-
-
 		if( i == 0 ){
 			if(intVal.m_airTemp < -50)
 				intVal.m_airTemp = 0;
@@ -616,13 +619,13 @@ void MainWindow::on_pushButtonDownload_clicked(){
 			if(intVal.m_diffRad < 0 || intVal.m_diffRad > 1200)
 				intVal.m_diffRad = 0;
 			if(intVal.m_globalRad < 0 || intVal.m_globalRad > 1400)
-				intVal.m_globalRad = 0;
+				intVal.m_globalRad = intVal.m_diffRad;			//global must be diffuse radiation if normal radiation is zero
 		}
 		else{
 			if(intVal.m_diffRad < 0 || intVal.m_diffRad > 1200)
 				intVal.m_diffRad = m_dwdData.m_data[i-24].m_diffRad;
-			if(intVal.m_globalRad < 0 || intVal.m_globalRad > 1400)
-				intVal.m_globalRad = m_dwdData.m_data[i-24].m_globalRad;
+			if(intVal.m_globalRad < 0 || intVal.m_globalRad > 1400 || intVal.m_globalRad < intVal.m_diffRad)
+				intVal.m_globalRad = std::max(m_dwdData.m_data[i-24].m_globalRad, intVal.m_diffRad);
 		}
 	}
 
@@ -643,15 +646,9 @@ void MainWindow::on_pushButtonMap_clicked() {
 
 	m_ui->lineEditLatitude->setText(QString::number(latitude) );
 	m_ui->lineEditLongitude->setText(QString::number(longitude) );
+	updateTable();
 }
 
-
-void MainWindow::on_pushButtonUpdate_clicked() {
-	m_ui->tableWidget->blockSignals(true);
-	IBK::Time filterDate (m_ui->lineEditYear->text().toInt(), 0);
-	updateTable(filterDate);
-	m_ui->tableWidget->blockSignals(false);
-}
 
 void MainWindow::setProgress(int min, int max, int val) {
 	FUNCID(setProgress);
@@ -668,4 +665,11 @@ void MainWindow::setProgress(int min, int max, int val) {
 
 void MainWindow::on_radioButtonHistorical_toggled(bool checked) {
 	loadData();
+}
+
+void MainWindow::on_lineEditYear_editingFinished() {
+	if(m_ui->lineEditYear->isValid()){
+		updateTable();
+	}
+
 }

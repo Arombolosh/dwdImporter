@@ -36,7 +36,7 @@ public:
 
 	void update(int tableWidth);
 
-	void updateTable(const IBK::Time &filterDate);
+	void updateTable();
 
 	void addToList(const QUrlInfo qUrlI);
 protected:
@@ -55,11 +55,11 @@ private slots:
 
 	void on_pushButtonMap_clicked();
 
-	void on_pushButtonUpdate_clicked();
-
 	void setProgress(int min, int max, int val);
 
 	void on_radioButtonHistorical_toggled(bool checked);
+
+	void on_lineEditYear_editingFinished();
 
 private:
 
