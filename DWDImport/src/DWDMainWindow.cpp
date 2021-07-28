@@ -576,7 +576,56 @@ void MainWindow::on_pushButtonDownload_clicked(){
 	double latiDeg = m_ui->lineEditLatitude->text().toDouble();
 	double longiDeg = m_ui->lineEditLongitude->text().toDouble();
 
-	///TODO take coordinates from radiation if exists
+	///TODO take coordinates from radiation if exists --> zenith angle
+
+
+	//check data
+	for(unsigned int i=0; i<m_dwdData.m_data.size(); ++i){
+		DWDData::IntervalData &intVal = m_dwdData.m_data[i];
+
+
+
+		if( i == 0 ){
+			if(intVal.m_airTemp < -50)
+				intVal.m_airTemp = 0;
+			if(intVal.m_relHum < 0 || intVal.m_relHum > 100)
+				intVal.m_relHum = 50;
+			if(intVal.m_counterRad < 0 || intVal.m_counterRad > 1000)
+				intVal.m_counterRad = 280;
+			if(intVal.m_windDirection < 0 || intVal.m_windDirection > 360)
+				intVal.m_windDirection = 0;
+			if(intVal.m_windSpeed< 0 || intVal.m_windSpeed> 20)
+				intVal.m_windSpeed = 4;
+		}
+		else{
+			//take air temperature of last timepoint
+			if(intVal.m_airTemp < -50)
+				intVal.m_airTemp = m_dwdData.m_data[i-1].m_airTemp;
+			if(intVal.m_relHum < 0 || intVal.m_relHum > 100)
+				intVal.m_relHum = m_dwdData.m_data[i-1].m_relHum;
+			if(intVal.m_counterRad < 0 || intVal.m_counterRad > 1000)
+				intVal.m_counterRad = m_dwdData.m_data[i-1].m_counterRad;
+			if(intVal.m_windDirection < 0 || intVal.m_windDirection > 360)
+				intVal.m_windDirection = m_dwdData.m_data[i-1].m_windDirection;
+			if(intVal.m_windSpeed< 0 || intVal.m_windSpeed> 20)
+				intVal.m_windSpeed = m_dwdData.m_data[i-1].m_windSpeed;
+
+		}
+		//only radiation
+		if(i<=24){
+			if(intVal.m_diffRad < 0 || intVal.m_diffRad > 1200)
+				intVal.m_diffRad = 0;
+			if(intVal.m_globalRad < 0 || intVal.m_globalRad > 1400)
+				intVal.m_globalRad = 0;
+		}
+		else{
+			if(intVal.m_diffRad < 0 || intVal.m_diffRad > 1200)
+				intVal.m_diffRad = m_dwdData.m_data[i-24].m_diffRad;
+			if(intVal.m_globalRad < 0 || intVal.m_globalRad > 1400)
+				intVal.m_globalRad = m_dwdData.m_data[i-24].m_globalRad;
+		}
+	}
+
 
 	m_dwdData.exportEPW(m_ui->lineEditYear->text().toInt(), latiDeg, longiDeg);
 	QMessageBox::information(this, QString(), "Export done.");
