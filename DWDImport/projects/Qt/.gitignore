@@ -1,3 +1,4 @@
 /Makefile.DWDImport
 /Makefile.DWDImport.Debug
 /Makefile.DWDImport.Release
+/qrc_DWDImport.cpp
