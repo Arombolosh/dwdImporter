@@ -35,7 +35,7 @@ public:
 
 
 	/*! Station id. */
-	unsigned int				m_id;
+	unsigned int				m_idStation;
 
 	/*! Start date of data type. */
 	IBK::Time					m_startDate[NUM_D];
@@ -48,6 +48,9 @@ public:
 
 	/*! Start date string.*/
 	std::string					m_startDateString;
+
+	/*! Distance to reference location */
+	double						m_distance;
 
 	/*! Station height in m. */
 	double						m_height;

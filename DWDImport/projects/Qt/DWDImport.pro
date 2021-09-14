@@ -44,14 +44,12 @@ SOURCES += \
 		../../src/DWDDownloader.cpp \
 		../../src/DWDMainWindow.cpp \
 		../../src/DWDMap.cpp \
-		../../src/DWDTableView.cpp \
 		../../src/main.cpp \
     ../../src/DWDTableModel.cpp
 
 FORMS += \
 		../../src/DWDMainWindow.ui \
-		../../src/DWDMap.ui \
-		../../src/DWDTableView.ui
+		../../src/DWDMap.ui
 
 HEADERS += \
 		../../src/Constants.h \
@@ -63,7 +61,6 @@ HEADERS += \
 		../../src/DWDMainWindow.h \
 		../../src/DWDMap.h \
 		../../src/DWDScene.h \
-		../../src/DWDTableView.h \
     ../../src/DWDTableModel.h
 
 DISTFILES +=
