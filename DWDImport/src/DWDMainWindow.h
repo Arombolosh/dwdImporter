@@ -14,14 +14,16 @@
 
 #include "DWDDescriptonData.h"
 #include "DWDData.h"
-
+#include "DWDTableModel.h"
 
 
 namespace Ui {
-class MainWindow;
+	class MainWindow;
 }
+
 class QProgressDialog;
 class QTableWidgetItem;
+class DWDDownloader;
 
 class MainWindow : public QMainWindow
 {
@@ -34,22 +36,16 @@ public:
 
 	void loadData();
 
-	void update(int tableWidth);
-
-	void updateTable();
 
 	void addToList(const QUrlInfo qUrlI);
-protected:
-	void resizeEvent(QResizeEvent *event) override;
 
-	void showEvent(QShowEvent *event) override;
+	/*! Function that calculates all distances to the Reference location */
+	void calculateDistances();
+
 
 private slots:
 	void readData();
 
-	void setTableHeader();
-
-	void on_tableWidget_itemChanged(QTableWidgetItem *item);
 
 	void on_pushButtonDownload_clicked();
 
@@ -65,6 +61,8 @@ private:
 
 	Ui::MainWindow						*m_ui;
 
+	DWDDownloader						*m_manager = nullptr;
+
 	/*! Description input of all stations.
 		key of map is station id
 	*/
@@ -76,6 +74,9 @@ private:
 	QStandardItemModel							*m_model;
 	QProgressDialog								*m_progressDlg;
 	QElapsedTimer								m_progressTimer;
+
+	/*! Table model instance for dwd data. */
+	DWDTableModel								*m_dwdTableModel = nullptr;
 
 };
 
