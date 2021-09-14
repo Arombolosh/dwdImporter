@@ -33,8 +33,7 @@ INCLUDEPATH = \
 CODECFORSRC = UTF-8
 
 RESOURCES += \
-		../../resources/DWDImport.qrc \
-		../../resources/DWDImport.qrc
+                ../../resources/DWDImport.qrc
 
 SOURCES += \
 		../../src/Constants.cpp \
@@ -46,7 +45,8 @@ SOURCES += \
 		../../src/DWDMainWindow.cpp \
 		../../src/DWDMap.cpp \
 		../../src/DWDTableView.cpp \
-		../../src/main.cpp
+		../../src/main.cpp \
+    ../../src/DWDTableModel.cpp
 
 FORMS += \
 		../../src/DWDMainWindow.ui \
@@ -63,7 +63,8 @@ HEADERS += \
 		../../src/DWDMainWindow.h \
 		../../src/DWDMap.h \
 		../../src/DWDScene.h \
-		../../src/DWDTableView.h
+		../../src/DWDTableView.h \
+    ../../src/DWDTableModel.h
 
 DISTFILES +=
 

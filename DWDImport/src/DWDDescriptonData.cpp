@@ -63,7 +63,7 @@ void DWDDescriptonData::readDescription(const IBK::Path &filepath, std::map<unsi
 
 		try {
 			//extract all informations
-			dwd.m_id = id;
+			dwd.m_idStation = id;
 			dwd.m_data[dataType] = 1;
 //00071 20091201 20191231            759     48.2156    8.9784 Albstadt-Badkap                          Baden-Württemberg
 			dwd.m_startDate[dataType].set( IBK::string2val<unsigned int>(line.substr(6,4)),
@@ -96,7 +96,7 @@ void DWDDescriptonData::readDescription(const IBK::Path &filepath, std::map<unsi
 
 		}  catch (IBK::Exception &ex) {
 			QMessageBox::warning(nullptr, QString(), QString("Got an exception while reading lines. In line %1\n").arg(i)
-								 + QString("%1\n").arg(dwd.m_id)
+								 + QString("%1\n").arg(dwd.m_idStation)
 								 + QString("%1\n").arg(QString::fromStdString(dwd.m_startDate[dataType].toDateTimeFormat()))
 								 + QString("%1\n").arg(QString::fromStdString(dwd.m_endDate[dataType].toDateTimeFormat()))
 								 + QString("%1\n").arg(dwd.m_height)

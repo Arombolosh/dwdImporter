@@ -73,9 +73,9 @@ private:
 
 	QStringList									m_filelist;
 
-	QStandardItemModel					*m_model;
-	QProgressDialog						*m_progressDlg;
-	QElapsedTimer						m_progressTimer;
+	QStandardItemModel							*m_model;
+	QProgressDialog								*m_progressDlg;
+	QElapsedTimer								m_progressTimer;
 
 };
 

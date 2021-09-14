@@ -49,7 +49,6 @@ public:
 	/*! Start date string.*/
 	std::string					m_startDateString;
 
-
 	/*! Station height in m. */
 	double						m_height;
 

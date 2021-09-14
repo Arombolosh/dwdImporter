@@ -217,7 +217,7 @@ void MainWindow::updateTable() {
 
 			QTableWidgetItem *item = new QTableWidgetItem();
 			DWDDelegate *delegate = new DWDDelegate(this);
-//			m_ui->tableWidget->setItemDelegateForColumn(5, delegate);
+			//m_ui->tableWidget->setItemDelegateForColumn(6, delegate);
 
 			if(checkable){
 				item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);

@@ -30,7 +30,7 @@ void DWDDelegate::paint( QPainter * painter, const QStyleOptionViewItem & option
 
 	opt.state = QStyle::State_Enabled; // CheckBox enabled
 	if ( option.state & QStyle::State_MouseOver )
-		opt.state |= QStyle::State_MouseOver; // Mouse over sell
+        opt.state |= QStyle::State_MouseOver; // Mouse over cell
 	if ( state == Qt::Checked )
 		opt.state |= QStyle::State_On;
 	else
