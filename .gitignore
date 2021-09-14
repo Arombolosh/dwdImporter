@@ -32,3 +32,5 @@ Makefile
 *.lib
 *.pdb
 /externals/lib_x64/
+*.txt
+*.zip
