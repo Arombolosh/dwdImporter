@@ -1,6 +1,8 @@
 #include "DWDTableModel.h"
 
-DWDTableModel::DWDTableModel()
+
+DWDTableModel::DWDTableModel(QObject * parent):
+	QAbstractTableModel(parent)
 {
 
 }
@@ -14,16 +16,39 @@ int DWDTableModel::columnCount(const QModelIndex & parent) const {
 }
 
 QVariant DWDTableModel::data(const QModelIndex & index, int role) const {
-	DWDDescriptonData & dwdData = m_descDataMap[(size_t)index.row()];
+
+	std::map<unsigned int, DWDDescriptonData>::iterator itDWDData = m_descDataMap->begin();
+
+//	for (int i = 0; i<index.row(); ++i)
+//		++itDWDData;
+
+	std::advance(itDWDData, index.row() );
+
+	DWDDescriptonData & dwdData = itDWDData->second;
 
 	switch (role) {
 		case Qt::DisplayRole :
 			switch (index.column()) {
-				case 0 : // station ID
-					return dwdData.m_id;
-				case 1 : {// distance
-//					return dwdData->m_;
-				}
+				case ColId :
+					return dwdData.m_idStation;
+				case ColDistance :
+					return dwdData.m_distance;
+				case ColWind :
+					return dwdData.m_data[DWDDescriptonData::D_Wind];
+				case ColAirTemp:
+					return dwdData.m_data[DWDDescriptonData::D_Wind];
+				case ColPressure :
+					return dwdData.m_data[DWDDescriptonData::D_Pressure];
+				case ColRadiation :
+					return dwdData.m_data[DWDDescriptonData::D_Solar];
+				case ColCountry :
+					return QString::fromStdString(dwdData.m_country);
+				case ColLatitude :
+					return dwdData.m_latitude;
+				case ColLongitude :
+					return dwdData.m_longitude;
+				case ColName :
+					return QString::fromStdString(dwdData.m_name);
 
 		}
 		break;
@@ -40,11 +65,33 @@ QVariant DWDTableModel::data(const QModelIndex & index, int role) const {
 		// UserRole returns value reference
 		case Qt::UserRole :
 //			return (*m_availableVariables)[(size_t)index.row()].m_fmiValueRef;
+		break;
 	}
 	return QVariant();
 
 }
 
-bool DWDTableModel::setData(const QModelIndex & index, const QVariant & value, int role) {
 
+QVariant DWDTableModel::headerData(int section, Qt::Orientation orientation, int role) const {
+
+		static QStringList headers = QStringList()
+
+			<< tr("Station Id")
+			<< tr("Distance")
+			<< tr("Location Longitude Deg")
+			<< tr("Location Latitude Deg")
+			<< tr("Name")
+			<< tr("Country")
+			<< tr("T_air + rH")
+			<< tr("Radiation")
+			<< tr("Wind")
+			<< tr("Pressure");
+
+		if (orientation == Qt::Vertical)
+			return QVariant();
+		switch (role) {
+			case Qt::DisplayRole :
+				return headers[section];
+		}
+		return QVariant();
 }

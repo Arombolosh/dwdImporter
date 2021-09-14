@@ -9,16 +9,29 @@
 class DWDTableModel : public QAbstractTableModel {
 	Q_OBJECT
 public:
-	DWDTableModel();
+	DWDTableModel(QObject *parent);
 
-
+	/*! Columns shown in the table view. */
+	enum Columns {
+		ColId,
+		ColDistance,
+		ColLongitude,
+		ColLatitude,
+		ColName,
+		ColCountry,
+		ColAirTemp,
+		ColRadiation,
+		ColWind,
+		ColPressure,
+		NumColumns
+	};
 
 	// QAbstractItemModel interface
 public:
 	int rowCount(const QModelIndex & parent) const;
 	int columnCount(const QModelIndex & parent) const;
 	QVariant data(const QModelIndex & index, int role) const;
-	bool setData(const QModelIndex & index, const QVariant & value, int role);
+	QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
 
 
@@ -27,6 +40,9 @@ public:
 		key of map is station id
 	*/
 	std::map<unsigned int, DWDDescriptonData>				*m_descDataMap = nullptr;
+
+	// QAbstractItemModel interface
+public:
 };
 
 #endif // DWDTableModelH
