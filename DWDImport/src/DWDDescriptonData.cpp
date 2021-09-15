@@ -23,23 +23,47 @@ QStringList DWDDescriptonData::downloadDescriptionFiles(bool isRecent){
 	return sl;
 }
 
-void DWDDescriptonData::readAllDescriptions(std::map<unsigned int, DWDDescriptonData> &stationDescription){
+void DWDDescriptonData::readAllDescriptions(std::vector<DWDDescriptonData> &dwdDescriptonData){
 
 	IBK::Path filepath(std::string(DATA_DIR) + "Tests/TU_Stundenwerte_Beschreibung_Stationen.txt");
-	readDescription(filepath, stationDescription, D_TemperatureAndHumidity);
+	readDescription(filepath, dwdDescriptonData, D_TemperatureAndHumidity);
 
 	filepath= IBK::Path (std::string(DATA_DIR) + "Tests/P0_Stundenwerte_Beschreibung_Stationen.txt");
-	readDescription(filepath, stationDescription, D_Pressure);
+	readDescription(filepath, dwdDescriptonData, D_Pressure);
 
 	filepath= IBK::Path (std::string(DATA_DIR) + "Tests/ST_Stundenwerte_Beschreibung_Stationen.txt");
-	readDescription(filepath, stationDescription, D_Solar);
+	readDescription(filepath, dwdDescriptonData, D_Solar);
 
 	filepath= IBK::Path (std::string(DATA_DIR) + "Tests/FF_Stundenwerte_Beschreibung_Stationen.txt");
-	readDescription(filepath, stationDescription, D_Wind);
+	readDescription(filepath, dwdDescriptonData, D_Wind);
 
+	for ( DWDDescriptonData &dwdData : dwdDescriptonData )
+		dwdData.calculateMinMaxDate(); // we calculate the minimum period
 }
 
-void DWDDescriptonData::readDescription(const IBK::Path &filepath, std::map<unsigned int, DWDDescriptonData> &stationDescription, const Data &dataType){
+void DWDDescriptonData::calculateMinMaxDate() {
+
+	m_minDate = m_startDate[0];
+	m_maxDate = m_endDate[0];
+
+	for ( unsigned int i = 1; i<4; ++i ) {
+
+		if ( !m_data[i].m_isAvailable )
+			continue;
+
+		double secUntilStart = m_minDate.secondsUntil(m_startDate[i]);
+
+		double secUntilEnd = m_maxDate.secondsUntil(m_endDate[i]);
+
+		if ( secUntilStart>0 )
+			m_minDate = m_startDate[i];
+
+		if ( secUntilEnd<0 )
+			m_maxDate = m_startDate[i];
+	}
+}
+
+void DWDDescriptonData::readDescription(const IBK::Path &filepath, std::vector<DWDDescriptonData> &dwdDescriptonData, const DWDDataTypes &dataType){
 //	IBK::Path filepath(QtExt::Directories::userDataDir().toStdString() + "filename.txt");
 
 	IBK::FileReader fileReader(filepath);
@@ -58,20 +82,45 @@ void DWDDescriptonData::readDescription(const IBK::Path &filepath, std::map<unsi
 		const std::string & line =lines[i];
 		if(line.empty())
 			continue;
+
 		unsigned int id = IBK::string2val<unsigned int>(line.substr(0,5));
-		DWDDescriptonData & dwd = stationDescription[id];
+
+		unsigned int index = 0;
+		bool foundIndex = false;
+		// we have to go through our vector if we already have specified our station ID
+		for ( unsigned int i=0; i<dwdDescriptonData.size(); ++i ) {
+			if ( dwdDescriptonData[i].m_idStation == id ) {
+				index = i;
+				foundIndex = true;
+				break;
+			}
+		}
+
+		if (!foundIndex) {
+			dwdDescriptonData.push_back(DWDDescriptonData());
+			index = dwdDescriptonData.size() - 1; // mind that size is always latest index + 1
+		}
+
+		DWDDescriptonData &dwd = dwdDescriptonData[index];
 
 		try {
 			//extract all informations
 			dwd.m_idStation = id;
-			dwd.m_data[dataType] = 1;
-//00071 20091201 20191231            759     48.2156    8.9784 Albstadt-Badkap                          Baden-Württemberg
+			dwd.m_data[dataType] = DWDDataManager(true, false);
+
+			// Example for an entry:
+			// =======================================================================================================================
+			// 00071 20091201 20191231            759     48.2156    8.9784 Albstadt-Badkap                          Baden-Württemberg
+			// =======================================================================================================================
+
+
 			dwd.m_startDate[dataType].set( IBK::string2val<unsigned int>(line.substr(6,4)),
 										   IBK::string2val<unsigned int>(line.substr(10,2))-1,
 										   IBK::string2val<unsigned int>(line.substr(12,2))-1,0);
 			dwd.m_endDate[dataType].set( IBK::string2val<unsigned int>(line.substr(15,4)),
 										 IBK::string2val<unsigned int>(line.substr(19,2))-1,
 										 IBK::string2val<unsigned int>(line.substr(21,2))-1,0);
+
 			dwd.m_startDateString = line.substr(6,8);
 			dwd.m_endDateString = line.substr(15,8);
 			dwd.m_height = IBK::string2val<double>(line.substr(24,38-24));
@@ -80,19 +129,6 @@ void DWDDescriptonData::readDescription(const IBK::Path &filepath, std::map<unsi
 			dwd.m_name = IBK::trim_copy(line.substr(61,100-61));
 			dwd.m_country = IBK::trim_copy(line.substr(101,500));
 
-//			QMessageBox::warning(this, QString(),
-//								 QString("%1\n").arg(dwd.m_id)
-//								 + QString("%1\n").arg(QString::fromStdString(dwd.m_startDate.toDateTimeFormat()))
-//								 + QString("%1\n").arg(QString::fromStdString(dwd.m_endDate.toDateTimeFormat()))
-//								 + QString("%1\n").arg(dwd.m_height)
-//								 + QString("%1\n").arg(dwd.m_latitude)
-//								 + QString("%1\n").arg(dwd.m_longitude)
-//								 + QString("%1\n").arg(QString::fromStdString(dwd.m_name))
-//								 + QString("%1\n").arg(QString::fromStdString(dwd.m_country))
-//								 + QString("%1\n").arg(QString::fromStdString(line))
-//								 );
-			//add dwd object to map
-			///TODO check if other information are equal
 
 		}  catch (IBK::Exception &ex) {
 			QMessageBox::warning(nullptr, QString(), QString("Got an exception while reading lines. In line %1\n").arg(i)

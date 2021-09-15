@@ -3,6 +3,10 @@
 
 #include <QObject>
 #include <QAbstractTableModel>
+#include <QAbstractItemModel>
+#include <QSortFilterProxyModel>
+
+#include <vector>
 
 #include "DWDDescriptonData.h"
 
@@ -19,6 +23,8 @@ public:
 		ColLatitude,
 		ColName,
 		ColCountry,
+		ColMinDate,
+		ColMaxDate,
 		ColAirTemp,
 		ColRadiation,
 		ColWind,
@@ -32,6 +38,8 @@ public:
 	int columnCount(const QModelIndex & parent) const;
 	QVariant data(const QModelIndex & index, int role) const;
 	QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+	bool setData(const QModelIndex & index, const QVariant & value, int role);
+	Qt::ItemFlags flags(const QModelIndex & index) const;
 
 
 
@@ -39,10 +47,11 @@ public:
 		Map Cointainging all necessairy data about the weather station
 		key of map is station id
 	*/
-	std::map<unsigned int, DWDDescriptonData>				*m_descDataMap = nullptr;
+	std::vector<DWDDescriptonData>				*m_descData = nullptr;
 
-	// QAbstractItemModel interface
-public:
+	QSortFilterProxyModel						m_proxyModel;
+
+
 };
 
 #endif // DWDTableModelH

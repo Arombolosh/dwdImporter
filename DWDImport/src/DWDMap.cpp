@@ -2,8 +2,22 @@
 #include "ui_DWDMap.h"
 #include "DWDScene.h"
 
+#include "DWDDescriptonData.h"
+
 #include <QMouseEvent>
 
+void getPosition(QSize size, const double &longitude, const double &latitude, double &xPos, double &yPos) {
+	int width = size.width();
+	int height = size.height();
+
+	yPos = height - ((latitude - 47.271679) / ( 55.05864 - 47.271679 ))*height;
+	xPos = width + ((15.043611 - longitude) / ( 5.866944 - 15.043611 ))*width;
+}
+
+void drawEllipse(DWDScene *scene, int xPos, int yPos, int rad, QColor color) {
+	scene->addEllipse(xPos-rad, yPos-rad, rad*2.0, rad*2.0,
+							QPen(color), QBrush(color, Qt::SolidPattern));
+}
 
 DWDMap::DWDMap(QWidget *parent) :
 	QDialog(parent),
@@ -67,25 +81,35 @@ void DWDMap::setLocation(const double &latitude, const double &longitude) {
 	double xPos;
 	double yPos;
 
-	QSize size = m_ui->graphicsViewMap->maximumViewportSize();
+	m_size = m_ui->graphicsViewMap->maximumViewportSize();
 
-	int width = size.width();
-	int height = size.height();
-
-	yPos = height - ((m_latitude - 47.271679) / ( 55.05864 - 47.271679 ))*height;
-	xPos = width + ((15.043611 - m_longitude) / ( 5.866944 - 15.043611 ))*width;
+	getPosition(m_size, m_longitude, m_latitude, xPos, yPos);
 
 	double rad = 5;
 
-	m_scene->addEllipse(xPos-rad, yPos-rad, rad*2.0, rad*2.0,
-							QPen(), QBrush(Qt::SolidPattern));
+	drawEllipse(m_scene, xPos, yPos, 5, Qt::black);
 
 	m_ui->lineEditLatitude->setText(QString::number(m_latitude));
 	m_ui->lineEditLongitude->setText(QString::number(m_longitude));
 }
 
-bool DWDMap::getLocation(double &latitude, double &longitude, QWidget *parent) {
+void DWDMap::setAllDWDLocations(const std::vector<DWDDescriptonData> & dwdDescData) {
+	for (const DWDDescriptonData &dwdData : dwdDescData) {
+
+		double xPos;
+		double yPos;
+
+		m_size = m_ui->graphicsViewMap->maximumViewportSize();
+
+		getPosition(m_size, dwdData.m_longitude, dwdData.m_latitude, xPos, yPos);
+
+		drawEllipse(m_scene, xPos, yPos, 3, Qt::gray);
+	}
+}
+
+bool DWDMap::getLocation(const std::vector<DWDDescriptonData> & dwdDescData, double &latitude, double &longitude, QWidget *parent) {
 	DWDMap dwdMap(parent);
+	dwdMap.setAllDWDLocations(dwdDescData);
 	dwdMap.setLocation(latitude, longitude);
 
 	int res = dwdMap.exec();

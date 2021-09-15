@@ -22,8 +22,11 @@ namespace Ui {
 }
 
 class QProgressDialog;
+class QAbstractProxyModel;
 class QTableWidgetItem;
 class DWDDownloader;
+class DWDMap;
+class DWDSortFilterProxyModel;
 
 class MainWindow : public QMainWindow
 {
@@ -57,6 +60,8 @@ private slots:
 
 	void on_lineEditYear_editingFinished();
 
+	void on_lineEditDistance_textChanged(const QString &arg1);
+
 private:
 
 	Ui::MainWindow						*m_ui;
@@ -66,10 +71,12 @@ private:
 	/*! Description input of all stations.
 		key of map is station id
 	*/
-	std::map<unsigned int, DWDDescriptonData>	m_descDataMap;
+	std::vector<DWDDescriptonData>				m_descData;
 	DWDData										m_dwdData;
 
 	QStringList									m_filelist;
+
+	DWDMap										*m_dwdMap;
 
 	QStandardItemModel							*m_model;
 	QProgressDialog								*m_progressDlg;
@@ -77,6 +84,8 @@ private:
 
 	/*! Table model instance for dwd data. */
 	DWDTableModel								*m_dwdTableModel = nullptr;
+	DWDSortFilterProxyModel						*m_proxyModel = nullptr;
+	QAbstractProxyModel							*m_abstractProxyModel = nullptr;
 
 };
 

@@ -10,6 +10,8 @@
 
 #include <QCheckBox>
 #include <QStandardItemModel>
+#include <QAbstractTableModel>
+#include <QAbstractProxyModel>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDir>
@@ -32,6 +34,7 @@
 #include "DWDMap.h"
 // #include "DWDDelegate.h"
 #include "DWDData.h"
+#include "DWDSortFilterProxyModel.h"
 
 #include "Constants.h"
 // #include "DWD_CheckBox.h"
@@ -75,8 +78,10 @@ public:
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
 	m_ui(new Ui::MainWindow),
+	m_dwdMap(new DWDMap),
 	m_progressDlg(nullptr),
-	m_dwdTableModel(new DWDTableModel(this))
+	m_dwdTableModel(new DWDTableModel(this)),
+	m_proxyModel(new DWDSortFilterProxyModel(this))
 {
 	m_ui->setupUi(this);
 
@@ -86,6 +91,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_ui->radioButtonRecent->blockSignals(false);
 
 
+	m_ui->lineEditDistance->setup(0,1000, "Distance in km", true, true);
 	m_ui->lineEditLatitude->setup(-90,90, "Latitude in Deg", true, true);
 	m_ui->lineEditLongitude->setup(-180,180, "Longitude in Deg", true, true);
 	m_ui->lineEditLatitude->setText("51.03");
@@ -95,7 +101,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_ui->lineEditYear->setText("2020");
 
 	QTableView * v = m_ui->tableView;
-	v->verticalHeader()->setDefaultSectionSize(19);
+	v->verticalHeader()->setDefaultSectionSize(25);
 	v->verticalHeader()->setVisible(false);
 	v->horizontalHeader()->setMinimumSectionSize(19);
 	v->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -153,12 +159,24 @@ void MainWindow::loadData(){
 void MainWindow::readData() {
 	// read all decription files
 	DWDDescriptonData descData;
-	m_descDataMap.clear();
-	descData.readAllDescriptions(m_descDataMap);
+	m_descData.clear();
+	descData.readAllDescriptions(m_descData);
+
+	calculateDistances();
+
 
 	// we give the data to our table model
-	m_dwdTableModel->m_descDataMap = &m_descDataMap;
-	m_ui->tableView->setModel(m_dwdTableModel); // we connect the table model to our view
+	m_dwdTableModel->m_descData = &m_descData;
+
+
+	m_proxyModel->setSourceModel( m_dwdTableModel );
+
+	m_ui->tableView->setModel(m_proxyModel); // we connect the table model to our view
+
+	m_ui->tableView->setSortingEnabled(true);
+	m_ui->tableView->sortByColumn(1, Qt::AscendingOrder);
+
+	//m_ui->tableView->resizeColumnsToContents();
 
 }
 
@@ -225,7 +243,7 @@ void MainWindow::on_pushButtonDownload_clicked(){
 			DWDData dwdData;
 			std::string dateString;
 			unsigned int stationId = QString::number(dataInRows[i]).rightJustified(5,'0').toUInt();
-			dateString = "_" + m_descDataMap[stationId].m_startDateString + "_" + m_descDataMap[stationId].m_endDateString;
+			dateString = "_" + m_descData[stationId].m_startDateString + "_" + m_descData[stationId].m_endDateString;
 
 			bool isRecent = m_ui->radioButtonRecent->isChecked();
 			QString filename = ""; //only needed by historical
@@ -435,23 +453,21 @@ void MainWindow::addToList(const QUrlInfo qUrlI){
 
 void MainWindow::calculateDistances() {
 
+	double lat1 = m_ui->lineEditLatitude->text().toDouble();
+	double lon1 = m_ui->lineEditLongitude->text().toDouble();
+
 	// we calculate for each description the distance to the reference location
-	for ( std::map<unsigned int, DWDDescriptonData>::iterator itDescData = m_descDataMap.begin();
-			itDescData != m_descDataMap.end(); ++itDescData) {
+	for ( DWDDescriptonData &data : m_descData ) {
 
-
-		double lat1 = m_ui->lineEditLatitude->text().toDouble();
-		double lon1 = m_ui->lineEditLongitude->text().toDouble();
-
-		double lat2 = itDescData->second.m_latitude;
-		double lon2 = itDescData->second.m_longitude;
+		double lat2 = data.m_latitude;
+		double lon2 = data.m_longitude;
 
 		double lat = (lat1 + lat2) / 2 * 0.01745;
 		double dx = 111.3 * cos(lat) * (lon1 - lon2);
 		double dy = 111.3 * (lat1 - lat2);
 
 		// calc distance
-		itDescData->second.m_distance = std::sqrt( std::pow( dx, 2 ) + std::pow( dy, 2 ) );
+		data.m_distance = std::sqrt( std::pow( dx, 2 ) + std::pow( dy, 2 ) );
 	}
 }
 
@@ -459,10 +475,20 @@ void MainWindow::on_pushButtonMap_clicked() {
 	double latitude = m_ui->lineEditLatitude->text().toDouble();
 	double longitude = m_ui->lineEditLongitude->text().toDouble();
 
-	DWDMap::getLocation(latitude, longitude, this);
+//	m_dwdMap->setAllDWDLocations(m_descData);
+
+	DWDMap::getLocation(m_descData, latitude, longitude, this);
 
 	m_ui->lineEditLatitude->setText(QString::number(latitude) );
 	m_ui->lineEditLongitude->setText(QString::number(longitude) );
+
+	calculateDistances();
+
+	QModelIndex top = m_dwdTableModel->index(0, 2);
+	QModelIndex bottom = m_dwdTableModel->index(m_descData.size(), 2);
+	emit m_dwdTableModel->dataChanged(top, bottom); // we just update the whole column
+
+	m_proxyModel->sort(1);
 
 }
 
@@ -486,7 +512,14 @@ void MainWindow::on_radioButtonHistorical_toggled(bool checked) {
 
 void MainWindow::on_lineEditYear_editingFinished() {
 	if(m_ui->lineEditYear->isValid()){
-
+		m_proxyModel->setFilterMinimumDate(QDate(m_ui->lineEditYear->value(), 1, 1));
+		m_proxyModel->setFilterKeyColumn(6);
+		m_proxyModel->setFilterMaximumDate(QDate(m_ui->lineEditYear->value(), 12, 31));
+		m_proxyModel->setFilterKeyColumn(7);
 	}
+}
 
+void MainWindow::on_lineEditDistance_textChanged(const QString &arg1) {
+	m_proxyModel->setFilterRegExp(arg1);
+	m_proxyModel->setFilterKeyColumn(0);
 }

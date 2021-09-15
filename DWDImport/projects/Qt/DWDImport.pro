@@ -44,6 +44,7 @@ SOURCES += \
 		../../src/DWDDownloader.cpp \
 		../../src/DWDMainWindow.cpp \
 		../../src/DWDMap.cpp \
+	../../src/DWDSortFilterProxyModel.cpp \
 		../../src/main.cpp \
     ../../src/DWDTableModel.cpp
 
@@ -61,6 +62,7 @@ HEADERS += \
 		../../src/DWDMainWindow.h \
 		../../src/DWDMap.h \
 		../../src/DWDScene.h \
+	../../src/DWDSortFilterProxyModel.h \
     ../../src/DWDTableModel.h
 
 DISTFILES +=
