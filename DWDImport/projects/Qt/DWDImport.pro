@@ -7,27 +7,38 @@ TEMPLATE = app
 # this pri must be sourced from all our applications
 include( ../../../externals/IBK/projects/Qt/IBK.pri )
 
-QT += xml core gui network printsupport widgets
+QT += xml core gui network printsupport widgets svg
 CONFIG += console
 
 LIBS += -L../../../lib$${DIR_PREFIX} \
-		#-lIBKMK \
-		-lQtExt \
-		-lQuaZIP \
-		-lCCM \
-		-lTiCPP \
-		-lIBK \
-		-lqftp
+                #-lIBKMK \
+                -lQtExt \
+                -lQuaZIP \
+                -lCCM \
+                -lTiCPP \
+                -lIBK \
+                -lqwt6 \
+                -lqftp
 
 INCLUDEPATH = \
-		../../src \
-		../../../externals/IBK/src \
-		#../../../externals/IBKMK/src \
-		../../../externals/QtExt/src \
-		../../../externals/CCM/src \
-		../../../externals/TiCPP/src \
-		../../../externals/QuaZIP/src \
-		../../../externals/qftp/src
+                ../../src \
+                ../../../externals/IBK/src \
+                #../../../externals/IBKMK/src \
+                ../../../externals/QtExt/src \
+                ../../../externals/CCM/src \
+                ../../../externals/TiCPP/src \
+                ../../../externals/QuaZIP/src \
+                ../../../externals/qwt/src \
+                ../../../externals/qftp/src
+
+win32 {
+PRE_TARGETDEPS += \
+        $$PWD/../../../externals/lib$${DIR_PREFIX}/IBK.lib \
+        $$PWD/../../../externals/lib$${DIR_PREFIX}/CCM.lib \
+        $$PWD/../../../externals/lib$${DIR_PREFIX}/QtExt.lib \
+        $$PWD/../../../externals/lib$${DIR_PREFIX}/qwt6.lib \
+        $$PWD/../../../externals/lib$${DIR_PREFIX}/QuaZIP.lib \
+}
 
 #TRANSLATIONS += ../../resources/translations/GenBuiGui.ts
 CODECFORSRC = UTF-8
@@ -36,34 +47,34 @@ RESOURCES += \
                 ../../resources/DWDImport.qrc
 
 SOURCES += \
-		../../src/Constants.cpp \
-		../../src/DWDData.cpp \
-		../../src/DWDDelegate.cpp \
-		../../src/DWDDescriptonData.cpp \
-		#../../src/DWD_CheckBox.cpp \
-		../../src/DWDDownloader.cpp \
-		../../src/DWDMainWindow.cpp \
-		../../src/DWDMap.cpp \
-	../../src/DWDSortFilterProxyModel.cpp \
-		../../src/main.cpp \
-    ../../src/DWDTableModel.cpp
+                ../../src/Constants.cpp \
+                ../../src/DWDData.cpp \
+                ../../src/DWDDelegate.cpp \
+                ../../src/DWDDescriptonData.cpp \
+                #../../src/DWD_CheckBox.cpp \
+                ../../src/DWDDownloader.cpp \
+                ../../src/DWDMainWindow.cpp \
+                ../../src/DWDMap.cpp \
+                ../../src/DWDSortFilterProxyModel.cpp \
+                ../../src/main.cpp \
+                 ../../src/DWDTableModel.cpp
 
 FORMS += \
-		../../src/DWDMainWindow.ui \
-		../../src/DWDMap.ui
+                ../../src/DWDMainWindow.ui \
+                ../../src/DWDMap.ui
 
 HEADERS += \
-		../../src/Constants.h \
-		../../src/DWDData.h \
-		../../src/DWDDelegate.h \
-		../../src/DWDDescriptonData.h \
-		#../../src/DWD_CheckBox.h \
-		../../src/DWDDownloader.h \
-		../../src/DWDMainWindow.h \
-		../../src/DWDMap.h \
-		../../src/DWDScene.h \
-	../../src/DWDSortFilterProxyModel.h \
-    ../../src/DWDTableModel.h
+                ../../src/Constants.h \
+                ../../src/DWDData.h \
+                ../../src/DWDDelegate.h \
+                ../../src/DWDDescriptonData.h \
+                #../../src/DWD_CheckBox.h \
+                ../../src/DWDDownloader.h \
+                ../../src/DWDMainWindow.h \
+                ../../src/DWDMap.h \
+                ../../src/DWDScene.h \
+                ../../src/DWDSortFilterProxyModel.h \
+                ../../src/DWDTableModel.h
 
 DISTFILES +=
 
