@@ -57,13 +57,13 @@ QVariant DWDTableModel::data(const QModelIndex & index, int role) const {
 				case ColId :
 					return dwdData.m_idStation;
 				case ColDistance :
-					return dwdData.m_distance;
+					return (double)(int)(100*dwdData.m_distance)/100;
 				case ColCountry :
 					return QString::fromLatin1(dwdData.m_country.c_str());
 				case ColLatitude :
-					return dwdData.m_latitude;
+					return (double)(int)(100*dwdData.m_latitude)/100;
 				case ColLongitude :
-					return dwdData.m_longitude;
+					return (double)(int)(100*dwdData.m_longitude)/100;
 				case ColName :
 					return QString::fromLatin1(dwdData.m_name.c_str());
 				case ColMinDate :
@@ -109,7 +109,7 @@ QVariant DWDTableModel::headerData(int section, Qt::Orientation orientation, int
 		static QStringList headers = QStringList()
 
 			<< tr("Station Id")
-			<< tr("Distance")
+			<< tr("Distance [km]")
 			<< tr("Longitude")
 			<< tr("Latitude")
 			<< tr("Name")
@@ -161,15 +161,16 @@ bool DWDTableModel::setData(const QModelIndex & index, const QVariant & value, i
 		if ((Qt::CheckState)value.toInt() == Qt::Checked) {
 			//	user has checked item
 			//  we have to uncheck all the data in the column if we check a different value
-			for ( DWDDescriptonData &dwdData : (*m_descData) ) {
+			for ( unsigned int i = 0; i < m_descData->size(); ++i ) {
+
+				DWDDescriptonData &dwdData = (*m_descData)[i];
 				if (dwdData.m_data[dataType].m_isChecked) { // we find where we need to update our view
 					dwdData.m_data[dataType].m_isChecked = false; // we uncheck the checkbox
+					Q_ASSERT(m_proxyModel!=nullptr);
+					QModelIndex srcIndex = QAbstractTableModel::index(i,col);
+					emit dataChanged(srcIndex, srcIndex); // we just update the whole column
+					break;
 				}
-
-				// get index range
-				QModelIndex top = QAbstractTableModel::index(0,index.column() );
-				QModelIndex bottom = QAbstractTableModel::index((*m_descData).size(), index.column() );
-				emit dataChanged(top, bottom); // we just update the whole column
 			}
 
 			checkBox.m_data[dataType].m_isChecked = true;
@@ -177,8 +178,8 @@ bool DWDTableModel::setData(const QModelIndex & index, const QVariant & value, i
 		else {
 			checkBox.m_data[dataType].m_isChecked = false; //user has unchecked item
 
-			emit dataChanged(index, index);
 		}
+		emit dataChanged(index, index);
 
 		return true;
 	}
@@ -191,21 +192,30 @@ Qt::ItemFlags DWDTableModel::flags(const QModelIndex & index) const {
 	if (!index.isValid()) // assert that index is valid
 		return Qt::ItemFlags();
 
-	int col = index.column();
 	DWDDescriptonData &checkBox = (*m_descData)[index.row()];
+	DWDDescriptonData::DWDDataTypes dataType;
 
-	switch (col) {
-		case 6:
-			return checkBox.m_data[DWDDescriptonData::D_TemperatureAndHumidity].m_isAvailable ? QAbstractItemModel::flags(index) | Qt::ItemIsUserCheckable : QAbstractItemModel::flags(index) ;
-		case 7:
-			return checkBox.m_data[DWDDescriptonData::D_Solar].m_isAvailable ? QAbstractItemModel::flags(index) | Qt::ItemIsUserCheckable : QAbstractItemModel::flags(index) ;
-		case 8:
-			return checkBox.m_data[DWDDescriptonData::D_Wind].m_isAvailable ? QAbstractItemModel::flags(index) | Qt::ItemIsUserCheckable : QAbstractItemModel::flags(index) ;
-		case 9:
-			return checkBox.m_data[DWDDescriptonData::D_Pressure].m_isAvailable ? QAbstractItemModel::flags(index) | Qt::ItemIsUserCheckable : QAbstractItemModel::flags(index) ;
+	switch (index.column()) {
+		case ColWind:
+			dataType = DWDDescriptonData::D_Wind;
+		break;
+		case ColAirTemp:
+			dataType = DWDDescriptonData::D_TemperatureAndHumidity;
+		break;
+		case ColPressure:
+			dataType = DWDDescriptonData::D_Pressure;
+		break;
+		case ColRadiation:
+			dataType = DWDDescriptonData::D_Solar;
+		break;
 	}
 
+	return checkBox.m_data[dataType].m_isAvailable ? QAbstractItemModel::flags(index) | Qt::ItemIsUserCheckable : QAbstractItemModel::flags(index) ;
 
-	return QAbstractItemModel::flags(index);
 
+}
+
+void DWDTableModel::reset() {
+	beginResetModel();
+	endResetModel();
 }

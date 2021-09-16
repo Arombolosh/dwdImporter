@@ -41,7 +41,8 @@ public:
 	bool setData(const QModelIndex & index, const QVariant & value, int role);
 	Qt::ItemFlags flags(const QModelIndex & index) const;
 
-
+	/*! Performs a model reset. */
+	void reset();
 
 	/*! Description input of all stations.
 		Map Cointainging all necessairy data about the weather station
@@ -49,7 +50,7 @@ public:
 	*/
 	std::vector<DWDDescriptonData>				*m_descData = nullptr;
 
-	QSortFilterProxyModel						m_proxyModel;
+	QSortFilterProxyModel						*m_proxyModel = nullptr;
 
 
 };
