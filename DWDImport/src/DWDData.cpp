@@ -44,7 +44,7 @@ void DWDData::createData(IBK::NotificationHandler * notify, const std::map<IBK::
 		m_label->setText( QString("Extract data of file ") + QString::fromStdString(fileName.str() ) );
 		for(unsigned int i=1;i<lines.size(); ++i){
 			addDataLine(lines[i], it->second);
-			notify->notify((double)i/lines.size() );
+			notify->notify((double)(i+1)/lines.size() );
 		}
 	}
 }
