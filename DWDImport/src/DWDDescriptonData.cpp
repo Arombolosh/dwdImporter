@@ -55,11 +55,11 @@ void DWDDescriptonData::calculateMinMaxDate() {
 
 		double secUntilEnd = m_maxDate.secondsUntil(m_endDate[i]);
 
-		if ( secUntilStart>0 )
+		if ( secUntilStart>0 || !m_minDate.isValid() )
 			m_minDate = m_startDate[i];
 
-		if ( secUntilEnd<0 )
-			m_maxDate = m_startDate[i];
+		if ( secUntilEnd<0 || !m_maxDate.isValid() )
+			m_maxDate = m_endDate[i];
 	}
 }
 
