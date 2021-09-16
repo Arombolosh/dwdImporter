@@ -4,6 +4,7 @@
 #include <IBK_NotificationHandler.h>
 #include <IBK_messages.h>
 #include <IBK_FileReader.h>
+#include <IBK_physics.h>
 
 #include <QtExt_Directories.h>
 #include <QtExt_ValidatingLineEdit.h>
@@ -25,6 +26,9 @@
 #include <QMessageBox>
 #include <QItemDelegate>
 #include <QtNumeric>
+
+#include <qwt_plot_curve.h>
+#include <qwt_series_data.h>
 
 #include <qftp.h>
 
@@ -56,9 +60,9 @@ public:
 			return;
 		m_bar->setValue(m_value);
 		qApp->processEvents();
-//		if(m_bar->wasCanceled()){
-//			throw IBK::Exception("Canceled", FUNC_ID);
-//		}
+		//		if(m_bar->wasCanceled()){
+		//			throw IBK::Exception("Canceled", FUNC_ID);
+		//		}
 	}
 
 	/*! Reimplement this function in derived child 'notification' objects
@@ -97,8 +101,10 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_ui->lineEditLatitude->setText("51.03");
 	m_ui->lineEditLongitude->setText("13.7");
 
-	m_ui->lineEditYear->setup(1950,2023,tr("Year of interest."), true, true);
-	m_ui->lineEditYear->setText("2020");
+	//	m_ui->lineEditYear->setup(1950,2023,tr("Year of interest."), true, true);
+	//	m_ui->lineEditYear->setText("2020");
+
+	//	on_lineEditYear_editingFinished();
 
 	QTableView * v = m_ui->tableView;
 	v->verticalHeader()->setDefaultSectionSize(25);
@@ -118,6 +124,14 @@ MainWindow::MainWindow(QWidget *parent) :
 	v->horizontalHeader()->setFont(f); // Note: on Linux/Mac this won't work until Qt 5.11.1 - this was a bug between Qt 4.8...5.11.1
 
 	m_progressTimer.start();
+
+	// we fill the comboBox
+	for (unsigned int year = 1950; year<2025; year++)
+		m_ui->comboBoxYear->addItem(QString::number(year) );
+
+	m_ui->comboBoxYear->setCurrentText("2020");
+
+	on_horizontalSliderDistance_valueChanged(50);
 
 	connect( &m_dwdData, &DWDData::progress, this, &MainWindow::setProgress );
 
@@ -154,58 +168,7 @@ void MainWindow::loadData(){
 	m_manager->execute(); // simply registers network requests
 }
 
-
-
-void MainWindow::readData() {
-	// read all decription files
-	DWDDescriptonData descData;
-	m_descData.clear();
-	descData.readAllDescriptions(m_descData);
-
-	calculateDistances();
-
-
-	// we give the data to our table model
-	m_dwdTableModel->m_descData = &m_descData;
-
-
-	m_proxyModel->setSourceModel( m_dwdTableModel );
-
-	m_ui->tableView->setModel(m_proxyModel); // we connect the table model to our view
-
-	m_ui->tableView->setSortingEnabled(true);
-	m_ui->tableView->sortByColumn(1, Qt::AscendingOrder);
-
-	//m_ui->tableView->resizeColumnsToContents();
-
-}
-
-
-
-
-/// TODO
-/// Herunterladen der Beschreibungsdateien
-/// Lesen der Stationsbeschreibungsdateien
-///
-/* Stations_id von_datum bis_datum Stationshoehe geoBreite geoLaenge Stationsname Bundesland
------------ --------- --------- ------------- --------- --------- ----------------------------------------- ----------
-012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
-00003 19500401 20110331            202     50.7827    6.0941 Aachen                                   Nordrhein-Westfalen
-00044 20070401 20210314             44     52.9336    8.2370 Großenkneten                             Niedersachsen
-*/
-/// sind für die ausgewählte datei daten vorhanden
-/// Intervalfestlegung
-/// Temperatur Feuchte
-/// Strahlung
-/// Wind, etc...
-///
-/// Daten runterladen
-/// Fehlerprüfung
-///		Fehlwerte korrigieren
-/// fertigstellen für CCM (epw) oder ccd (nicht jahresscheiben)
-
-
-void MainWindow::on_pushButtonDownload_clicked(){
+void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 
 	//check longitude and latitude
 	if(m_ui->lineEditLatitude->text().isEmpty()){
@@ -219,6 +182,14 @@ void MainWindow::on_pushButtonDownload_clicked(){
 
 	std::vector<int> dataInRows(4,-1);
 	//find selected elements
+	for ( unsigned int i = 0; i<m_descData.size(); ++i ) {
+		for ( unsigned int j = 0; j<4; ++j ) {
+			DWDDescriptonData &dwdData = m_descData[i];
+
+			if (dwdData.m_data[j].m_isChecked)
+				dataInRows[j] = i;
+		}
+	}
 
 
 	if(dataInRows == std::vector<int>(4,-1)){
@@ -228,22 +199,27 @@ void MainWindow::on_pushButtonDownload_clicked(){
 
 	std::vector<QString> filenames(4); //hold filenames for download
 	std::vector<DWDData::DataType>	types{DWDData::DT_AirTemperature, DWDData::DT_RadiationDiffuse,
-									DWDData::DT_WindDirection,DWDData::DT_Pressure};
+				DWDData::DT_WindDirection,DWDData::DT_Pressure};
 
-	DWDDownloader manager(this);
+	m_manager = new DWDDownloader(this);
+	m_manager->m_progress = m_ui->progressBar;
+	m_manager->m_label = m_ui->labelDownload;
+	m_manager->m_urls.clear();
 
-	manager.m_progress = m_ui->progressBar;
-	manager.m_label = m_ui->labelDownload;
-
-	connect( &manager, &DWDDownloader::finished, this, &MainWindow::readData );
+	connect( m_manager, &DWDDownloader::finished, this, &MainWindow::readData );
 	//download the data (zip)
 
 	for(unsigned int i=0; i<4; ++i){
 		if(dataInRows[i] != -1){
 			DWDData dwdData;
 			std::string dateString;
-			unsigned int stationId = QString::number(dataInRows[i]).rightJustified(5,'0').toUInt();
-			dateString = "_" + m_descData[stationId].m_startDateString + "_" + m_descData[stationId].m_endDateString;
+
+			int idx = dataInRows[i];
+
+			unsigned int stationId = QString::number(m_descData[idx].m_idStation).rightJustified(5,'0').toUInt();
+			// find our descData
+
+			dateString = "_" + m_descData[idx].m_startDateString + "_" + m_descData[idx].m_endDateString;
 
 			bool isRecent = m_ui->radioButtonRecent->isChecked();
 			QString filename = ""; //only needed by historical
@@ -264,9 +240,9 @@ void MainWindow::on_pushButtonDownload_clicked(){
 
 
 				switch(i){
-					case 0:	ftp->cd("air_temperature"); break;
-					case 2:	ftp->cd("wind"); break;
-					case 3:	ftp->cd("pressure"); break;
+				case 0:	ftp->cd("air_temperature"); break;
+				case 2:	ftp->cd("wind"); break;
+				case 3:	ftp->cd("pressure"); break;
 				}
 				ftp->cd("historical");
 				ftp->list();
@@ -289,20 +265,19 @@ void MainWindow::on_pushButtonDownload_clicked(){
 				dwdData.m_urls.clear();
 				qDebug() << "\nclear\n";
 			}
-			manager.m_urls << dwdData.urlFilename(types[i], QString::number(dataInRows[i]).rightJustified(5,'0'), dateString, isRecent, filename);
-			qDebug() << manager.m_urls.back();
+			m_manager->m_urls << dwdData.urlFilename(types[i], QString::number(m_descData[idx].m_idStation).rightJustified(5,'0'), dateString, isRecent, filename);
+			qDebug() << m_manager->m_urls.back();
 
 			if(isRecent || i==1)
-				filenames[i] = dwdData.filename(types[i], QString::number(dataInRows[i]).rightJustified(5,'0'),dateString, isRecent);
+				filenames[i] = dwdData.filename(types[i], QString::number(m_descData[idx].m_idStation).rightJustified(5,'0'),dateString, isRecent);
 			else
 				filenames[i] = filename.mid(0, filename.length()-4);
 		}
 	}
-	if(!manager.m_urls.empty())
-		QTimer::singleShot(0, &manager, SLOT(execute() ) );
+	if(!m_manager->m_urls.empty())
+		m_manager->execute();
 
-	// dirty way to wait till asynchronous download is finished
-	while ( manager.m_isRunning ) // wait for data to be downloaded (the little bit dirty way)
+	while ( m_manager->m_isRunning )
 		qApp->processEvents();
 
 	//Check if all downloaded files are valid
@@ -315,10 +290,10 @@ void MainWindow::on_pushButtonDownload_clicked(){
 		if(!checkfile.exists()){
 			QString cat;
 			switch (types[i]) {
-				case DWDData::DT_AirTemperature:	cat = "Temperature and relative Humidity";		break;
-				case DWDData::DT_RadiationDiffuse:	cat = "Radiation"						;		break;
-				case DWDData::DT_WindDirection:		cat = "Wind";									break;
-				case DWDData::DT_Pressure:			cat = "Pressure";								break;
+			case DWDData::DT_AirTemperature:	cat = "Temperature and relative Humidity";		break;
+			case DWDData::DT_RadiationDiffuse:	cat = "Radiation"						;		break;
+			case DWDData::DT_WindDirection:		cat = "Wind";									break;
+			case DWDData::DT_Pressure:			cat = "Pressure";								break;
 			}
 			QMessageBox::warning(this, QString(), QString("Download of file '%1' was not successfull. Category: '%2'").arg(filenames[i]+".zip").arg(cat));
 		}
@@ -360,36 +335,26 @@ void MainWindow::on_pushButtonDownload_clicked(){
 		if(checkedFileNames[i] == IBK::Path())
 			continue; // skip empty states
 		switch (i) {
-			case 0:
-				filenamesForReading[checkedFileNames[i]] = std::set<DWDData::DataType>{DWDData::DT_AirTemperature, DWDData::DT_RelativeHumidity}; break;
-			case 1:
-				filenamesForReading[checkedFileNames[i]] = std::set<DWDData::DataType>{DWDData::DT_RadiationDiffuse,DWDData::DT_RadiationGlobal, DWDData::DT_RadiationLongWave, DWDData::DT_ZenithAngle}; break;
-			case 2:
-				filenamesForReading[checkedFileNames[i]] = std::set<DWDData::DataType>{DWDData::DT_WindDirection,DWDData::DT_WindSpeed}; break;
-			case 3:
-				filenamesForReading[checkedFileNames[i]] = std::set<DWDData::DataType>{DWDData::DT_Pressure}; break;
+		case 0:
+			filenamesForReading[checkedFileNames[i]] = std::set<DWDData::DataType>{DWDData::DT_AirTemperature, DWDData::DT_RelativeHumidity}; break;
+		case 1:
+			filenamesForReading[checkedFileNames[i]] = std::set<DWDData::DataType>{DWDData::DT_RadiationDiffuse,DWDData::DT_RadiationGlobal, DWDData::DT_RadiationLongWave, DWDData::DT_ZenithAngle}; break;
+		case 2:
+			filenamesForReading[checkedFileNames[i]] = std::set<DWDData::DataType>{DWDData::DT_WindDirection,DWDData::DT_WindSpeed}; break;
+		case 3:
+			filenamesForReading[checkedFileNames[i]] = std::set<DWDData::DataType>{DWDData::DT_Pressure}; break;
 		}
 	}
 	//read data
 
-	m_dwdData.m_startTime = IBK::Time(m_ui->lineEditYear->text().toInt(),0);
-
-//	m_progressDlg = new QProgressDialog( tr("Progress"), tr("Abort"), 0, 100, this);
-//	m_progressDlg->setWindowModality(Qt::WindowModal);
-//	m_progressDlg->setValue(0);
-//	m_progressDlg->hide();
-//	qApp->processEvents();
-
-//	m_progressDlg->show();
+	m_dwdData.m_startTime = IBK::Time(m_ui->comboBoxYear->currentText().toInt(),0);
 
 	m_ui->progressBar->setRange(0,100);
 	ProgressNotify progressNotify(m_ui->progressBar);
 
 	m_dwdData.m_label = m_ui->labelDownload;
 	m_dwdData.createData(&progressNotify, filenamesForReading);
-//	m_progressDlg->hide();
 
-	//	dwdData.writeTSV(2001);
 	//copy all data in range and create an epw
 	double latiDeg = m_ui->lineEditLatitude->text().toDouble();
 	double longiDeg = m_ui->lineEditLongitude->text().toDouble();
@@ -442,9 +407,123 @@ void MainWindow::on_pushButtonDownload_clicked(){
 		}
 	}
 
+	if ( showPreview ) {
+//		m_ui->tempPlot = new QwtPlot( );
 
-	m_dwdData.exportEPW(m_ui->lineEditYear->text().toInt(), latiDeg, longiDeg);
-	QMessageBox::information(this, QString(), "Export done.");
+		m_ui->tempPlot->detachItems();
+
+		// create plot as main widget
+		m_ui->tempPlot->setAxisScale(QwtPlot::xBottom, 0, 365, 10);
+		m_ui->tempPlot->setAxisScale(QwtPlot::yLeft, -10, 40, 5);
+		m_ui->tempPlot->setAxisScale(QwtPlot::yRight, 0, 1000, 100);
+
+		m_ui->tempPlot->setAxisTitle(QwtPlot::xBottom, "Day of year");
+		m_ui->tempPlot->setAxisTitle(QwtPlot::yLeft, "Temperatur [C]");
+		m_ui->tempPlot->setAxisTitle(QwtPlot::yRight, "SW Radiation [W/m2]");
+
+//		m_ui->tempPlot->axisEnabled(QwtPlot::yLeft);
+		m_ui->tempPlot->enableAxis(QwtPlot::yRight);
+
+		m_ui->tempPlot->setTitle( "Weather Data" );
+		m_ui->tempPlot->setCanvasBackground( Qt::white );
+
+		// create a new curve to be shown in the plot and set some properties
+		QwtPlotCurve *curveTemp = new QwtPlotCurve();
+		QwtPlotCurve *curveRad= new QwtPlotCurve();
+		curveTemp->setTitle( "Air Temp" ); // will later be used in legend
+		curveTemp->setPen( Qt::blue, 2 ); // color and thickness in pixels
+		curveTemp->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
+
+		curveRad->setTitle( "SW Rad" ); // will later be used in legend
+		curveRad->setPen( Qt::yellow, 2 ); // color and thickness in pixels
+		curveRad->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
+
+		// data points
+		QPolygonF pointsTemp, pointsRad;
+
+		for ( unsigned int i=0; i<m_dwdData.m_data.size(); ++i ) {
+			DWDData::IntervalData intVal = m_dwdData.m_data[i];
+
+			pointsTemp << QPointF( (double)i/24, intVal.m_airTemp );
+			pointsRad << QPointF( (double)i/24, intVal.m_globalRad );
+		}
+
+		// give some points to the curve
+		curveTemp->setSamples( pointsTemp );
+		curveRad->setSamples( pointsRad );
+
+		// set the curve in the plot
+		curveTemp->attach( m_ui->tempPlot );
+		curveRad->attach( m_ui->tempPlot );
+
+		m_ui->tempPlot->replot();
+		m_ui->tempPlot->repaint();
+		m_ui->tempPlot->show();
+	}
+
+	if ( exportEPW ) {
+		m_dwdData.exportEPW(m_ui->comboBoxYear->currentText().toInt(), latiDeg, longiDeg);
+		QMessageBox::information(this, QString(), "Export done.");
+	}
+
+
+}
+
+
+
+void MainWindow::readData() {
+	// read all decription files
+	DWDDescriptonData descData;
+	m_descData.clear();
+	descData.readAllDescriptions(m_descData);
+
+	calculateDistances();
+
+
+	// we give the data to our table model
+	m_dwdTableModel->m_descData = &m_descData;
+
+
+	m_proxyModel->setSourceModel( m_dwdTableModel );
+
+	m_ui->tableView->setModel(m_proxyModel); // we connect the table model to our view
+
+	m_ui->tableView->setSortingEnabled(true);
+	m_ui->tableView->sortByColumn(1, Qt::AscendingOrder);
+
+	m_dwdTableModel->m_proxyModel = m_proxyModel;
+	//m_ui->tableView->resizeColumnsToContents();
+
+	m_ui->tableView->reset();
+}
+
+
+
+
+/// TODO
+/// Herunterladen der Beschreibungsdateien
+/// Lesen der Stationsbeschreibungsdateien
+///
+/* Stations_id von_datum bis_datum Stationshoehe geoBreite geoLaenge Stationsname Bundesland
+----------- --------- --------- ------------- --------- --------- ----------------------------------------- ----------
+012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+00003 19500401 20110331            202     50.7827    6.0941 Aachen                                   Nordrhein-Westfalen
+00044 20070401 20210314             44     52.9336    8.2370 Großenkneten                             Niedersachsen
+*/
+/// sind für die ausgewählte datei daten vorhanden
+/// Intervalfestlegung
+/// Temperatur Feuchte
+/// Strahlung
+/// Wind, etc...
+///
+/// Daten runterladen
+/// Fehlerprüfung
+///		Fehlwerte korrigieren
+/// fertigstellen für CCM (epw) oder ccd (nicht jahresscheiben)
+
+
+void MainWindow::on_pushButtonDownload_clicked(){
+	downloadData(true, true);
 }
 
 void MainWindow::addToList(const QUrlInfo qUrlI){
@@ -459,15 +538,16 @@ void MainWindow::calculateDistances() {
 	// we calculate for each description the distance to the reference location
 	for ( DWDDescriptonData &data : m_descData ) {
 
+
 		double lat2 = data.m_latitude;
 		double lon2 = data.m_longitude;
 
-		double lat = (lat1 + lat2) / 2 * 0.01745;
-		double dx = 111.3 * cos(lat) * (lon1 - lon2);
-		double dy = 111.3 * (lat1 - lat2);
+		// https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula
+
+		double a = 0.5 - cos((lat2-lat1)*IBK::DEG2RAD)/2 + cos(lat1*IBK::DEG2RAD) * cos(lat2*IBK::DEG2RAD) * (1-cos((lon2-lon1)*IBK::DEG2RAD))/2;
 
 		// calc distance
-		data.m_distance = std::sqrt( std::pow( dx, 2 ) + std::pow( dy, 2 ) );
+		data.m_distance = 12742 * std::asin(sqrt(a)); //2*R*asin
 	}
 }
 
@@ -475,20 +555,22 @@ void MainWindow::on_pushButtonMap_clicked() {
 	double latitude = m_ui->lineEditLatitude->text().toDouble();
 	double longitude = m_ui->lineEditLongitude->text().toDouble();
 
-//	m_dwdMap->setAllDWDLocations(m_descData);
+	//	m_dwdMap->setAllDWDLocations(m_descData);
 
 	DWDMap::getLocation(m_descData, latitude, longitude, this);
 
 	m_ui->lineEditLatitude->setText(QString::number(latitude) );
 	m_ui->lineEditLongitude->setText(QString::number(longitude) );
 
+
+
 	calculateDistances();
 
-	QModelIndex top = m_dwdTableModel->index(0, 2);
-	QModelIndex bottom = m_dwdTableModel->index(m_descData.size(), 2);
-	emit m_dwdTableModel->dataChanged(top, bottom); // we just update the whole column
+	//	QModelIndex top = m_dwdTableModel->index(0, 2);
+	//	QModelIndex bottom = m_dwdTableModel->index(m_descData.size(), 2);
+	//	emit m_dwdTableModel->dataChanged(top, bottom); // we just update the whole column
 
-	m_proxyModel->sort(1);
+	m_dwdTableModel->reset();
 
 }
 
@@ -499,27 +581,40 @@ void MainWindow::setProgress(int min, int max, int val) {
 		m_progressDlg->setMaximum(max);
 		m_progressDlg->setMaximum(min);
 		m_progressDlg->setValue(val);
-//		if (m_progressDlg->wasCanceled())
-//			throw IBK::Exception("Import canceled.", FUNC_ID);
+		//		if (m_progressDlg->wasCanceled())
+		//			throw IBK::Exception("Import canceled.", FUNC_ID);
 		m_progressTimer.start();
 	}
 
+	m_dwdTableModel->reset();
 }
 
 void MainWindow::on_radioButtonHistorical_toggled(bool checked) {
 	loadData();
+
+	m_ui->tableView->reset();
 }
 
-void MainWindow::on_lineEditYear_editingFinished() {
-	if(m_ui->lineEditYear->isValid()){
-		m_proxyModel->setFilterMinimumDate(QDate(m_ui->lineEditYear->value(), 1, 1));
-		m_proxyModel->setFilterKeyColumn(6);
-		m_proxyModel->setFilterMaximumDate(QDate(m_ui->lineEditYear->value(), 12, 31));
-		m_proxyModel->setFilterKeyColumn(7);
-	}
+
+void MainWindow::on_lineEditNameFilter_textChanged(const QString &filter) {
+	m_proxyModel->setFilterRegExp(filter);
+	m_proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+	m_proxyModel->setFilterKeyColumn(4);
 }
 
-void MainWindow::on_lineEditDistance_textChanged(const QString &arg1) {
-	m_proxyModel->setFilterRegExp(arg1);
-	m_proxyModel->setFilterKeyColumn(0);
+void MainWindow::on_comboBoxYear_currentIndexChanged(const QString &arg1) {
+	m_proxyModel->setFilterMinimumDate(QDate(m_ui->comboBoxYear->currentText().toInt(), 1, 1));
+	m_proxyModel->setFilterKeyColumn(6);
+	m_proxyModel->setFilterMaximumDate(QDate(m_ui->comboBoxYear->currentText().toInt(), 12, 31));
+	m_proxyModel->setFilterKeyColumn(7);
+}
+
+void MainWindow::on_horizontalSliderDistance_valueChanged(int value) {
+	m_ui->lineEditDistance->setText(QString::number(value) );
+	m_proxyModel->setFilterMaximumDistance(value);
+	m_proxyModel->setFilterKeyColumn(1);
+}
+
+void MainWindow::on_pushButtonPreview_clicked() {
+	downloadData(true, false);
 }

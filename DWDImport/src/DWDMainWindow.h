@@ -39,6 +39,7 @@ public:
 
 	void loadData();
 
+	void downloadData(bool showPreview = true, bool exportEPW = false);
 
 	void addToList(const QUrlInfo qUrlI);
 
@@ -58,9 +59,13 @@ private slots:
 
 	void on_radioButtonHistorical_toggled(bool checked);
 
-	void on_lineEditYear_editingFinished();
+	void on_lineEditNameFilter_textChanged(const QString &filter);
 
-	void on_lineEditDistance_textChanged(const QString &arg1);
+	void on_comboBoxYear_currentIndexChanged(const QString &arg1);
+
+	void on_horizontalSliderDistance_valueChanged(int value);
+
+	void on_pushButtonPreview_clicked();
 
 private:
 
