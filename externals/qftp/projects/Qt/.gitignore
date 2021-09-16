@@ -1,1 +1,3 @@
 /Makefile.qftp
+*.Debug
+*.Release
