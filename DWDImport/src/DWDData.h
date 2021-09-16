@@ -52,6 +52,7 @@ public:
 			}
 		}
 
+
 		double				m_airTemp		= -999;		///< Air temperature in C
 		double				m_relHum		= -999;		///< Relative humidity in %
 		double				m_counterRad	= -999;		///< Long wave counter radiation in W/m2
@@ -65,6 +66,7 @@ public:
 
 
 	};
+
 
 	/*! Reads all given dwd files and creates the data. */
 	void createData(IBK::NotificationHandler * notify, const std::map<IBK::Path, std::set<DWDData::DataType>> &filenames, unsigned int intervalDuration = 3600);

@@ -50,6 +50,7 @@ void DWDData::createData(IBK::NotificationHandler * notify, const std::map<IBK::
 }
 
 
+
 void DWDData::addDataLine(std::string &line, const std::set<DataType> &dataType){
 	std::vector<std::string> data;
 
