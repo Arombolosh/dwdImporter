@@ -1,14 +1,16 @@
 TEMPLATE = subdirs
 
 SUBDIRS = \
-		IBK \
-		#IBKMK \
-		QtExt \
-		QuaZIP \
-		CCM \
-		TiCPP \
-		qtftp \
-		DWDImport
+                IBK \
+                #IBKMK \
+                QtExt \
+                QuaZIP \
+                CCM \
+                TiCPP \
+                qtftp \
+                qwt \
+                DWDImport
+
 
 # where to find the sub projects
 #DWDImport.file = ../../DWDImport/projects/Qt/DWDImport.pro
@@ -20,6 +22,8 @@ QuaZIP.file = ../../externals/QuaZIP/projects/Qt/QuaZIP.pro
 CCM.file = ../../externals/CCM/projects/Qt/CCM.pro
 TiCPP.file = ../../externals/TiCPP/projects/Qt/TiCPP.pro
 qtftp.file = ../../externals/qftp/projects/Qt/qftp.pro
+qwt.file = ../../externals/qwt/projects/Qt/qwt.pro
+
 
 
 DWDImport.file = ../../DWDImport/projects/Qt/DWDImport.pro
@@ -31,5 +35,5 @@ QtExt.depends = IBK
 QuaZIP.depends = IBK
 CCM.depends = IBK TiCPP
 TiCPP.depends = IBK
-DWDImport.depends = IBK QtExt qtftp #IBKMK
+DWDImport.depends = IBK QtExt qtftp qwt #IBKMK
 
