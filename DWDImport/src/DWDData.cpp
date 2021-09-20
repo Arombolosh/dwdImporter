@@ -39,7 +39,7 @@ void DWDData::createData(IBK::NotificationHandler * notify, const std::map<IBK::
 		m_label->setText( QString("Reading file ") + QString::fromStdString(fileName.str() ) );
 		fileReader.readAll(fileName, lines, std::vector<std::string>{"\n"}, 0, notify);
 
-		qDebug() << "Get data of files ------------------";
+		qDebug() << "Get data of files --------------------";
 
 		m_label->setText( QString("Extract data of file ") + QString::fromStdString(fileName.str() ) );
 		for(unsigned int i=1;i<lines.size(); ++i){

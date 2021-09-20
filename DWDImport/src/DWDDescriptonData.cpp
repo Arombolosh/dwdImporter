@@ -77,6 +77,18 @@ void DWDDescriptonData::readDescription(const IBK::Path &filepath, std::vector<D
 	//fill lines vector
 	fileReader.readAll(filepath, lines,std::vector<std::string>{"\n"});
 
+
+	// --------------------------------------------------
+	// we want to find the right line
+
+//	std::ifstream f("FILE.txt");
+//	std::string s;
+
+//	for (int i = 1; i <= LINE; i++)
+//			std::getline(f, s);
+
+	// --------------------------------------------------
+
 	//parse each line
 	for (unsigned int i=2; i<lines.size(); ++i ) {
 		const std::string & line =lines[i];
