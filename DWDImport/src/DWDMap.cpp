@@ -5,6 +5,20 @@
 #include "DWDDescriptonData.h"
 
 #include <QMouseEvent>
+#include <QGraphicsEllipseItem>
+#include <QString>
+
+QDate convertIBKTimeToQDate2(const IBK::Time &time) {
+
+	int y;
+	unsigned int m, d;
+	double s;
+
+	time.decomposeDate(y, m, d, s);
+
+	return QDate(y, m+1, d+1);
+
+};
 
 void getPosition(QSize size, const double &longitude, const double &latitude, double &xPos, double &yPos) {
 	int width = size.width();
@@ -14,9 +28,17 @@ void getPosition(QSize size, const double &longitude, const double &latitude, do
 	xPos = width + ((15.043611 - longitude) / ( 5.866944 - 15.043611 ))*width;
 }
 
-void drawEllipse(DWDScene *scene, int xPos, int yPos, int rad, QColor color) {
-	scene->addEllipse(xPos-rad, yPos-rad, rad*2.0, rad*2.0,
-							QPen(color), QBrush(color, Qt::SolidPattern));
+void drawLocationInformation(QGraphicsItemGroup *group, int xPos, int yPos, int rad, QColor color) {
+	//	scene->addEllipse(xPos-rad, yPos-rad, rad*2.0, rad*2.0,
+	//							QPen(color), QBrush(color, Qt::SolidPattern));
+
+	QGraphicsEllipseItem *ellipse = new QGraphicsEllipseItem(xPos-rad, yPos-rad, rad, rad);
+	//	>ellipse->setPen(QPen (color, 2, Qt::SolidLine));
+	ellipse->setBrush(QBrush (color) );
+
+	group->addToGroup(ellipse);
+
+	//	scene->addEllipse(xPos-rad, yPos-rad, rad, rad, QPen(color, 2, Qt::SolidLine), QBrush() );
 }
 
 DWDMap::DWDMap(QWidget *parent) :
@@ -39,10 +61,48 @@ DWDMap::DWDMap(QWidget *parent) :
 	qreal width = m_scene->width();
 	qreal height = m_scene->height();
 
+	m_ui->checkBoxAirTemp->setText("Air Temperature & Relative Humidity");
+	m_ui->checkBoxRadiation->setText("SW Radiation");
+	m_ui->checkBoxPressure->setText("Pressure");
+	m_ui->checkBoxWind->setText("Wind");
+
+	//	blockSignals(true);
+	//	m_ui->checkBoxAirTemp->setChecked(true);
+	//	m_ui->checkBoxRadiation->setChecked(true);
+	//	m_ui->checkBoxPressure->setChecked(true);
+	//	m_ui->checkBoxWind->setChecked(true);
+	//	blockSignals(false);
+
+	m_ui->comboBoxYear->blockSignals(true);
+	// we fill the comboBox
+	for (unsigned int year = 1950; year<2025; year++)
+		m_ui->comboBoxYear->addItem(QString::number(year) );
+	m_ui->comboBoxYear->blockSignals(false);
+
 	view->setFixedSize(width, height);
 	view->setSceneRect(0, 0, width, height);
 	view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+	m_color[DWDDescriptonData::D_Wind] = Qt::green;
+	m_color[DWDDescriptonData::D_TemperatureAndHumidity] = Qt::blue;
+	m_color[DWDDescriptonData::D_Solar] = QColor ( 250, 170, 30 );
+	m_color[DWDDescriptonData::D_Pressure] = QColor ( 130, 30, 250 );
+
+	m_descTypeToDraw[DWDDescriptonData::D_Wind] = true;
+	m_descTypeToDraw[DWDDescriptonData::D_TemperatureAndHumidity] = true;
+	m_descTypeToDraw[DWDDescriptonData::D_Solar] = true;
+	m_descTypeToDraw[DWDDescriptonData::D_Pressure] = true;
+
+	m_items[DWDDescriptonData::D_Wind] = new QGraphicsItemGroup();
+	m_items[DWDDescriptonData::D_TemperatureAndHumidity] = new QGraphicsItemGroup();
+	m_items[DWDDescriptonData::D_Solar] = new QGraphicsItemGroup();
+	m_items[DWDDescriptonData::D_Pressure] = new QGraphicsItemGroup();
+
+	m_scene->addItem(m_items[DWDDescriptonData::D_Wind]);
+	m_scene->addItem(m_items[DWDDescriptonData::D_Solar]);
+	m_scene->addItem(m_items[DWDDescriptonData::D_TemperatureAndHumidity]);
+	m_scene->addItem(m_items[DWDDescriptonData::D_Pressure]);
 }
 
 DWDMap::~DWDMap() {
@@ -64,7 +124,7 @@ void DWDMap::mousePressEvent(QMouseEvent *e) {
 		m_scene->removeItem( list.at(0) );
 
 	m_scene->addEllipse(pt.x()-rad-18, pt.y()-rad-18, rad*2.0, rad*2.0,
-							QPen(), QBrush(Qt::SolidPattern));
+						QPen(), QBrush(Qt::SolidPattern));
 
 	m_latitude = m_scene->m_latitude;
 	m_longitude = m_scene->m_longitude;
@@ -87,38 +147,112 @@ void DWDMap::setLocation(const double &latitude, const double &longitude) {
 
 	double rad = 5;
 
-	drawEllipse(m_scene, xPos, yPos, 5, Qt::black);
+	//	drawWeather(m_scene, xPos, yPos, 8, Qt::black);
 
 	m_ui->lineEditLatitude->setText(QString::number(m_latitude));
 	m_ui->lineEditLongitude->setText(QString::number(m_longitude));
 }
 
-void DWDMap::setAllDWDLocations(const std::vector<DWDDescriptonData> & dwdDescData) {
-	for (const DWDDescriptonData &dwdData : dwdDescData) {
-
-		double xPos;
-		double yPos;
-
-		m_size = m_ui->graphicsViewMap->maximumViewportSize();
-
-		getPosition(m_size, dwdData.m_longitude, dwdData.m_latitude, xPos, yPos);
-
-		drawEllipse(m_scene, xPos, yPos, 3, Qt::gray);
-	}
+void DWDMap::setYear(const unsigned int & year) {
+	m_year = year;
+	drawAllDataForYear(m_year);
 }
 
-bool DWDMap::getLocation(const std::vector<DWDDescriptonData> & dwdDescData, double &latitude, double &longitude, QWidget *parent) {
+void DWDMap::setAllDWDLocations(const std::vector<DWDDescriptonData> & dwdDescData) {
+
+	m_descData = &dwdDescData;
+}
+
+void DWDMap::drawAllDataForYear(unsigned int year){
+
+	double xPos;
+	double yPos;
+
+	m_year = year;
+
+	m_size = m_ui->graphicsViewMap->maximumViewportSize();
+
+	m_items[DWDDescriptonData::D_Solar]->setZValue(99);
+
+	QDate minDate (year, 01, 01);
+	QDate maxDate (year, 12, 31);
+
+
+	for ( unsigned int i = 0; i<DWDDescriptonData::DWDDataTypes::NUM_D; ++i) {
+		for (QGraphicsItem *item : m_items[i]->childItems() ) {
+			m_items[DWDDescriptonData::D_Wind]->removeFromGroup(item);
+			m_scene->removeItem(item);
+		}
+	}
+
+	for ( unsigned int j = 0; j<m_descData->size(); ++j ) {
+		for ( unsigned int i = 0; i<DWDDescriptonData::DWDDataTypes::NUM_D; ++i) {
+
+			const DWDDescriptonData &dwdData = (*m_descData)[j];
+
+			if (!dwdData.m_data[i].m_isAvailable )
+				continue;
+
+			if ( !( convertIBKTimeToQDate2(dwdData.m_minDate) < minDate && convertIBKTimeToQDate2(dwdData.m_maxDate) > maxDate ) )
+				continue;
+
+			getPosition(m_size, (*m_descData)[j].m_longitude, (*m_descData)[j].m_latitude, xPos, yPos);
+			double rad = 5;
+
+			drawLocationInformation(m_items[i], xPos, yPos, 8, m_color[i]);
+		}
+	}
+
+	m_scene->update();
+
+
+	//	drawWeather(m_scene, xPos, yPos, 8, Qt::black);
+}
+
+void DWDMap::updateLocationData() {
+	for ( unsigned int i = 0; i<DWDDescriptonData::DWDDataTypes::NUM_D; ++i)
+		m_items[i]->setOpacity( m_descTypeToDraw[i] ? 1 : 0 );
+}
+
+bool DWDMap::getLocation(const std::vector<DWDDescriptonData> & dwdDescData, double &latitude, double &longitude, unsigned int &year, QWidget *parent) {
 	DWDMap dwdMap(parent);
 	dwdMap.setAllDWDLocations(dwdDescData);
 	dwdMap.setLocation(latitude, longitude);
+	dwdMap.drawAllDataForYear(year); // we also want to draw all circles with data to the map
+
 
 	int res = dwdMap.exec();
 
 	if (res = QDialog::Accepted) {
 		latitude = dwdMap.m_latitude;
 		longitude = dwdMap.m_longitude;
+		year = dwdMap.m_year;
 		return true; // return invalid object
 	}
 	else
 		return false;
+}
+
+void DWDMap::on_checkBoxAirTemp_toggled(bool checked) {
+	m_descTypeToDraw[DWDDescriptonData::D_TemperatureAndHumidity] = checked;
+	updateLocationData();
+}
+
+void DWDMap::on_checkBoxRadiation_toggled(bool checked) {
+	m_descTypeToDraw[DWDDescriptonData::D_Solar] = checked;
+	updateLocationData();
+}
+
+void DWDMap::on_checkBoxPressure_toggled(bool checked) {
+	m_descTypeToDraw[DWDDescriptonData::D_Pressure] = checked;
+	updateLocationData();
+}
+
+void DWDMap::on_checkBoxWind_toggled(bool checked) {
+	m_descTypeToDraw[DWDDescriptonData::D_Wind] = checked;
+	updateLocationData();
+}
+
+void DWDMap::on_comboBoxYear_currentIndexChanged(const QString &year) {
+	drawAllDataForYear(year.toUInt() );
 }

@@ -13,29 +13,60 @@
   <property name="windowTitle">
    <string>Pick a location</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0">
-   <property name="sizeConstraint">
-    <enum>QLayout::SetFixedSize</enum>
-   </property>
-   <item>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <item row="0" column="0">
     <widget class="QGraphicsView" name="graphicsViewMap">
      <property name="viewportUpdateMode">
       <enum>QGraphicsView::MinimalViewportUpdate</enum>
      </property>
     </widget>
    </item>
-   <item>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
-      <widget class="QLabel" name="label">
+   <item row="1" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QCheckBox" name="checkBoxAirTemp">
        <property name="text">
-        <string>Latitude:</string>
+        <string>CheckBox</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="lineEditLatitude"/>
+     <item>
+      <widget class="QCheckBox" name="checkBoxRadiation">
+       <property name="text">
+        <string>CheckBox</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
+     <item>
+      <widget class="QCheckBox" name="checkBoxPressure">
+       <property name="text">
+        <string>CheckBox</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="checkBoxWind">
+       <property name="text">
+        <string>CheckBox</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="2" column="0">
+    <layout class="QGridLayout" name="gridLayout">
      <item row="1" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
@@ -43,12 +74,36 @@
        </property>
       </widget>
      </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Latitude:</string>
+       </property>
+      </widget>
+     </item>
      <item row="1" column="1">
       <widget class="QLineEdit" name="lineEditLongitude"/>
      </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="lineEditLatitude"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Year:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="comboBoxYear">
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToMinimumContentsLength</enum>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
-   <item>
+   <item row="3" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
