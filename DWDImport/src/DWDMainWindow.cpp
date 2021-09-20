@@ -421,15 +421,27 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 		m_ui->tempPlot->setAxisTitle(QwtPlot::yLeft, "Temperatur [C]");
 		m_ui->tempPlot->setAxisTitle(QwtPlot::yRight, "SW Radiation [W/m2]");
 
-//		m_ui->tempPlot->axisEnabled(QwtPlot::yLeft);
-		m_ui->tempPlot->enableAxis(QwtPlot::yRight);
+		// create plot as main widget
+		m_ui->windPlot->setAxisScale(QwtPlot::xBottom, 0, 365, 10);
+		m_ui->windPlot->setAxisScale(QwtPlot::yLeft, 0 , 30, 10);
+		m_ui->windPlot->setAxisScale(QwtPlot::yRight, 800, 1200, 100);
 
-		m_ui->tempPlot->setTitle( "Weather Data" );
-		m_ui->tempPlot->setCanvasBackground( Qt::white );
+		m_ui->windPlot->setAxisTitle(QwtPlot::xBottom, "Day of year");
+		m_ui->windPlot->setAxisTitle(QwtPlot::yLeft, "Wind speed [m/s]");
+		m_ui->windPlot->setAxisTitle(QwtPlot::yRight, "Pressure [kPa]");
+
+		m_ui->tempPlot->axisEnabled(QwtPlot::yRight);
+		m_ui->windPlot->enableAxis(QwtPlot::yRight);
+
+//		m_ui->windPlot->setTitle( "Weather Data" );
+		m_ui->windPlot->setCanvasBackground( Qt::white );
 
 		// create a new curve to be shown in the plot and set some properties
 		QwtPlotCurve *curveTemp = new QwtPlotCurve();
-		QwtPlotCurve *curveRad= new QwtPlotCurve();
+		QwtPlotCurve *curveRad = new QwtPlotCurve();
+		QwtPlotCurve *curveWind = new QwtPlotCurve();
+		QwtPlotCurve *curvePressure = new QwtPlotCurve();
+
 		curveTemp->setTitle( "Air Temp" ); // will later be used in legend
 		curveTemp->setPen( Qt::blue, 2 ); // color and thickness in pixels
 		curveTemp->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
@@ -437,28 +449,47 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 		curveRad->setTitle( "SW Rad" ); // will later be used in legend
 		curveRad->setPen( Qt::yellow, 2 ); // color and thickness in pixels
 		curveRad->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
+		curveRad->setYAxis(QwtPlot::yRight);
+
+		curveWind->setTitle( "Wind" ); // will later be used in legend
+		curveWind->setPen( QColor(130, 30, 250), 2 ); // color and thickness in pixels
+		curveWind->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
+
+		curvePressure->setTitle( "Pressure" ); // will later be used in legend
+		curvePressure->setPen( QColor(250, 30, 30), 2 ); // color and thickness in pixels
+		curvePressure->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
+		curvePressure->setYAxis(QwtPlot::yRight);
+
 
 		// data points
-		QPolygonF pointsTemp, pointsRad;
+		QPolygonF pointsTemp, pointsRad, pointsWind, pointsPressure;
 
 		for ( unsigned int i=0; i<m_dwdData.m_data.size(); ++i ) {
 			DWDData::IntervalData intVal = m_dwdData.m_data[i];
 
 			pointsTemp << QPointF( (double)i/24, intVal.m_airTemp );
 			pointsRad << QPointF( (double)i/24, intVal.m_globalRad );
+			pointsWind << QPointF( (double)i/24, intVal.m_windSpeed );
+			pointsPressure << QPointF( (double)i/24, intVal.m_pressure );
 		}
 
 		// give some points to the curve
 		curveTemp->setSamples( pointsTemp );
 		curveRad->setSamples( pointsRad );
+		curveWind->setSamples( pointsWind );
+		curvePressure->setSamples( pointsPressure );
 
 		// set the curve in the plot
 		curveTemp->attach( m_ui->tempPlot );
 		curveRad->attach( m_ui->tempPlot );
+		curveWind->attach( m_ui->windPlot );
+		curvePressure->attach( m_ui->windPlot );
 
 		m_ui->tempPlot->replot();
-		m_ui->tempPlot->repaint();
 		m_ui->tempPlot->show();
+
+		m_ui->windPlot->replot();
+		m_ui->windPlot->show();
 	}
 
 	if ( exportEPW ) {
@@ -556,8 +587,11 @@ void MainWindow::on_pushButtonMap_clicked() {
 	double longitude = m_ui->lineEditLongitude->text().toDouble();
 
 	//	m_dwdMap->setAllDWDLocations(m_descData);
+	unsigned int year = m_ui->comboBoxYear->currentText().toUInt();
 
-	DWDMap::getLocation(m_descData, latitude, longitude, this);
+	DWDMap::getLocation(m_descData, latitude, longitude, year, this);
+
+	m_ui->comboBoxYear->setCurrentText(QString::number(year) );
 
 	m_ui->lineEditLatitude->setText(QString::number(latitude) );
 	m_ui->lineEditLongitude->setText(QString::number(longitude) );
