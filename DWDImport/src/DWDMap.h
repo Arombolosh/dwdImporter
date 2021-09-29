@@ -58,6 +58,8 @@ private slots:
 
 	void on_comboBoxYear_currentIndexChanged(const QString &arg1);
 
+	void on_checkBoxPrecipitation_toggled(bool checked);
+
 private:
 	DWDScene								*m_scene;
 

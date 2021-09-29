@@ -88,21 +88,25 @@ DWDMap::DWDMap(QWidget *parent) :
 	m_color[DWDDescriptonData::D_TemperatureAndHumidity] = Qt::blue;
 	m_color[DWDDescriptonData::D_Solar] = QColor ( 250, 170, 30 );
 	m_color[DWDDescriptonData::D_Pressure] = QColor ( 130, 30, 250 );
+	m_color[DWDDescriptonData::D_Precipitation] = Qt::darkGreen;
 
 	m_descTypeToDraw[DWDDescriptonData::D_Wind] = true;
 	m_descTypeToDraw[DWDDescriptonData::D_TemperatureAndHumidity] = true;
 	m_descTypeToDraw[DWDDescriptonData::D_Solar] = true;
 	m_descTypeToDraw[DWDDescriptonData::D_Pressure] = true;
+	m_descTypeToDraw[DWDDescriptonData::D_Precipitation] = true;
 
 	m_items[DWDDescriptonData::D_Wind] = new QGraphicsItemGroup();
 	m_items[DWDDescriptonData::D_TemperatureAndHumidity] = new QGraphicsItemGroup();
 	m_items[DWDDescriptonData::D_Solar] = new QGraphicsItemGroup();
 	m_items[DWDDescriptonData::D_Pressure] = new QGraphicsItemGroup();
+	m_items[DWDDescriptonData::D_Precipitation] = new QGraphicsItemGroup();
 
 	m_scene->addItem(m_items[DWDDescriptonData::D_Wind]);
 	m_scene->addItem(m_items[DWDDescriptonData::D_Solar]);
 	m_scene->addItem(m_items[DWDDescriptonData::D_TemperatureAndHumidity]);
 	m_scene->addItem(m_items[DWDDescriptonData::D_Pressure]);
+	m_scene->addItem(m_items[DWDDescriptonData::D_Precipitation]);
 }
 
 DWDMap::~DWDMap() {
@@ -180,7 +184,7 @@ void DWDMap::drawAllDataForYear(unsigned int year){
 
 	for ( unsigned int i = 0; i<DWDDescriptonData::DWDDataTypes::NUM_D; ++i) {
 		for (QGraphicsItem *item : m_items[i]->childItems() ) {
-			m_items[DWDDescriptonData::D_Wind]->removeFromGroup(item);
+			m_items[i]->removeFromGroup(item);
 			m_scene->removeItem(item);
 		}
 	}
@@ -253,6 +257,12 @@ void DWDMap::on_checkBoxWind_toggled(bool checked) {
 	updateLocationData();
 }
 
+void DWDMap::on_checkBoxPrecipitation_toggled(bool checked){
+	m_descTypeToDraw[DWDDescriptonData::D_Precipitation] = checked;
+	updateLocationData();
+}
+
 void DWDMap::on_comboBoxYear_currentIndexChanged(const QString &year) {
 	drawAllDataForYear(year.toUInt() );
 }
+
