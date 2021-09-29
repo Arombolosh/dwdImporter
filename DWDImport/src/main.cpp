@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
 		// add user settings related window resize at program start
 #if defined(Q_OS_WIN)
 		//w.showMaximized();
-		w.show();
+		w.showMaximized();
 #elif defined(Q_OS_LINUX)
 		w.show();
 #else
