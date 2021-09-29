@@ -235,7 +235,7 @@ QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numbe
 	if(!(type == DT_RadiationDiffuse || type == DT_RadiationGlobal || type == DT_RadiationLongWave))
 		rec2 = isRecent ? "recent/" : "historical/";
 
-	if( isRecent || (type == DT_RadiationDiffuse || type == DT_RadiationGlobal || type == DT_RadiationLongWave)) {
+	if( isRecent || (type == DT_RadiationDiffuse || type == DT_RadiationGlobal || type == DT_RadiationLongWave || type == DT_Precipitation)) {
 
 		switch (type) {
 			case DT_AirTemperature:
@@ -247,6 +247,9 @@ QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numbe
 
 			case DT_Pressure:
 				return base + "pressure/" + rec2 + "stundenwerte_P0_" + numberString + dateStringNew + rec + ".zip";
+
+			case DT_Precipitation:
+				return base + "precipitation/" + rec2 + "stundenwerte_RR_" + numberString + dateStringNew + rec + ".zip";
 
 			case DT_WindSpeed:
 			case DT_WindDirection:
@@ -312,6 +315,9 @@ QString DWDData::filename(const DWDData::DataType &type, const QString &numberSt
 	case DT_WindDirection:
 		return "stundenwerte_FF_" + numberString + dateStringNew + rec;
 
+	case DT_Precipitation:
+		return "stundenwerte_RR_" + numberString + dateStringNew + rec;
+
 	case DT_RadiationDiffuse:
 	case DT_RadiationGlobal:
 	case DT_RadiationLongWave:
@@ -336,6 +342,7 @@ unsigned int DWDData::getColumnDWD(const DataType &dt){
 		case DT_WindSpeed:						return 3;
 		case DT_WindDirection:					return 4;
 		case DT_Pressure:						return 4;
+		case DT_Precipitation:					return 3;
 	}
 	return 0;
 }
