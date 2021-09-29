@@ -168,22 +168,34 @@ void MainWindow::loadData(){
 	m_manager->execute(); // simply registers network requests
 }
 
+void MainWindow::setGUIState(bool guiState) {
+	m_ui->tableView->setEnabled(guiState);
+	m_ui->groupBoxLocation->setEnabled(guiState);
+	m_ui->groupBoxTime->setEnabled(guiState);
+	m_ui->groupBoxDistance->setEnabled(guiState);
+	m_ui->pushButtonPreview->setEnabled(guiState);
+	m_ui->pushButtonMap->setEnabled(guiState);
+	m_ui->pushButtonDownload->setEnabled(guiState);
+}
+
 void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 
 	//check longitude and latitude
 	if(m_ui->lineEditLatitude->text().isEmpty()){
 		QMessageBox::critical(this, QString(), "Latitude is empty");
+		setGUIState(true);
 		return;
 	}
 	if(m_ui->lineEditLongitude->text().isEmpty()){
 		QMessageBox::critical(this, QString(), "Longitude is empty");
+		setGUIState(true);
 		return;
 	}
 
-	std::vector<int> dataInRows(4,-1);
+	std::vector<int> dataInRows(DWDDescriptonData::NUM_D,-1);
 	//find selected elements
 	for ( unsigned int i = 0; i<m_descData.size(); ++i ) {
-		for ( unsigned int j = 0; j<4; ++j ) {
+		for ( unsigned int j = 0; j<DWDDescriptonData::NUM_D; ++j ) {
 			DWDDescriptonData &dwdData = m_descData[i];
 
 			if (dwdData.m_data[j].m_isChecked)
@@ -192,14 +204,15 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 	}
 
 
-	if(dataInRows == std::vector<int>(4,-1)){
+	if(dataInRows == std::vector<int>(DWDDescriptonData::NUM_D,-1)){
 		QMessageBox::information(this, "Download Error.", "Download aborted. Please select at least one climate entry e.g. temperature, radiation, ... ");
+		setGUIState(true);
 		return;
 	}
 
-	std::vector<QString> filenames(4); //hold filenames for download
-	std::vector<DWDData::DataType>	types{DWDData::DT_AirTemperature, DWDData::DT_RadiationDiffuse,
-				DWDData::DT_WindDirection,DWDData::DT_Pressure};
+	std::vector<QString> filenames(DWDDescriptonData::NUM_D); //hold filenames for download
+	std::vector<DWDData::DataType>	types{	DWDData::DT_AirTemperature, DWDData::DT_RadiationDiffuse,
+											DWDData::DT_WindDirection, DWDData::DT_Pressure, DWDData::DT_Precipitation};
 
 	m_manager = new DWDDownloader(this);
 	m_manager->m_progress = m_ui->progressBar;
@@ -209,7 +222,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 	connect( m_manager, &DWDDownloader::finished, this, &MainWindow::readData );
 	//download the data (zip)
 
-	for(unsigned int i=0; i<4; ++i){
+	for(unsigned int i=0; i<DWDDescriptonData::NUM_D; ++i){
 		if(dataInRows[i] != -1){
 			DWDData dwdData;
 			std::string dateString;
@@ -282,8 +295,8 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 
 	//Check if all downloaded files are valid
 	//create a vector with valid files
-	std::vector<IBK::Path>	validFiles(4);
-	for(unsigned int i=0; i<4; ++i){
+	std::vector<IBK::Path>	validFiles(DWDDescriptonData::NUM_D);
+	for(unsigned int i=0; i<DWDDescriptonData::NUM_D; ++i){
 		if(dataInRows[i] == -1)
 			continue;
 		IBK::Path checkfile(std::string(DATA_DIR) + "Tests/" + filenames[i].toStdString() + ".zip");
@@ -294,6 +307,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 			case DWDData::DT_RadiationDiffuse:	cat = "Radiation"						;		break;
 			case DWDData::DT_WindDirection:		cat = "Wind";									break;
 			case DWDData::DT_Pressure:			cat = "Pressure";								break;
+			case DWDData::DT_Precipitation:		cat = "Precipitation";							break;
 			}
 			QMessageBox::warning(this, QString(), QString("Download of file '%1' was not successfull. Category: '%2'").arg(filenames[i]+".zip").arg(cat));
 		}
@@ -304,7 +318,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 	//open the zip
 	//find file with name 'produkt_....'
 	//create the file path names and according data types for reading
-	std::vector<IBK::Path>	checkedFileNames(4);
+	std::vector<IBK::Path>	checkedFileNames(DWDDescriptonData::NUM_D);
 	std::map<IBK::Path, std::set<DWDData::DataType>> filenamesForReading;
 	for (int i=0; i<filenames.size(); ++i) {
 		if ( filenames[i].isEmpty() )
@@ -331,18 +345,20 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 	}
 
 	//create extract folder
-	for(unsigned int i=0; i<4; ++i){
+	for(unsigned int i=0; i<DWDDescriptonData::NUM_D; ++i){
 		if(checkedFileNames[i] == IBK::Path())
 			continue; // skip empty states
 		switch (i) {
-		case 0:
+		case DWDDescriptonData::D_TemperatureAndHumidity:
 			filenamesForReading[checkedFileNames[i]] = std::set<DWDData::DataType>{DWDData::DT_AirTemperature, DWDData::DT_RelativeHumidity}; break;
-		case 1:
+		case DWDDescriptonData::D_Solar:
 			filenamesForReading[checkedFileNames[i]] = std::set<DWDData::DataType>{DWDData::DT_RadiationDiffuse,DWDData::DT_RadiationGlobal, DWDData::DT_RadiationLongWave, DWDData::DT_ZenithAngle}; break;
-		case 2:
+		case DWDDescriptonData::D_Wind:
 			filenamesForReading[checkedFileNames[i]] = std::set<DWDData::DataType>{DWDData::DT_WindDirection,DWDData::DT_WindSpeed}; break;
-		case 3:
+		case DWDDescriptonData::D_Pressure:
 			filenamesForReading[checkedFileNames[i]] = std::set<DWDData::DataType>{DWDData::DT_Pressure}; break;
+		case DWDDescriptonData::D_Precipitation:
+			filenamesForReading[checkedFileNames[i]] = std::set<DWDData::DataType>{DWDData::DT_Precipitation}; break;
 		}
 	}
 	//read data
@@ -430,6 +446,14 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 		m_ui->windPlot->setAxisTitle(QwtPlot::yLeft, "Wind speed [m/s]");
 		m_ui->windPlot->setAxisTitle(QwtPlot::yRight, "Pressure [kPa]");
 
+		// create plot as main widget
+		m_ui->rainPlot->setAxisScale(QwtPlot::xBottom, 0, 365, 10);
+		m_ui->rainPlot->setAxisScale(QwtPlot::yLeft, 0 , 30, 10);
+
+		m_ui->rainPlot->setAxisTitle(QwtPlot::xBottom, "Day of year");
+		m_ui->rainPlot->setAxisTitle(QwtPlot::yLeft, "Rain [mm]");
+
+
 		m_ui->tempPlot->axisEnabled(QwtPlot::yRight);
 		m_ui->windPlot->enableAxis(QwtPlot::yRight);
 
@@ -441,6 +465,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 		QwtPlotCurve *curveRad = new QwtPlotCurve();
 		QwtPlotCurve *curveWind = new QwtPlotCurve();
 		QwtPlotCurve *curvePressure = new QwtPlotCurve();
+		QwtPlotCurve *curvePrecipitation = new QwtPlotCurve();
 
 		curveTemp->setTitle( "Air Temp" ); // will later be used in legend
 		curveTemp->setPen( Qt::blue, 2 ); // color and thickness in pixels
@@ -460,9 +485,12 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 		curvePressure->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
 		curvePressure->setYAxis(QwtPlot::yRight);
 
+		curvePrecipitation->setTitle( "Precipitation" ); // will later be used in legend
+		curvePrecipitation->setPen( QColor(250, 30, 30), 2 ); // color and thickness in pixels
+		curvePrecipitation->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
 
 		// data points
-		QPolygonF pointsTemp, pointsRad, pointsWind, pointsPressure;
+		QPolygonF pointsTemp, pointsRad, pointsWind, pointsPressure, pointsPrecipitation;
 
 		for ( unsigned int i=0; i<m_dwdData.m_data.size(); ++i ) {
 			DWDData::IntervalData intVal = m_dwdData.m_data[i];
@@ -471,6 +499,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 			pointsRad << QPointF( (double)i/24, intVal.m_globalRad );
 			pointsWind << QPointF( (double)i/24, intVal.m_windSpeed );
 			pointsPressure << QPointF( (double)i/24, intVal.m_pressure );
+			pointsPrecipitation << QPointF( (double)i/24, intVal.m_precipitaion );
 		}
 
 		// give some points to the curve
@@ -478,18 +507,23 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 		curveRad->setSamples( pointsRad );
 		curveWind->setSamples( pointsWind );
 		curvePressure->setSamples( pointsPressure );
+		curvePrecipitation->setSamples( pointsPrecipitation );
 
 		// set the curve in the plot
 		curveTemp->attach( m_ui->tempPlot );
 		curveRad->attach( m_ui->tempPlot );
 		curveWind->attach( m_ui->windPlot );
 		curvePressure->attach( m_ui->windPlot );
+		curvePrecipitation->attach( m_ui->rainPlot );
 
 		m_ui->tempPlot->replot();
 		m_ui->tempPlot->show();
 
 		m_ui->windPlot->replot();
 		m_ui->windPlot->show();
+
+		m_ui->rainPlot->replot();
+		m_ui->rainPlot->show();
 	}
 
 	if ( exportEPW ) {
@@ -650,5 +684,7 @@ void MainWindow::on_horizontalSliderDistance_valueChanged(int value) {
 }
 
 void MainWindow::on_pushButtonPreview_clicked() {
+	setGUIState(false);
 	downloadData(true, false);
+	setGUIState(true);
 }
