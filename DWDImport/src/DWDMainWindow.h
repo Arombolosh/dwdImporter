@@ -39,6 +39,8 @@ public:
 
 	void loadData();
 
+	void setGUIState(bool guiState);
+
 	void downloadData(bool showPreview = true, bool exportEPW = false);
 
 	void addToList(const QUrlInfo qUrlI);
