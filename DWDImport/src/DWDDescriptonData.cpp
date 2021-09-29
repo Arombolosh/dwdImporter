@@ -19,6 +19,7 @@ QStringList DWDDescriptonData::downloadDescriptionFiles(bool isRecent){
 	sl << baseDirFTP + "solar/ST_Stundenwerte_Beschreibung_Stationen.txt";					//no difference between historical or recent
 	sl << baseDirFTP + "wind/" + type +"FF_Stundenwerte_Beschreibung_Stationen.txt";
 	sl << baseDirFTP + "pressure/" + type + "P0_Stundenwerte_Beschreibung_Stationen.txt";
+	sl << baseDirFTP + "precipitation/" + type + "RR_Stundenwerte_Beschreibung_Stationen.txt";
 
 	return sl;
 }
@@ -36,6 +37,9 @@ void DWDDescriptonData::readAllDescriptions(std::vector<DWDDescriptonData> &dwdD
 
 	filepath= IBK::Path (std::string(DATA_DIR) + "Tests/FF_Stundenwerte_Beschreibung_Stationen.txt");
 	readDescription(filepath, dwdDescriptonData, D_Wind);
+
+	filepath= IBK::Path (std::string(DATA_DIR) + "Tests/RR_Stundenwerte_Beschreibung_Stationen.txt");
+	readDescription(filepath, dwdDescriptonData, D_Precipitation);
 
 	for ( DWDDescriptonData &dwdData : dwdDescriptonData )
 		dwdData.calculateMinMaxDate(); // we calculate the minimum period

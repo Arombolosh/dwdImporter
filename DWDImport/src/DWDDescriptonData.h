@@ -44,6 +44,7 @@ public:
 		D_Solar,
 		D_Wind,
 		D_Pressure,
+		D_Precipitation,
 		NUM_D
 	};
 	/*! Read predefined (download dwd) description files. */
