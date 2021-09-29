@@ -29,6 +29,7 @@ public:
 		ColRadiation,
 		ColWind,
 		ColPressure,
+		ColPrecipitation,
 		NumColumns
 	};
 

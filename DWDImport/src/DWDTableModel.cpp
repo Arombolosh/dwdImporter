@@ -24,7 +24,7 @@ int DWDTableModel::rowCount(const QModelIndex & parent) const {
 }
 
 int DWDTableModel::columnCount(const QModelIndex & parent) const {
-	return 12;
+	return 13;
 }
 
 QVariant DWDTableModel::data(const QModelIndex & index, int role) const {
@@ -48,6 +48,9 @@ QVariant DWDTableModel::data(const QModelIndex & index, int role) const {
 		break;
 		case ColRadiation:
 			dataType = DWDDescriptonData::D_Solar;
+		break;
+		case ColPrecipitation:
+			dataType = DWDDescriptonData::D_Precipitation;
 		break;
 	}
 
@@ -79,6 +82,7 @@ QVariant DWDTableModel::data(const QModelIndex & index, int role) const {
 				case ColAirTemp :
 				case ColRadiation :
 				case ColPressure :
+				case ColPrecipitation :
 					Q_ASSERT(dataType != DWDDescriptonData::DWDDataTypes::NUM_D);
 					if (!dwdData.m_data[dataType].m_isAvailable)
 						return QVariant();
@@ -119,7 +123,8 @@ QVariant DWDTableModel::headerData(int section, Qt::Orientation orientation, int
 			<< tr("T_air + rH")
 			<< tr("Radiation")
 			<< tr("Wind")
-			<< tr("Pressure");
+			<< tr("Pressure")
+			<< tr("Precipitation");
 
 		if (orientation == Qt::Vertical)
 			return QVariant();
@@ -150,6 +155,9 @@ bool DWDTableModel::setData(const QModelIndex & index, const QVariant & value, i
 		break;
 		case ColRadiation:
 			dataType = DWDDescriptonData::D_Solar;
+		break;
+		case ColPrecipitation:
+			dataType = DWDDescriptonData::D_Precipitation;
 		break;
 	}
 
