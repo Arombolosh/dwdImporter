@@ -65,6 +65,7 @@ DWDMap::DWDMap(QWidget *parent) :
 	m_ui->checkBoxRadiation->setText("SW Radiation");
 	m_ui->checkBoxPressure->setText("Pressure");
 	m_ui->checkBoxWind->setText("Wind");
+	m_ui->checkBoxPrecipitation->setText("Precipitation");
 
 	//	blockSignals(true);
 	//	m_ui->checkBoxAirTemp->setChecked(true);
