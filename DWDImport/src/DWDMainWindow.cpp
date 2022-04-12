@@ -26,9 +26,12 @@
 #include <QMessageBox>
 #include <QItemDelegate>
 #include <QtNumeric>
+#include <QDate>
+#include <QDebug>
 
 #include <qwt_plot_curve.h>
 #include <qwt_series_data.h>
+#include <qwt_date_scale_draw.h>
 
 #include <qftp.h>
 
@@ -137,6 +140,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	resize(1500,800);
 
+
+	QList<int> sizes;
+	sizes << 1200 << 300;
+	m_ui->splitter->setSizes(sizes);
 }
 
 /// TODO Stephan
@@ -426,39 +433,47 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 	if ( showPreview ) {
 //		m_ui->tempPlot = new QwtPlot( );
 
-		m_ui->tempPlot->detachItems();
+		m_ui->plotTemp->detachItems();
 
 		// create plot as main widget
-		m_ui->tempPlot->setAxisScale(QwtPlot::xBottom, 0, 365, 10);
-		m_ui->tempPlot->setAxisScale(QwtPlot::yLeft, -10, 40, 5);
-		m_ui->tempPlot->setAxisScale(QwtPlot::yRight, 0, 1000, 100);
+		//m_ui->plotTemp->setAxisScale(QwtPlot::xBottom, 0, 365, 10);
+		m_ui->plotTemp->setAxisScale(QwtPlot::yLeft, -10, 40, 5);
+		m_ui->plotTemp->setAxisScale(QwtPlot::yRight, 0, 1000, 100);
 
-		m_ui->tempPlot->setAxisTitle(QwtPlot::xBottom, "Day of year");
-		m_ui->tempPlot->setAxisTitle(QwtPlot::yLeft, "Temperatur [C]");
-		m_ui->tempPlot->setAxisTitle(QwtPlot::yRight, "SW Radiation [W/m2]");
+		m_ui->plotTemp->setAxisTitle(QwtPlot::xBottom, "Day of year");
+		m_ui->plotTemp->setAxisTitle(QwtPlot::yLeft, "Temperatur [C]");
+		m_ui->plotTemp->setAxisTitle(QwtPlot::yRight, "SW Radiation [W/m2]");
+
+
+		QwtDateScaleDraw *scaleDraw = new QwtDateScaleDraw(Qt::UTC);
+		scaleDraw->setDateFormat(QwtDate::Millisecond, "dd-MM-yyyy");
+		scaleDraw->setDateFormat(QwtDate::Second, "dd-MM-yyyy");
+		scaleDraw->setDateFormat(QwtDate::Minute, "dd-MM-yyyy");
+		scaleDraw->setDateFormat(QwtDate::Hour, "dd-MM-yyyy");
+		m_ui->plotTemp->setAxisScaleDraw(QwtPlot::xBottom, scaleDraw);
 
 		// create plot as main widget
-		m_ui->windPlot->setAxisScale(QwtPlot::xBottom, 0, 365, 10);
-		m_ui->windPlot->setAxisScale(QwtPlot::yLeft, 0 , 30, 10);
-		m_ui->windPlot->setAxisScale(QwtPlot::yRight, 800, 1200, 100);
+		m_ui->plotWind->setAxisScale(QwtPlot::xBottom, 0, 365, 10);
+		m_ui->plotWind->setAxisScale(QwtPlot::yLeft, 0 , 30, 10);
+		m_ui->plotWind->setAxisScale(QwtPlot::yRight, 800, 1200, 100);
 
-		m_ui->windPlot->setAxisTitle(QwtPlot::xBottom, "Day of year");
-		m_ui->windPlot->setAxisTitle(QwtPlot::yLeft, "Wind speed [m/s]");
-		m_ui->windPlot->setAxisTitle(QwtPlot::yRight, "Pressure [kPa]");
+		m_ui->plotWind->setAxisTitle(QwtPlot::xBottom, "Day of year");
+		m_ui->plotWind->setAxisTitle(QwtPlot::yLeft, "Wind speed [m/s]");
+		m_ui->plotWind->setAxisTitle(QwtPlot::yRight, "Pressure [kPa]");
 
 		// create plot as main widget
-		m_ui->rainPlot->setAxisScale(QwtPlot::xBottom, 0, 365, 10);
-		m_ui->rainPlot->setAxisScale(QwtPlot::yLeft, 0 , 30, 10);
+		m_ui->plotRain->setAxisScale(QwtPlot::xBottom, 0, 365, 10);
+		m_ui->plotRain->setAxisScale(QwtPlot::yLeft, 0 , 30, 10);
 
-		m_ui->rainPlot->setAxisTitle(QwtPlot::xBottom, "Day of year");
-		m_ui->rainPlot->setAxisTitle(QwtPlot::yLeft, "Rain [mm]");
+		m_ui->plotRain->setAxisTitle(QwtPlot::xBottom, "Day of year");
+		m_ui->plotRain->setAxisTitle(QwtPlot::yLeft, "Rain [mm]");
 
 
-		m_ui->tempPlot->axisEnabled(QwtPlot::yRight);
-		m_ui->windPlot->enableAxis(QwtPlot::yRight);
+		m_ui->plotTemp->axisEnabled(QwtPlot::yRight);
+		m_ui->plotWind->enableAxis(QwtPlot::yRight);
 
 //		m_ui->windPlot->setTitle( "Weather Data" );
-		m_ui->windPlot->setCanvasBackground( Qt::white );
+		m_ui->plotWind->setCanvasBackground( Qt::white );
 
 		// create a new curve to be shown in the plot and set some properties
 		QwtPlotCurve *curveTemp = new QwtPlotCurve();
@@ -492,14 +507,25 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 		// data points
 		QPolygonF pointsTemp, pointsRad, pointsWind, pointsPressure, pointsPrecipitation;
 
+		bool ok;
+		int year = m_ui->comboBoxYear->currentText().toInt(&ok);
+
+		if(!ok)
+			return;
+
+		QDateTime zeroDateTime(QDate (year,0,0));
+		zeroDateTime.setTimeSpec(Qt::UTC);
 		for ( unsigned int i=0; i<m_dwdData.m_data.size(); ++i ) {
+			qint64 timeStep = zeroDateTime.toMSecsSinceEpoch() + i * 60 * 60 * 1000;
+			qDebug() << timeStep;
+
 			DWDData::IntervalData intVal = m_dwdData.m_data[i];
 
-			pointsTemp << QPointF( (double)i/24, intVal.m_airTemp );
-			pointsRad << QPointF( (double)i/24, intVal.m_globalRad );
-			pointsWind << QPointF( (double)i/24, intVal.m_windSpeed );
-			pointsPressure << QPointF( (double)i/24, intVal.m_pressure );
-			pointsPrecipitation << QPointF( (double)i/24, intVal.m_precipitaion );
+			pointsTemp << QPointF(timeStep , intVal.m_airTemp );
+			pointsRad << QPointF(timeStep, intVal.m_globalRad );
+			pointsWind << QPointF(timeStep, intVal.m_windSpeed );
+			pointsPressure << QPointF(timeStep, intVal.m_pressure );
+			pointsPrecipitation << QPointF(timeStep, intVal.m_precipitaion );
 		}
 
 		// give some points to the curve
@@ -510,20 +536,21 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 		curvePrecipitation->setSamples( pointsPrecipitation );
 
 		// set the curve in the plot
-		curveTemp->attach( m_ui->tempPlot );
-		curveRad->attach( m_ui->tempPlot );
-		curveWind->attach( m_ui->windPlot );
-		curvePressure->attach( m_ui->windPlot );
-		curvePrecipitation->attach( m_ui->rainPlot );
+		curveTemp->attach( m_ui->plotTemp );
+		curveRad->attach( m_ui->plotRad );
+		curveWind->attach( m_ui->plotWind );
+		curvePressure->attach( m_ui->plotPressure );
+		curvePrecipitation->attach( m_ui->plotRain );
 
-		m_ui->tempPlot->replot();
-		m_ui->tempPlot->show();
+		m_ui->plotTemp->axisAutoScale(QwtPlot::xBottom);
+		m_ui->plotTemp->replot();
+		m_ui->plotTemp->show();
 
-		m_ui->windPlot->replot();
-		m_ui->windPlot->show();
+		m_ui->plotTemp->replot();
+		m_ui->plotTemp->show();
 
-		m_ui->rainPlot->replot();
-		m_ui->rainPlot->show();
+		m_ui->plotTemp->replot();
+		m_ui->plotTemp->show();
 	}
 
 	if ( exportEPW ) {
@@ -688,3 +715,20 @@ void MainWindow::on_pushButtonPreview_clicked() {
 	downloadData(true, false);
 	setGUIState(true);
 }
+
+void MainWindow::on_toolButtonOpenDirectory_clicked() {
+
+	// request file name
+	QString filename = QFileDialog::getSaveFileName(
+							this,
+							tr("Save EPW File"),
+							"",
+							tr("EPW Weather file (.epw);;All files (*.*)") );
+
+	if (filename.isEmpty()) return;
+
+	m_fileName = filename;
+
+	m_ui->lineEditFile->setText(filename);
+}
+

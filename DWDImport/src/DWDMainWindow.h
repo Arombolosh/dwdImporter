@@ -8,6 +8,7 @@
 #include <QProcess>
 #include <QElapsedTimer>
 #include <QStandardItemModel>
+#include <QFile>
 
 #include <IBK_Time.h>
 #include <IBK_Path.h>
@@ -69,6 +70,8 @@ private slots:
 
 	void on_pushButtonPreview_clicked();
 
+	void on_toolButtonOpenDirectory_clicked();
+
 private:
 
 	Ui::MainWindow						*m_ui;
@@ -93,6 +96,8 @@ private:
 	DWDTableModel								*m_dwdTableModel = nullptr;
 	DWDSortFilterProxyModel						*m_proxyModel = nullptr;
 	QAbstractProxyModel							*m_abstractProxyModel = nullptr;
+
+	QString										m_fileName;
 
 };
 
