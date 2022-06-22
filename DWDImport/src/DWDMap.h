@@ -60,6 +60,10 @@ private slots:
 
 	void on_checkBoxPrecipitation_toggled(bool checked);
 
+	void on_horizontalSliderDiameter_valueChanged(int value);
+
+	void on_horizontalSliderOpacity_valueChanged(int value);
+
 private:
 	DWDScene								*m_scene;
 
@@ -68,7 +72,12 @@ private:
 	double									m_latitude;
 	double									m_longitude;
 
+	/*! Year for wich data is shown. */
 	unsigned int							m_year;
+
+	/*! Radius of data points in scene.*/
+	unsigned int							m_radius = 15;
+	unsigned int							m_opacity = 255;
 
 	bool									m_descTypeToDraw[DWDDescriptonData::DWDDataTypes::NUM_D];
 	QColor									m_color[DWDDescriptonData::DWDDataTypes::NUM_D];

@@ -28,12 +28,13 @@ void getPosition(QSize size, const double &longitude, const double &latitude, do
 	xPos = width + ((15.043611 - longitude) / ( 5.866944 - 15.043611 ))*width;
 }
 
-void drawLocationInformation(QGraphicsItemGroup *group, int xPos, int yPos, int rad, QColor color) {
+void drawLocationInformation(QGraphicsItemGroup *group, int xPos, int yPos, int rad, int alpha, QColor color) {
 	//	scene->addEllipse(xPos-rad, yPos-rad, rad*2.0, rad*2.0,
 	//							QPen(color), QBrush(color, Qt::SolidPattern));
 
-	QGraphicsEllipseItem *ellipse = new QGraphicsEllipseItem(xPos-rad, yPos-rad, rad, rad);
+	QGraphicsEllipseItem *ellipse = new QGraphicsEllipseItem(xPos-rad/2, yPos-rad/2, rad, rad);
 	//	>ellipse->setPen(QPen (color, 2, Qt::SolidLine));
+	color.setAlpha(alpha);
 	ellipse->setBrush(QBrush (color) );
 
 	group->addToGroup(ellipse);
@@ -54,17 +55,17 @@ DWDMap::DWDMap(QWidget *parent) :
 	QGraphicsView *view = m_ui->graphicsViewMap;
 	view->setScene(m_scene);
 
-	m_scene->addPixmap( QPixmap(":/gfx/Karte_Deutschland.svg") );
+	m_scene->addPixmap( QPixmap(":/gfx/Karte_Deutschland.svg").scaled(1200,1500,Qt::KeepAspectRatio,Qt::SmoothTransformation) );
 	QList<QGraphicsItem*> list = m_scene->items();
 	list.at(0)->setZValue(-100);
 
-	qreal width = m_scene->width();
-	qreal height = m_scene->height();
+	double width = m_scene->width();
+	double height = m_scene->height();
 
-	m_ui->checkBoxAirTemp->setText("Air Temperature & Relative Humidity");
-	m_ui->checkBoxRadiation->setText("SW Radiation");
+	m_ui->checkBoxAirTemp->setText("Air Temperature / Relative Humidity");
+	m_ui->checkBoxRadiation->setText("Short-Wave Radiation");
 	m_ui->checkBoxPressure->setText("Pressure");
-	m_ui->checkBoxWind->setText("Wind");
+	m_ui->checkBoxWind->setText("Wind Speed");
 	m_ui->checkBoxPrecipitation->setText("Precipitation");
 
 	//	blockSignals(true);
@@ -78,18 +79,35 @@ DWDMap::DWDMap(QWidget *parent) :
 	// we fill the comboBox
 	for (unsigned int year = 1950; year<2025; year++)
 		m_ui->comboBoxYear->addItem(QString::number(year) );
+	m_ui->comboBoxYear->setCurrentIndex(2020-1950);
 	m_ui->comboBoxYear->blockSignals(false);
+
+	m_ui->horizontalSliderDiameter->blockSignals(true);
+	m_ui->horizontalSliderDiameter->setValue(30);
+	m_ui->horizontalSliderDiameter->blockSignals(false);
+
+
+	m_ui->horizontalSliderOpacity->blockSignals(true);
+	m_ui->horizontalSliderOpacity->setValue(255);
+	m_ui->horizontalSliderOpacity->blockSignals(false);
+
 
 	view->setFixedSize(width, height);
 	view->setSceneRect(0, 0, width, height);
 	view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-	m_color[DWDDescriptonData::D_Wind] = Qt::green;
-	m_color[DWDDescriptonData::D_TemperatureAndHumidity] = Qt::blue;
-	m_color[DWDDescriptonData::D_Solar] = QColor ( 250, 170, 30 );
-	m_color[DWDDescriptonData::D_Pressure] = QColor ( 130, 30, 250 );
-	m_color[DWDDescriptonData::D_Precipitation] = Qt::darkGreen;
+	m_color[DWDDescriptonData::D_Wind] = QColor ("#008b8b");
+	m_color[DWDDescriptonData::D_TemperatureAndHumidity] = QColor ("#ffa500");
+	m_color[DWDDescriptonData::D_Solar] = QColor ("#00ff00");
+	m_color[DWDDescriptonData::D_Pressure] = QColor ("#0000ff");
+	m_color[DWDDescriptonData::D_Precipitation] = QColor ("#ff1493");
+
+	m_ui->checkBoxAirTemp->setStyleSheet("QCheckBox { color: #ffa500 }");
+	m_ui->checkBoxRadiation->setStyleSheet("QCheckBox { color: #00ff00 }");
+	m_ui->checkBoxPressure->setStyleSheet("QCheckBox { color: #0000ff }");
+	m_ui->checkBoxWind->setStyleSheet("QCheckBox { color: #008b8b }");
+	m_ui->checkBoxPrecipitation->setStyleSheet("QCheckBox { color: #ff1493 }");
 
 	m_descTypeToDraw[DWDDescriptonData::D_Wind] = true;
 	m_descTypeToDraw[DWDDescriptonData::D_TemperatureAndHumidity] = true;
@@ -204,7 +222,7 @@ void DWDMap::drawAllDataForYear(unsigned int year){
 			getPosition(m_size, (*m_descData)[j].m_longitude, (*m_descData)[j].m_latitude, xPos, yPos);
 			double rad = 5;
 
-			drawLocationInformation(m_items[i], xPos, yPos, 8, m_color[i]);
+			drawLocationInformation(m_items[i], xPos, yPos, m_radius/2, m_opacity, m_color[i]);
 		}
 	}
 
@@ -267,3 +285,15 @@ void DWDMap::on_comboBoxYear_currentIndexChanged(const QString &year) {
 	drawAllDataForYear(year.toUInt() );
 }
 
+
+void DWDMap::on_horizontalSliderDiameter_valueChanged(int value){
+	// radius of all shown data points need to be updated
+	m_radius = value;
+	drawAllDataForYear(m_year);
+}
+
+void DWDMap::on_horizontalSliderOpacity_valueChanged(int value) {
+	// radius of all shown data points need to be updated
+	m_opacity = value;
+	drawAllDataForYear(m_year);
+}
