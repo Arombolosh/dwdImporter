@@ -200,6 +200,9 @@ Qt::ItemFlags DWDTableModel::flags(const QModelIndex & index) const {
 	if (!index.isValid()) // assert that index is valid
 		return Qt::ItemFlags();
 
+	if(index.column() < 8)
+		return QAbstractItemModel::flags(index);
+
 	DWDDescriptonData &checkBox = (*m_descData)[index.row()];
 	DWDDescriptonData::DWDDataTypes dataType;
 
@@ -215,6 +218,9 @@ Qt::ItemFlags DWDTableModel::flags(const QModelIndex & index) const {
 		break;
 		case ColRadiation:
 			dataType = DWDDescriptonData::D_Solar;
+		break;
+		case ColPrecipitation:
+			dataType = DWDDescriptonData::D_Precipitation;
 		break;
 	}
 

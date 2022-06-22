@@ -11,4 +11,5 @@ extern const char * const DATA_DIR;
 
 extern const int WRONG_NUMBER;
 
+
 #endif // CONSTANTS_H

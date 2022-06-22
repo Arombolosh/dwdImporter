@@ -57,11 +57,17 @@ SOURCES += \
                 ../../src/DWDMap.cpp \
                 ../../src/DWDSortFilterProxyModel.cpp \
                 ../../src/main.cpp \
-                 ../../src/DWDTableModel.cpp
+                 ../../src/DWDTableModel.cpp \
+    ../../src/DWDProgressBar.cpp \
+    ../../src/DWDTimePlotPicker.cpp \
+    ../../src/DWDDateTimeScaleEngine.cpp \
+    ../../src/DWDDateTimeScaleDraw.cpp \
+    ../../src/Utilities.cpp
 
 FORMS += \
                 ../../src/DWDMainWindow.ui \
-                ../../src/DWDMap.ui
+                ../../src/DWDMap.ui \
+    ../../src/DWDProgressBar.ui
 
 HEADERS += \
                 ../../src/Constants.h \
@@ -74,7 +80,12 @@ HEADERS += \
                 ../../src/DWDMap.h \
                 ../../src/DWDScene.h \
                 ../../src/DWDSortFilterProxyModel.h \
-                ../../src/DWDTableModel.h
+                ../../src/DWDTableModel.h \
+    ../../src/DWDProgressBar.h \
+    ../../src/DWDTimePlotPicker.h \
+    ../../src/DWDDateTimeScaleEngine.h \
+    ../../src/DWDDateTimeScaleDraw.h \
+    ../../src/Utilities.h
 
 DISTFILES +=
 

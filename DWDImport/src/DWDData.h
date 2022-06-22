@@ -14,6 +14,7 @@
 #include <IBK_Path.h>
 #include <IBK_NotificationHandler.h>
 
+class DWDProgressBar;
 
 class DWDData : public QObject
 {
@@ -81,7 +82,7 @@ public:
 	void writeTSV(unsigned int year);
 
 	/*! Create an epw-file for one year. */
-	void exportEPW(unsigned int year, double latitudeDeg, double longitudeDeg);
+	void exportEPW(unsigned int year, double latitudeDeg, double longitudeDeg, const IBK::Path &exportPath);
 
 	/*! Returns the complete url as QString needed for download. */
 	QString urlFilename(const DataType &type, const QString &numberString, const std::string &dateString,
@@ -99,7 +100,7 @@ public:
 	std::vector<IntervalData>		m_data;					///< Vector with interval data
 	IBK::Path						m_filenames[NUM_DT];	///< Filename
 	std::vector<QUrlInfo>			m_urls;					///< urls in ftp directory
-	QLabel							*m_label = nullptr;		///< pointer to label
+	DWDProgressBar					*m_progressDlg = nullptr;		///< pointer to label
 
 signals:
 	void progress(int min, int max, int val);

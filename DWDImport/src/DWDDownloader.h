@@ -11,6 +11,7 @@
 #include <QProgressBar>
 #include <QLabel>
 
+class DWDProgressBar;
 
 class DWDDownloader: public QObject
 {
@@ -29,9 +30,7 @@ public:
 	bool						m_isRunning = true;
 	int							m_finishedDownloads;
 
-	QProgressBar				*m_progress;
-	QLabel						*m_label;
-
+	DWDProgressBar				*m_progress;
 signals:
 	void finished();
 	QNetworkRequest request();

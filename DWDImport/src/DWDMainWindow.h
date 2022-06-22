@@ -28,6 +28,7 @@ class QTableWidgetItem;
 class DWDDownloader;
 class DWDMap;
 class DWDSortFilterProxyModel;
+class DWDProgressBar;
 
 class MainWindow : public QMainWindow
 {
@@ -46,8 +47,11 @@ public:
 
 	void addToList(const QUrlInfo qUrlI);
 
-	/*! Function that calculates all distances to the Reference location */
+	/*! Function that calculates all distances to the Reference location. */
 	void calculateDistances();
+
+	/*! Inits all plots. */
+	void initPlots();
 
 
 private slots:
@@ -72,6 +76,16 @@ private slots:
 
 	void on_toolButtonOpenDirectory_clicked();
 
+	void on_checkBoxTemp_clicked(bool checked);
+
+	void on_checkBoxRad_clicked(bool checked);
+
+	void on_checkBoxRain_clicked(bool checked);
+
+	void on_checkBoxPressure_clicked(bool checked);
+
+	void on_checkBoxWind_clicked(bool checked);
+
 private:
 
 	Ui::MainWindow						*m_ui;
@@ -89,8 +103,7 @@ private:
 	DWDMap										*m_dwdMap;
 
 	QStandardItemModel							*m_model;
-	QProgressDialog								*m_progressDlg;
-	QElapsedTimer								m_progressTimer;
+	DWDProgressBar								*m_progressDlg;
 
 	/*! Table model instance for dwd data. */
 	DWDTableModel								*m_dwdTableModel = nullptr;

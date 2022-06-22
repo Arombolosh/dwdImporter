@@ -14,9 +14,9 @@
 
 #include <CCM_SolarRadiationModel.h>
 #include <CCM_ClimateDataLoader.h>
+
 #include "Constants.h"
-
-
+#include "DWDProgressBar.h"
 
 
 void DWDData::createData(IBK::NotificationHandler * notify, const std::map<IBK::Path, std::set<DWDData::DataType>> &filenames, unsigned int intervalDuration) {
@@ -36,12 +36,12 @@ void DWDData::createData(IBK::NotificationHandler * notify, const std::map<IBK::
 		IBK::FileReader fileReader(fileName, 40960);
 		std::vector<std::string> lines;
 		qDebug() << "Start reading files ------------------";
-		m_label->setText( QString("Reading file ") + QString::fromStdString(fileName.str() ) );
+		m_progressDlg->addText(  QString("Reading file ") + QString::fromStdString(fileName.str() ) );
 		fileReader.readAll(fileName, lines, std::vector<std::string>{"\n"}, 0, notify);
 
 		qDebug() << "Get data of files --------------------";
 
-		m_label->setText( QString("Extract data of file ") + QString::fromStdString(fileName.str() ) );
+		m_progressDlg->addText( QString("Extract data of file ") + QString::fromStdString(fileName.str() ) );
 		for(unsigned int i=1;i<lines.size(); ++i){
 			addDataLine(lines[i], it->second);
 			notify->notify((double)(i+1)/lines.size() );
@@ -150,7 +150,7 @@ void DWDData::writeTSV(unsigned int year){
 	}
 }
 
-void DWDData::exportEPW(unsigned int year, double latitudeDeg, double longitudeDeg) {
+void DWDData::exportEPW(unsigned int year, double latitudeDeg, double longitudeDeg, const IBK::Path &exportPath) {
 	FUNCID(exportEPW);
 
 	/*! Mind the time zone. In DWD Data the time zone is set to UTC+0 whereas in our exported epw file
