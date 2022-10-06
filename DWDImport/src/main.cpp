@@ -3,6 +3,8 @@
 
 #include <QApplication>
 #include <QDir>
+#include <QProxyStyle>
+#include <QStyleOptionViewItem>
 
 #include <QtExt_Directories.h>
 
@@ -13,8 +15,8 @@
 int main(int argc, char* argv[]) {
 	FUNCID(main);
 	QApplication a( argc, argv );
-	// *** Create log file directory and setup message handler ***
 
+	// *** Create log file directory and setup message handler ***
 	QDir baseDir;
 	QtExt::Directories::appname = PROGRAM_NAME;
 	baseDir.mkpath(QtExt::Directories::userDataDir());

@@ -39,7 +39,8 @@ public:
 	};
 
 
-	enum DWDDataTypes{
+	enum DWDDataType{
+		D_Location,
 		D_TemperatureAndHumidity,
 		D_Solar,
 		D_Wind,
@@ -100,7 +101,7 @@ public:
 	bool						m_isVisible;
 
 private:
-	void readDescription(const IBK::Path &filepath, std::vector<DWDDescriptonData> & dwdDescriptonData, const DWDDataTypes &dataType);
+	void readDescription(const IBK::Path &filepath, std::vector<DWDDescriptonData> & dwdDescriptonData, const DWDDataType &dataType);
 
 	/*
 

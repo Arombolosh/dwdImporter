@@ -67,7 +67,7 @@ void DWDDescriptonData::calculateMinMaxDate() {
 	}
 }
 
-void DWDDescriptonData::readDescription(const IBK::Path &filepath, std::vector<DWDDescriptonData> &dwdDescriptonData, const DWDDataTypes &dataType){
+void DWDDescriptonData::readDescription(const IBK::Path &filepath, std::vector<DWDDescriptonData> &dwdDescriptonData, const DWDDataType &dataType){
 //	IBK::Path filepath(QtExt::Directories::userDataDir().toStdString() + "filename.txt");
 
 	IBK::FileReader fileReader(filepath);

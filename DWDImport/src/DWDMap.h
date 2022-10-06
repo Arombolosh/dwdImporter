@@ -19,6 +19,14 @@ class DWDMap : public QDialog
 {
 	Q_OBJECT
 
+	enum DataType {
+		DT_Precipitation,
+		DT_TemperatureAndHumidity,
+		DT_ShortWaveRadiation,
+		DT_Wind,
+		DT_Pressure
+	};
+
 public:
 	explicit DWDMap(QWidget *parent = nullptr);
 	~DWDMap();
@@ -37,6 +45,9 @@ public:
 
 	/*! Add all the locations */
 	void setAllDWDLocations(const std::vector<DWDDescriptonData> & dwdDescData);
+
+	/*! Draws a Location specific data point*/
+	void drawDataPoint(const DWDDescriptonData::DWDDataType & type, QGraphicsItemGroup *group, int xPos, int yPos, int rad, int alpha, QColor color);
 
 	/*! Draw all data */
 	void drawAllDataForYear(unsigned int year);
@@ -79,9 +90,9 @@ private:
 	unsigned int							m_radius = 15;
 	unsigned int							m_opacity = 255;
 
-	bool									m_descTypeToDraw[DWDDescriptonData::DWDDataTypes::NUM_D];
-	QColor									m_color[DWDDescriptonData::DWDDataTypes::NUM_D];
-	QGraphicsItemGroup						*m_items[DWDDescriptonData::DWDDataTypes::NUM_D] = {nullptr, nullptr, nullptr, nullptr};
+	bool									m_descTypeToDraw[DWDDescriptonData::DWDDataType::NUM_D];
+	QColor									m_color[DWDDescriptonData::DWDDataType::NUM_D];
+	QGraphicsItemGroup						*m_items[DWDDescriptonData::DWDDataType::NUM_D] = {nullptr, nullptr, nullptr, nullptr, nullptr};
 
 	const std::vector<DWDDescriptonData>	*m_descData = nullptr;
 

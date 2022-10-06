@@ -17,6 +17,7 @@
 #include "DWDData.h"
 #include "DWDTableModel.h"
 
+#include <qwt_plot.h>
 
 namespace Ui {
 	class MainWindow;
@@ -53,6 +54,10 @@ public:
 	/*! Inits all plots. */
 	void initPlots();
 
+	/*! Formats a qwt plot. */
+	void formatQwtPlot(QwtPlot &plot, int year, QString title, QString leftYAxisTitle, double yLeftMin, double yLeftMax, double yLeftStepSize,
+					   bool hasRightAxis = false, QString rightYAxisTitle = "", double yRightMin = 0, double yRightMax = 100, double yRightStepSize = 0);
+
 
 private slots:
 	void readData();
@@ -76,15 +81,6 @@ private slots:
 
 	void on_toolButtonOpenDirectory_clicked();
 
-	void on_checkBoxTemp_clicked(bool checked);
-
-	void on_checkBoxRad_clicked(bool checked);
-
-	void on_checkBoxRain_clicked(bool checked);
-
-	void on_checkBoxPressure_clicked(bool checked);
-
-	void on_checkBoxWind_clicked(bool checked);
 
 private:
 

@@ -34,7 +34,7 @@ QVariant DWDTableModel::data(const QModelIndex & index, int role) const {
 
 	DWDDescriptonData & dwdData = (*m_descData)[index.row()];
 
-	DWDDescriptonData::DWDDataTypes dataType = DWDDescriptonData::NUM_D;
+	DWDDescriptonData::DWDDataType dataType = DWDDescriptonData::NUM_D;
 
 	switch (index.column() ) {
 		case ColWind:
@@ -83,7 +83,7 @@ QVariant DWDTableModel::data(const QModelIndex & index, int role) const {
 				case ColRadiation :
 				case ColPressure :
 				case ColPrecipitation :
-					Q_ASSERT(dataType != DWDDescriptonData::DWDDataTypes::NUM_D);
+					Q_ASSERT(dataType != DWDDescriptonData::DWDDataType::NUM_D);
 					if (!dwdData.m_data[dataType].m_isAvailable)
 						return QVariant();
 					else
@@ -101,6 +101,26 @@ QVariant DWDTableModel::data(const QModelIndex & index, int role) const {
 		// UserRole returns value reference
 		case Qt::UserRole :
 //			return (*m_availableVariables)[(size_t)index.row()].m_fmiValueRef;
+		break;
+
+		case Qt::TextAlignmentRole :
+			switch (index.column()) {
+				case ColWind :
+				case ColAirTemp :
+				case ColRadiation :
+				case ColPressure :
+				case ColPrecipitation :
+				case ColId:
+				case ColLatitude:
+				case ColLongitude:
+				case ColDistance:
+				case ColMinDate:
+				case ColMaxDate:
+					return Qt::AlignCenter;
+				case ColCountry:
+				case ColName:
+					return Qt::AlignLeft;
+			}
 		break;
 	}
 	return QVariant();
@@ -120,9 +140,9 @@ QVariant DWDTableModel::headerData(int section, Qt::Orientation orientation, int
 			<< tr("Country")
 			<< tr("Minimum Date")
 			<< tr("Maximum Date")
-			<< tr("T_air + rH")
-			<< tr("Radiation")
-			<< tr("Wind")
+			<< tr("Air Temp. & Rel. Humidity")
+			<< tr("SW Radiation")
+			<< tr("Wind Speed")
 			<< tr("Pressure")
 			<< tr("Precipitation");
 
@@ -141,7 +161,7 @@ bool DWDTableModel::setData(const QModelIndex & index, const QVariant & value, i
 		return false;
 
 	int col = index.column();
-	DWDDescriptonData::DWDDataTypes dataType;
+	DWDDescriptonData::DWDDataType dataType;
 
 	switch (col) {
 		case ColWind:
@@ -204,7 +224,7 @@ Qt::ItemFlags DWDTableModel::flags(const QModelIndex & index) const {
 		return QAbstractItemModel::flags(index);
 
 	DWDDescriptonData &checkBox = (*m_descData)[index.row()];
-	DWDDescriptonData::DWDDataTypes dataType;
+	DWDDescriptonData::DWDDataType dataType;
 
 	switch (index.column()) {
 		case ColWind:

@@ -149,16 +149,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	resize(1500,800);
 
-	m_ui->checkBoxPressure->setText("Pressure");
-	m_ui->checkBoxWind->setText("Wind");
-	m_ui->checkBoxTemp->setText("Air Temperature / Relative Humidity");
-	m_ui->checkBoxRad->setText("Short-Wave Radiation");
-	m_ui->checkBoxRain->setText("Precipitation");
-
 	QList<int> sizes;
 	sizes << 1200 << 300;
 	m_ui->splitter->setSizes(sizes);
 
+	// init all plots
 	initPlots();
 }
 
@@ -219,11 +214,9 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 		return;
 	}
 
-	m_ui->plotTemp->setEnabled(false);
-	m_ui->plotRad->setEnabled(false);
-	m_ui->plotWind->setEnabled(false);
-	m_ui->plotPressure->setEnabled(false);
-	m_ui->plotRain->setEnabled(false);
+	m_ui->plotTempRelHum->setEnabled(false);
+	m_ui->plotRadPres->setEnabled(false);
+	m_ui->plotRainWind->setEnabled(false);
 
 	std::vector<int> dataInRows(DWDDescriptonData::NUM_D,-1);
 	//find selected elements
@@ -238,19 +231,15 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 
 				switch (j) {
 				case DWDDescriptonData::D_TemperatureAndHumidity:
-					m_ui->plotTemp->setEnabled(isChecked);
+					m_ui->plotTempRelHum->setEnabled(isChecked);
 					break;
 				case DWDDescriptonData::D_Solar:
-					m_ui->plotRad->setEnabled(isChecked);
+				case DWDDescriptonData::D_Pressure:
+					m_ui->plotRadPres->setEnabled(isChecked);
 					break;
 				case DWDDescriptonData::D_Wind:
-					m_ui->plotWind->setEnabled(isChecked);
-					break;
-				case DWDDescriptonData::D_Pressure:
-					m_ui->plotPressure->setEnabled(isChecked);
-					break;
 				case DWDDescriptonData::D_Precipitation:
-					m_ui->plotRain->setEnabled(isChecked);
+					m_ui->plotRainWind->setEnabled(isChecked);
 					break;
 				}
 			}
@@ -479,76 +468,35 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 	}
 
 	if ( showPreview ) {
-		//		m_ui->tempPlot = new QwtPlot( );
-
-		m_ui->plotTemp->detachItems();
-
-		// create plot as main widget
-		//m_ui->plotTemp->setAxisScale(QwtPlot::xBottom, 0, 365, 10);
-
 
 		// create a new curve to be shown in the plot and set some properties
 		QwtPlotCurve *curveTemp = new QwtPlotCurve();
+		QwtPlotCurve *curveRelHum = new QwtPlotCurve();
 		QwtPlotCurve *curveRad = new QwtPlotCurve();
 		QwtPlotCurve *curveWind = new QwtPlotCurve();
 		QwtPlotCurve *curvePressure = new QwtPlotCurve();
 		QwtPlotCurve *curvePrecipitation = new QwtPlotCurve();
 
-		QwtDateScaleDraw *scaleDrawTemp = new QwtDateScaleDraw(Qt::UTC);
-		scaleDrawTemp->setDateFormat(QwtDate::Millisecond, "MM.yyyy");
-		scaleDrawTemp->setDateFormat(QwtDate::Second, "MM");
-		scaleDrawTemp->setDateFormat(QwtDate::Minute, "MM");
-		scaleDrawTemp->setDateFormat(QwtDate::Hour, "MM");
-		m_ui->plotTemp->setAxisScaleDraw(QwtPlot::xBottom, scaleDrawTemp);
-		QwtDateScaleDraw *scaleDrawRad = new QwtDateScaleDraw(Qt::UTC);
-		scaleDrawRad->setDateFormat(QwtDate::Millisecond, "MM.yyyy");
-		scaleDrawRad->setDateFormat(QwtDate::Second, "MM");
-		scaleDrawRad->setDateFormat(QwtDate::Minute, "MM");
-		scaleDrawRad->setDateFormat(QwtDate::Hour, "MM");
-		m_ui->plotRad->setAxisScaleDraw(QwtPlot::xBottom, scaleDrawRad);
-		QwtDateScaleDraw *scaleDrawWind = new QwtDateScaleDraw(Qt::UTC);
-		scaleDrawWind->setDateFormat(QwtDate::Millisecond, "MM.yyyy");
-		scaleDrawWind->setDateFormat(QwtDate::Second, "MM");
-		scaleDrawWind->setDateFormat(QwtDate::Minute, "MM");
-		scaleDrawWind->setDateFormat(QwtDate::Hour, "MM");
-		m_ui->plotWind->setAxisScaleDraw(QwtPlot::xBottom, scaleDrawWind);
-		QwtDateScaleDraw *scaleDrawPressure = new QwtDateScaleDraw(Qt::UTC);
-		scaleDrawPressure->setDateFormat(QwtDate::Millisecond, "MM.yyyy");
-		scaleDrawPressure->setDateFormat(QwtDate::Second, "MM");
-		scaleDrawPressure->setDateFormat(QwtDate::Minute, "MM");
-		scaleDrawPressure->setDateFormat(QwtDate::Hour, "MM");
-		m_ui->plotPressure->setAxisScaleDraw(QwtPlot::xBottom, scaleDrawPressure);
-		QwtDateScaleDraw *scaleDrawRain = new QwtDateScaleDraw(Qt::UTC);
-		scaleDrawRain->setDateFormat(QwtDate::Millisecond, "MM.yyyy");
-		scaleDrawRain->setDateFormat(QwtDate::Second, "MM");
-		scaleDrawRain->setDateFormat(QwtDate::Minute, "MM");
-		scaleDrawRain->setDateFormat(QwtDate::Hour, "MM");
-		m_ui->plotRain->setAxisScaleDraw(QwtPlot::xBottom, scaleDrawPressure);
-
-		curveTemp->setTitle( "Air Temp" ); // will later be used in legend
-		curveTemp->setPen( Qt::blue, 2 ); // color and thickness in pixels
+		curveTemp->setPen( Qt::red, 2 ); // color and thickness in pixels
 		curveTemp->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
 
-		curveRad->setTitle( "SW Rad" ); // will later be used in legend
+		curveRelHum->setPen( Qt::blue, 2 ); // color and thickness in pixels
+		curveRelHum->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
+
 		curveRad->setPen( Qt::yellow, 2 ); // color and thickness in pixels
 		curveRad->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
-		curveRad->setYAxis(QwtPlot::yRight);
 
-		curveWind->setTitle( "Wind" ); // will later be used in legend
 		curveWind->setPen( QColor(130, 30, 250), 2 ); // color and thickness in pixels
 		curveWind->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
 
-		curvePressure->setTitle( "Pressure" ); // will later be used in legend
 		curvePressure->setPen( QColor(250, 30, 30), 2 ); // color and thickness in pixels
 		curvePressure->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
-		curvePressure->setYAxis(QwtPlot::yRight);
 
-		curvePrecipitation->setTitle( "Precipitation" ); // will later be used in legend
 		curvePrecipitation->setPen( QColor(250, 30, 30), 2 ); // color and thickness in pixels
 		curvePrecipitation->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
 
 		// data points
-		QPolygonF pointsTemp, pointsRad, pointsWind, pointsPressure, pointsPrecipitation;
+		QPolygonF pointsTemp, pointsRelHum, pointsRad, pointsWind, pointsPressure, pointsPrecipitation;
 
 		bool ok;
 		int year = m_ui->comboBoxYear->currentText().toInt(&ok);
@@ -573,72 +521,45 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 			DWDData::IntervalData intVal = m_dwdData.m_data[i];
 
 			pointsTemp << QPointF(timeStep , intVal.m_airTemp );
+			pointsRelHum << QPointF(timeStep , intVal.m_relHum );
 			pointsRad << QPointF(timeStep, intVal.m_globalRad );
 			pointsWind << QPointF(timeStep, intVal.m_windSpeed );
 			pointsPressure << QPointF(timeStep, intVal.m_pressure );
 			pointsPrecipitation << QPointF(timeStep, intVal.m_precipitaion );
 		}
 
-		qDebug() << start.toMSecsSinceEpoch() << "\t" << startUTC.toMSecsSinceEpoch() << "\t" << startLocal.toMSecsSinceEpoch();
-
-		//m_ui->plotTemp->setAxisScale(QwtPlot::xBottom, (double)start.toMSecsSinceEpoch(), (double)end.toMSecsSinceEpoch());
-
-		DWDTimePlotPicker * picker = new DWDTimePlotPicker(QwtPlot::xBottom, QwtPlot::yLeft, m_ui->plotTemp->canvas());
-		picker->setYUnit("C");
-		picker->setTrackerPen(QColor(0,0,64));
-		picker->setTrackerMode(QwtPicker::AlwaysOn);
-		picker->setStateMachine(new QwtPickerDragRectMachine);
-
-		QList<double> majorTicks;
-		majorTicks.push_back(start.toMSecsSinceEpoch() );
-		for(unsigned int i=0; i<11; ++i) {
-			majorTicks.push_back(start.toMSecsSinceEpoch()+(size_t)dayAtMonthStart[i]*24*60*60*1000);
-		}
-
-		QwtScaleDiv scaleDiv((double)start.toMSecsSinceEpoch(), (double)end.toMSecsSinceEpoch(),QList<double>(),QList<double>(),majorTicks);
-
-
-		QwtPlotGrid *grid = new QwtPlotGrid;
-		grid->enableXMin(true);
-		grid->setXDiv(scaleDiv);
-		grid->setMajorPen(QPen(Qt::gray, 0, Qt::DotLine));
-		grid->setMinorPen(QPen(Qt::lightGray, 0 , Qt::DotLine));
-		grid->attach(m_ui->plotTemp);
-		grid->attach(m_ui->plotRad);
-		grid->attach(m_ui->plotWind);
-		grid->attach(m_ui->plotPressure);
-		grid->attach(m_ui->plotRain);
-
 		// give some points to the curve
-		curveTemp->setSamples( pointsTemp );
-		curveRad->setSamples( pointsRad );
-		curveWind->setSamples( pointsWind );
-		curvePressure->setSamples( pointsPressure );
-		curvePrecipitation->setSamples( pointsPrecipitation );
+		curveTemp->setSamples(pointsTemp);
+		curveRelHum->setSamples(pointsRelHum);
+		curveRad->setSamples(pointsRad);
+		curveWind->setSamples(pointsWind);
+		curvePressure->setSamples(pointsPressure);
+		curvePrecipitation->setSamples(pointsPrecipitation);
 
 		// set the curve in the plot
-		curveTemp->attach( m_ui->plotTemp );
-		curveRad->attach( m_ui->plotRad );
-		curveWind->attach( m_ui->plotWind );
-		curvePressure->attach( m_ui->plotPressure );
-		curvePrecipitation->attach( m_ui->plotRain );
+		curveRelHum->attach(m_ui->plotTempRelHum);
+		curveRelHum->setYAxis(QwtPlot::yRight);
 
-		m_ui->plotTemp->replot();
-		m_ui->plotTemp->show();
+		curveTemp->attach(m_ui->plotTempRelHum);
 
-		m_ui->plotRad->replot();
-		m_ui->plotRad->show();
+		curveRad->attach( m_ui->plotRadPres );
+		curveRad->setYAxis(QwtPlot::yRight);
 
-		m_ui->plotWind->replot();
-		m_ui->plotWind->show();
+		curvePressure->attach( m_ui->plotRadPres );
 
-		m_ui->plotPressure->replot();
-		m_ui->plotPressure->show();
+		curvePrecipitation->attach( m_ui->plotRainWind );
 
-		m_ui->plotRain->replot();
-		m_ui->plotRain->show();
+		curveWind->attach(m_ui->plotRainWind);
+		curveWind->setYAxis(QwtPlot::yRight);
 
+		m_ui->plotTempRelHum->replot();
+		m_ui->plotTempRelHum->show();
 
+		m_ui->plotRadPres->replot();
+		m_ui->plotRadPres->show();
+
+		m_ui->plotRainWind->replot();
+		m_ui->plotRainWind->show();
 	}
 
 	if ( exportEPW ) {
@@ -745,39 +666,90 @@ void MainWindow::calculateDistances() {
 }
 
 void MainWindow::initPlots() {
+	formatQwtPlot(*m_ui->plotTempRelHum, 2020, "Air Temperature & Rel. Humidity", "C", -10, 40, 10, true, "%", 0, 100, 20);
+	formatQwtPlot(*m_ui->plotRadPres, 2020, "Pressure & Radiation", "kPa", 0, 1.4, 0.2, true, "W/m2", 0, 1400, 200);
+	formatQwtPlot(*m_ui->plotRainWind, 2020, "Precipitation & Wind speed", "mm", 0, 50, 10, true, "m/s", 0, 20, 4);
+}
 
-	/*! ================= Temp & rel Hum =================== */
-	m_ui->plotTemp->setAxisScale(QwtPlot::yLeft, -10, 40, 5);
-	m_ui->plotTemp->setAxisTitle(QwtPlot::yLeft, "Temperatur [C]");
+void MainWindow::formatQwtPlot(QwtPlot &plot, int year, QString title, QString leftYAxisTitle, double yLeftMin, double yLeftMax, double yLeftStepSize,
+							   bool hasRightAxis, QString rightYAxisTitle, double yRightMin, double yRightMax, double yRightStepSize) {
 
+	// initialize start and end date
+	QDateTime start(QDate(year, 1, 1), QTime(0,0,0,0), Qt::UTC);
+	QDateTime end(QDate(year+1, 1, 1), QTime(0,0,0,0), Qt::UTC);
 
+	// we set also the time spec
+	start.setTimeSpec(Qt::UTC);
+	end.setTimeSpec(Qt::UTC);
 
-	/*! ================= SW Rad =================== */
-	m_ui->plotRad->setAxisScale(QwtPlot::yLeft, 0, 1000, 200);
-	m_ui->plotRad->setAxisTitle(QwtPlot::yLeft, "SW Radiation [W/m2]");
-	m_ui->plotRad->setAxisFont(QwtPlot::yLeft, QFont("Arial", 12));
+	// initialize all major ticks in grid and Axis
+	QList<double> majorTicks;
+	majorTicks.push_back(start.toMSecsSinceEpoch() );
 
+	for(unsigned int i=0; i<12; ++i)
+		majorTicks.push_back(QwtDate::toDouble(start.addMonths(i) ) );
 
+	// Init Scale Divider
+	QwtScaleDiv scaleDiv(QwtDate::toDouble(start), QwtDate::toDouble(end), QList<double>(), QList<double>(), majorTicks);
 
-	/*! ================= Wind =================== */
-	m_ui->plotWind->setAxisScale(QwtPlot::yLeft, 0, 40, 5);
-	m_ui->plotWind->setAxisTitle(QwtPlot::yLeft, "Wind speed [m/s]");
+	// Init Grid
+	QwtPlotGrid *grid = new QwtPlotGrid;
+	grid->enableXMin(true);
+	grid->setXDiv(scaleDiv);
+	grid->setMajorPen(QPen(Qt::gray, 0, Qt::DotLine));
+	grid->setMinorPen(QPen(Qt::lightGray, 0 , Qt::DotLine));
+	grid->attach(&plot);
 
+	// inti plot title
+	QFont font;
+	font.setPixelSize(20);
+	QwtText qwtTitle;
+	qwtTitle.setFont(font);
+	qwtTitle.setText(title);
 
-	/*! ================= Pressure =================== */
-	m_ui->plotPressure->setAxisScale(QwtPlot::yLeft, 0, 2, 0.4);
-	m_ui->plotPressure->setAxisTitle(QwtPlot::yLeft, "Pressure [kPa]");
+	// Set plot title
+	plot.setTitle(qwtTitle);
 
+	// Scale all y axises
+	plot.setAxisScale(QwtPlot::yLeft, yLeftMin, yLeftMax, yLeftStepSize);
+	plot.setAxisFont(QwtPlot::yLeft, font);
 
+	// Init QWT Text
+	QwtText axisTitle;
+	axisTitle.setFont(font);
 
-	/*! ================= Rain =================== */
-	m_ui->plotRain->setAxisScale(QwtPlot::yLeft, 0, 2, 0.4);
-	m_ui->plotRain->setAxisTitle(QwtPlot::yLeft, "Pressure [kPa]");
+	// left Axis title
+	axisTitle.setText(leftYAxisTitle);
+	plot.setAxisTitle(QwtPlot::yLeft, axisTitle);
 
+	// do we have a right y axis?
+	if(hasRightAxis) {
+		plot.setAxisFont(QwtPlot::yRight, font);
+		plot.enableAxis(QwtPlot::yRight, true);
+		plot.setAxisScale(QwtPlot::yRight, yRightMin, yRightMax, yRightStepSize);
 
+		// right Axis title
+		axisTitle.setText(rightYAxisTitle);
+		plot.setAxisTitle(QwtPlot::yRight, axisTitle);
+		plot.setTitle(title);
+	}
 
+	// Bottom axis
+	plot.setAxisFont(QwtPlot::xBottom, font);
+
+	// Canvas Background
+	plot.setCanvasBackground(Qt::white);
+
+	// Init Scale draw engine
+	QwtDateScaleDraw *scaleDrawTemp = new QwtDateScaleDraw(Qt::UTC);
+	scaleDrawTemp->setDateFormat(QwtDate::Month, "MMM");
+
+	// Set scale draw engine
+	plot.setAxisScaleDraw(QwtPlot::xBottom, scaleDrawTemp);
+	plot.setAxisScaleDiv(QwtPlot::xBottom, scaleDiv);
 
 }
+
 
 void MainWindow::on_pushButtonMap_clicked() {
 	double latitude = m_ui->lineEditLatitude->text().toDouble();
@@ -862,23 +834,3 @@ void MainWindow::on_toolButtonOpenDirectory_clicked() {
 	m_ui->lineEditFile->setText(filename);
 }
 
-
-void MainWindow::on_checkBoxTemp_clicked(bool checked) {
-	m_ui->plotTemp->setHidden(!checked);
-}
-
-void MainWindow::on_checkBoxRad_clicked(bool checked) {
-	m_ui->plotRad->setHidden(!checked);
-}
-
-void MainWindow::on_checkBoxRain_clicked(bool checked) {
-	m_ui->plotRain->setHidden(!checked);
-}
-
-void MainWindow::on_checkBoxPressure_clicked(bool checked) {
-	m_ui->plotPressure->setHidden(!checked);
-}
-
-void MainWindow::on_checkBoxWind_clicked(bool checked) {
-	m_ui->plotWind->setHidden(!checked);
-}
