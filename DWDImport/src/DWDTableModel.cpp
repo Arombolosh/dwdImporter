@@ -1,5 +1,7 @@
 #include "DWDTableModel.h"
 
+#include <QColor>
+
 
 QDate convertIBKTimeToQDate(const IBK::Time &time) {
 
@@ -94,7 +96,24 @@ QVariant DWDTableModel::data(const QModelIndex & index, int role) const {
 			//      with valid value -> black, bold
 		break;
 
-		case Qt::ForegroundRole :
+		case Qt::BackgroundColorRole :
+			switch(index.column()) {
+				case ColWind:
+					if (!dwdData.m_data[dataType].m_isAvailable)
+						return QVariant();
+					else
+						return QVariant(QColor(Qt::blue));
+				case ColAirTemp:
+					if (!dwdData.m_data[dataType].m_isAvailable)
+						return QVariant();
+					else
+						return QVariant(QColor(Qt::red));
+				case ColRadiation:
+					if (!dwdData.m_data[dataType].m_isAvailable)
+						return QVariant();
+					else
+						return QVariant(QColor(Qt::yellow));
+			}
 			// vars with INVALID valueRef -> grey italic
 		break;
 

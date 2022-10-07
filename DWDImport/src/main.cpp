@@ -9,19 +9,32 @@
 #include <QtExt_Directories.h>
 
 #include "DWDMainWindow.h"
+#include "DWDMessageHandler.h"
 
 #include "Constants.h"
+
+/*! qDebug() message handler function, redirects debug messages to IBK::IBK_Message(). */
+void qDebugMsgHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
+	(void) type;
+	std::string contextstr;
+	if (context.file != nullptr && context.function != nullptr)
+		contextstr = "[" + std::string(context.file) + "::" + std::string(context.function) + "]";
+	IBK::IBK_Message(msg.toStdString(), IBK::MSG_DEBUG, contextstr.c_str(), IBK::VL_ALL);
+}
 
 int main(int argc, char* argv[]) {
 	FUNCID(main);
 	QApplication a( argc, argv );
+
+	// install message handler to catch qDebug()
+	qInstallMessageHandler(qDebugMsgHandler);
 
 	// *** Create log file directory and setup message handler ***
 	QDir baseDir;
 	QtExt::Directories::appname = PROGRAM_NAME;
 	baseDir.mkpath(QtExt::Directories::userDataDir());
 
-	IBK::MessageHandler messageHandler;
+	DWDMessageHandler messageHandler;
 	IBK::MessageHandlerRegistry::instance().setMessageHandler( &messageHandler );
 
 	std::string errmsg;
