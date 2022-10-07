@@ -2,8 +2,6 @@
 
 #include "Constants.h"
 
-#include "DWDProgressBar.h"
-
 #include <QMessageBox>
 
 DWDDownloader::DWDDownloader(QWidget *parent) {
@@ -24,6 +22,8 @@ void DWDDownloader::doDownload(const QUrl &url) {
 	connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
 			SLOT(downloadProgress(qint64,qint64)));
 
+    m_progressDlg->setLabelText(url.toDisplayString());
+    m_progressDlg->setWindowTitle("Downloading DWD Data...");
 
 	m_currentDownloads.append(reply);
 
@@ -81,8 +81,8 @@ void DWDDownloader::downloadProgress(qint64 bytesReceived, qint64 bytesTotal) {
 	m_bytesReceived += bytesReceived;
 	m_bytesTotal += bytesTotal;
 
-//	m_progress->setRange(0,m_bytesReceived);
-//	m_progress->setValue(m_bytesTotal);
+    m_progressDlg->setMaximum(m_bytesTotal);
+    m_progressDlg->setValue(m_bytesReceived);
 
 }
 
@@ -111,7 +111,7 @@ void DWDDownloader::downloadFinished(QNetworkReply *reply) {
 				printf("Download of %s succeeded (saved to %s)\n",
 					   url.toEncoded().constData(), qPrintable(filename));
 
-				m_progress->addText( QString("Downloaded succesfully ") + url.url() );
+                // m_progress->addText( QString("Downloaded succesfully ") + url.url() );
 			}
 		}
 	}

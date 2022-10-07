@@ -95,12 +95,12 @@ public:
 
 
 
-	IBK::Time						m_startTime;			///< Start time for the first interval data
-	unsigned int					m_intervalDuration;		///< Interval duration in sec
-	std::vector<IntervalData>		m_data;					///< Vector with interval data
-	IBK::Path						m_filenames[NUM_DT];	///< Filename
-	std::vector<QUrlInfo>			m_urls;					///< urls in ftp directory
-	DWDProgressBar					*m_progressDlg = nullptr;		///< pointer to label
+    IBK::Time						m_startTime;                ///> Start time for the first interval data
+    unsigned int					m_intervalDuration;         ///> Interval duration in sec
+    std::vector<IntervalData>		m_data;                     ///> Vector with interval data
+    IBK::Path						m_filenames[NUM_DT];        ///> Filename
+    std::vector<QUrlInfo>			m_urls;                     ///> urls in ftp directory
+    QProgressDialog					*m_progressDlg = nullptr;   ///> pointer to label
 
 signals:
 	void progress(int min, int max, int val);

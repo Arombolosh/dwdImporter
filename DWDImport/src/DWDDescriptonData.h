@@ -39,15 +39,15 @@ public:
 	};
 
 
-	enum DWDDataType{
-		D_Location,
-		D_TemperatureAndHumidity,
-		D_Solar,
-		D_Wind,
-		D_Pressure,
-		D_Precipitation,
-		NUM_D
-	};
+    enum DWDDataType{
+        D_TemperatureAndHumidity,
+        D_Solar,
+        D_Wind,
+        D_Pressure,
+        D_Precipitation,
+        NUM_D
+    };
+
 	/*! Read predefined (download dwd) description files. */
 	void readAllDescriptions(std::vector<DWDDescriptonData> &dwdDescriptonData);
 

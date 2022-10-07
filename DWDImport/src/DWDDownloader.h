@@ -8,7 +8,7 @@
 #include <QFile>
 #include <QtCore>
 #include <QThread>
-#include <QProgressBar>
+#include <QProgressDialog>
 #include <QLabel>
 
 class DWDProgressBar;
@@ -30,7 +30,8 @@ public:
 	bool						m_isRunning = true;
 	int							m_finishedDownloads;
 
-	DWDProgressBar				*m_progress;
+    /*! Progress Dialog. */
+    QProgressDialog				*m_progressDlg;
 signals:
 	void finished();
 	QNetworkRequest request();

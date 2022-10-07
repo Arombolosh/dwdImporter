@@ -16,7 +16,6 @@
 #include <CCM_ClimateDataLoader.h>
 
 #include "Constants.h"
-#include "DWDProgressBar.h"
 
 
 void DWDData::createData(IBK::NotificationHandler * notify, const std::map<IBK::Path, std::set<DWDData::DataType>> &filenames, unsigned int intervalDuration) {
@@ -35,13 +34,12 @@ void DWDData::createData(IBK::NotificationHandler * notify, const std::map<IBK::
 		//read the file
 		IBK::FileReader fileReader(fileName, 40960);
 		std::vector<std::string> lines;
-		qDebug() << "Start reading files ------------------";
-		m_progressDlg->addText(  QString("Reading file ") + QString::fromStdString(fileName.str() ) );
+        qDebug() << "Start reading file " << QString::fromStdString(fileName.str()) << " ------------------";
 		fileReader.readAll(fileName, lines, std::vector<std::string>{"\n"}, 0, notify);
 
-		qDebug() << "Get data of files --------------------";
+        qDebug() << "Read Data of file " << QString::fromStdString(fileName.str()) << " ------------------";
 
-		m_progressDlg->addText( QString("Extract data of file ") + QString::fromStdString(fileName.str() ) );
+        m_progressDlg->setLabelText( QString("Extract data of file ") + QString::fromStdString(fileName.str() ) );
 		for(unsigned int i=1;i<lines.size(); ++i){
 			addDataLine(lines[i], it->second);
 			notify->notify((double)(i+1)/lines.size() );

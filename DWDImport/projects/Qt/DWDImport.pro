@@ -53,21 +53,22 @@ SOURCES += \
                 ../../src/DWDDescriptonData.cpp \
                 #../../src/DWD_CheckBox.cpp \
                 ../../src/DWDDownloader.cpp \
+    ../../src/DWDLogWidget.cpp \
                 ../../src/DWDMainWindow.cpp \
                 ../../src/DWDMap.cpp \
+    ../../src/DWDMessageHandler.cpp \
                 ../../src/DWDSortFilterProxyModel.cpp \
                 ../../src/main.cpp \
                  ../../src/DWDTableModel.cpp \
-    ../../src/DWDProgressBar.cpp \
     ../../src/DWDTimePlotPicker.cpp \
     ../../src/DWDDateTimeScaleEngine.cpp \
     ../../src/DWDDateTimeScaleDraw.cpp \
     ../../src/Utilities.cpp
 
 FORMS += \
+                ../../src/DWDLogWidget.ui \
                 ../../src/DWDMainWindow.ui \
-                ../../src/DWDMap.ui \
-    ../../src/DWDProgressBar.ui
+                ../../src/DWDMap.ui
 
 HEADERS += \
                 ../../src/Constants.h \
@@ -76,12 +77,13 @@ HEADERS += \
                 ../../src/DWDDescriptonData.h \
                 #../../src/DWD_CheckBox.h \
                 ../../src/DWDDownloader.h \
+    ../../src/DWDLogWidget.h \
                 ../../src/DWDMainWindow.h \
                 ../../src/DWDMap.h \
+    ../../src/DWDMessageHandler.h \
                 ../../src/DWDScene.h \
                 ../../src/DWDSortFilterProxyModel.h \
                 ../../src/DWDTableModel.h \
-    ../../src/DWDProgressBar.h \
     ../../src/DWDTimePlotPicker.h \
     ../../src/DWDDateTimeScaleEngine.h \
     ../../src/DWDDateTimeScaleDraw.h \

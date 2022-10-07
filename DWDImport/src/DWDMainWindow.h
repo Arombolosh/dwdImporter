@@ -30,6 +30,7 @@ class DWDDownloader;
 class DWDMap;
 class DWDSortFilterProxyModel;
 class DWDProgressBar;
+class DWDLogWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -99,7 +100,7 @@ private:
 	DWDMap										*m_dwdMap;
 
 	QStandardItemModel							*m_model;
-	DWDProgressBar								*m_progressDlg;
+    QProgressDialog								*m_progressDlg;
 
 	/*! Table model instance for dwd data. */
 	DWDTableModel								*m_dwdTableModel = nullptr;
@@ -107,6 +108,8 @@ private:
 	QAbstractProxyModel							*m_abstractProxyModel = nullptr;
 
 	QString										m_fileName;
+
+	DWDLogWidget                               *m_logWidget = nullptr;
 
 };
 

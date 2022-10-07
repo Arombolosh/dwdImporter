@@ -5,6 +5,7 @@
 #include <IBK_messages.h>
 #include <IBK_FileReader.h>
 #include <IBK_physics.h>
+#include <IBK_MessageHandler.h>
 
 #include <QtExt_Directories.h>
 #include <QtExt_ValidatingLineEdit.h>
@@ -49,8 +50,9 @@
 // #include "DWDDelegate.h"
 #include "DWDData.h"
 #include "DWDSortFilterProxyModel.h"
-#include "DWDProgressBar.h"
 #include "DWDDateTimeScaleEngine.h"
+#include "DWDLogWidget.h"
+#include "DWDMessageHandler.h"
 
 #include "Constants.h"
 #include "Utilities.h"
@@ -60,22 +62,25 @@
 
 class ProgressNotify : public IBK::NotificationHandler{
 public:
-	ProgressNotify( DWDProgressBar *bar):
-		m_bar(bar)
-	{}
+	ProgressNotify(QProgressDialog *bar):
+		m_dlg(bar)
+	{
+		m_dlg->setMaximum(100);
+		m_dlg->show();
+	}
 
 	/*! Reimplement this function in derived child 'notification' objects
 		to provide whatever notification operation you want to perform.
 	*/
 	virtual void notify() {
 		FUNCID(notify);
-		if(m_bar->value() == m_value)
+		if(m_dlg->value() == m_value)
 			return;
-		m_bar->setMaximum(m_value);
+		m_dlg->setValue(m_value);
 		qApp->processEvents();
-		//		if(m_bar->wasCanceled()){
-		//			throw IBK::Exception("Canceled", FUNC_ID);
-		//		}
+		if(m_dlg->wasCanceled()){
+			throw IBK::Exception("Canceled", FUNC_ID);
+		}
 	}
 
 	/*! Reimplement this function in derived child 'notification' objects
@@ -88,7 +93,7 @@ public:
 		notify();
 	}
 
-	DWDProgressBar			*m_bar;
+	QProgressDialog			*m_dlg;
 	int						m_value;
 };
 
@@ -144,7 +149,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	on_horizontalSliderDistance_valueChanged(50);
 
-	m_progressDlg = new DWDProgressBar(this);
+	m_progressDlg = new QProgressDialog(this);
+	// m_progressDlg->setFixedWidth(1000);
+	m_progressDlg->setModal(true);
+
 	connect( &m_dwdData, &DWDData::progress, this, &MainWindow::setProgress );
 
 	resize(1500,800);
@@ -155,14 +163,16 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	// init all plots
 	initPlots();
+
+	// Add the Dockwidget
+	m_logWidget = new DWDLogWidget;
+	this->addDockWidget(Qt::BottomDockWidgetArea, m_logWidget);
+
+	// Also connect all IBK::Messages to Log Widget
+	DWDMessageHandler * msgHandler = dynamic_cast<DWDMessageHandler *>(IBK::MessageHandlerRegistry::instance().messageHandler() );
+	connect(msgHandler, &DWDMessageHandler::msgReceived, m_logWidget, &DWDLogWidget::onMsgReceived);
 }
 
-/// TODO Stephan
-/// bitte noch die Spalten sortierbar gestalten
-/// und die checkboxen in allen spalten zurechtrücken
-/// und die clicks auf die checkboxen setzen
-/// distance spalte einführen und berechnen
-/// danke
 
 MainWindow::~MainWindow() {
 	delete m_ui;
@@ -175,16 +185,15 @@ void MainWindow::loadData(){
 	//download all files
 	DWDDescriptonData  descData;
 
-	m_progressDlg->setTitle("Downloading weather descriptions...");
-
 	// get download links for data
 	QStringList urls = descData.downloadDescriptionFiles(m_ui->radioButtonRecent->isChecked());
 
 	// initiate download manager
 	m_manager = new DWDDownloader(this);
 	m_manager->m_urls = urls;
-	m_manager->m_progress = m_progressDlg; // bisschen quatsch
-	connect( m_manager, &DWDDownloader::finished, this, &MainWindow::readData );
+	m_manager->m_progressDlg = m_progressDlg; // bisschen quatsch
+	m_progressDlg->
+			connect( m_manager, &DWDDownloader::finished, this, &MainWindow::readData );
 
 	m_manager->execute(); // simply registers network requests
 }
@@ -258,7 +267,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 				DWDData::DT_WindDirection, DWDData::DT_Pressure, DWDData::DT_Precipitation};
 
 	m_manager = new DWDDownloader(this);
-	m_manager->m_progress = m_progressDlg;
+	m_manager->m_progressDlg = m_progressDlg;
 	m_manager->m_urls.clear();
 
 	connect( m_manager, &DWDDownloader::finished, this, &MainWindow::readData );
@@ -305,8 +314,8 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 				while(ftp->hasPendingCommands() || ftp->currentCommand()!=QFtp::None)
 					qApp->processEvents();
 
-//				while( dwdData.m_urls.empty() )
-//					qApp->processEvents();
+				//				while( dwdData.m_urls.empty() )
+				//					qApp->processEvents();
 
 				//now search through all urls for the right file
 				for(unsigned int j=0; j<dwdData.m_urls.size(); ++j){
@@ -330,7 +339,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 		}
 	}
 
-	m_progressDlg->setTitle("Downloading weather data...");
+	IBK::IBK_Message("Start downloading Weather Data...", IBK::MSG_PROGRESS);
 
 	if(!m_manager->m_urls.empty())
 		m_manager->execute();
@@ -585,7 +594,7 @@ void MainWindow::readData() {
 	// read all decription files
 	DWDDescriptonData descData;
 	m_descData.clear();
-	m_progressDlg->setTitle("Read all weather data...");
+	IBK::IBK_Message("Read all weather data...", IBK::MSG_PROGRESS);
 
 	descData.readAllDescriptions(m_descData);
 
@@ -604,7 +613,7 @@ void MainWindow::readData() {
 	m_ui->tableView->sortByColumn(1, Qt::AscendingOrder);
 
 	m_dwdTableModel->m_proxyModel = m_proxyModel;
-	//m_ui->tableView->resizeColumnsToContents();
+	m_ui->tableView->resizeColumnsToContents();
 
 	m_ui->tableView->reset();
 
@@ -702,7 +711,7 @@ void MainWindow::formatQwtPlot(QwtPlot &plot, int year, QString title, QString l
 
 	// inti plot title
 	QFont font;
-	font.setPixelSize(20);
+	font.setPointSize(10);
 	QwtText qwtTitle;
 	qwtTitle.setFont(font);
 	qwtTitle.setText(title);
