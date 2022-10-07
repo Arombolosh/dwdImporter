@@ -766,8 +766,9 @@ void MainWindow::on_pushButtonMap_clicked() {
 
 	//	m_dwdMap->setAllDWDLocations(m_descData);
 	unsigned int year = m_ui->comboBoxYear->currentText().toUInt();
+	unsigned int distance = m_ui->horizontalSliderDistance->value();
 
-	DWDMap::getLocation(m_descData, latitude, longitude, year, this);
+	DWDMap::getLocation(m_descData, latitude, longitude, year, distance, this);
 
 	m_ui->comboBoxYear->setCurrentText(QString::number(year) );
 
