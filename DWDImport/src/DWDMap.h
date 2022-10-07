@@ -26,7 +26,7 @@ class DWDMap : public QDialog
 		DT_Wind,
 		DT_Pressure,
 		DT_Precipitation,
-        NUM_DT
+		NUM_DT
 	};
 
 public:
@@ -40,7 +40,7 @@ public:
 	void mousePressEvent(QMouseEvent *event) override;
 
 	/*! Sets the currently picked location */
-	void setLocation(const double &latitude = 0.0, const double &longitude = 0.0);
+	void setLocation(const double &latitude = 0.0, const double &longitude = 0.0, const unsigned int &radius = 0.0);
 
 	/*! Sets the year needed for data extraction */
 	void setYear(const unsigned int &year = 2020);
@@ -49,7 +49,7 @@ public:
 	void setAllDWDLocations(const std::vector<DWDDescriptonData> & dwdDescData);
 
 	/*! Draws a Location specific data point*/
-    void drawDataPoint(const DataType & type, QGraphicsItemGroup *group, int xPos, int yPos, int rad, int alpha, QColor color);
+	void drawDataPoint(const DataType & type, QGraphicsItemGroup *group, int xPos, int yPos, int rad, int alpha, QColor color);
 
 	/*! Draw all data */
 	void drawAllDataForYear(unsigned int year);
@@ -58,7 +58,7 @@ public:
 	void updateLocationData();
 
 	/*! Static call to get a location from the map */
-	static bool getLocation(const std::vector<DWDDescriptonData> & dwdDescData, double &latitude, double &longitude, unsigned int & year, QWidget *parent = nullptr);
+	static bool getLocation(const std::vector<DWDDescriptonData> & dwdDescData, double &latitude, double &longitude, unsigned int & year, unsigned int & radius, QWidget *parent = nullptr);
 
 private slots:
 	void on_checkBoxAirTemp_toggled(bool checked);
@@ -77,6 +77,12 @@ private slots:
 
 	void on_horizontalSliderOpacity_valueChanged(int value);
 
+	void on_lineEditLatitude_textEdited(const QString &lat);
+
+	void on_lineEditLongitude_textEdited(const QString &lon);
+
+	void on_horizontalSliderDistance_sliderReleased();
+
 private:
 	DWDScene								*m_scene;
 
@@ -90,11 +96,12 @@ private:
 
 	/*! Radius of data points in scene.*/
 	unsigned int							m_radius = 15;
+	unsigned int							m_distance = 15;
 	unsigned int							m_opacity = 255;
 
-    bool									m_descTypeToDraw[NUM_DT];
-    QColor									m_color[NUM_DT];
-    QGraphicsItemGroup						*m_items[NUM_DT] = {nullptr, nullptr, nullptr, nullptr, nullptr};
+	bool									m_descTypeToDraw[NUM_DT];
+	QColor									m_color[NUM_DT];
+	QGraphicsItemGroup						*m_items[NUM_DT] = {nullptr, nullptr, nullptr, nullptr, nullptr};
 
 	const std::vector<DWDDescriptonData>	*m_descData = nullptr;
 
