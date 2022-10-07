@@ -6,6 +6,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsItem>
 #include <QDebug>
+#include <QWheelEvent>
 
 class DWDScene : public QGraphicsScene
 {
@@ -20,15 +21,21 @@ public:
 		m_cursor->setPos(0,0);
 	}
 
+
+
 	void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override 	{
 
-		int height = this->height();
-		int width = this->width();
+		int height = m_mapItem->boundingRect().size().height();
+		int width = m_mapItem->boundingRect().size().width();
 
 		qDebug() << "Scene Size:" << height << " | " << width;
 
-		m_latitude  = 47.271679 + ( height - event->scenePos().y() ) / height * ( 55.05864  - 47.271679 );
-		m_longitude = 15.043611 - ( width  - event->scenePos().x() ) / width  * ( 15.043611 -  5.866944 );
+		QPointF pointPos = event->scenePos();
+		QPointF mapPos = m_mapItem->pos();
+		QPointF finalPos = pointPos - mapPos;
+
+		m_latitude  = 47.271679 + ( height - finalPos.y() ) / height * ( 55.05864  - 47.271679 );
+		m_longitude = 15.043611 - ( width  - finalPos.x() ) / width  * ( 15.043611 -  5.866944 );
 
 		QString string = QString("%1° N,\n%2° O")
 				.arg(m_latitude)
@@ -43,6 +50,9 @@ public:
 	QGraphicsTextItem			*m_cursor;
 	double						m_latitude;
 	double						m_longitude;
+
+	QGraphicsItem*				m_mapItem = nullptr;
+	QGraphicsItem*				m_locationItem = nullptr;
 };
 
 
