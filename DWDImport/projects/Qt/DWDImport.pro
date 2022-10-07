@@ -53,6 +53,7 @@ SOURCES += \
                 ../../src/DWDDescriptonData.cpp \
                 #../../src/DWD_CheckBox.cpp \
                 ../../src/DWDDownloader.cpp \
+	../../src/DWDGraphicsView.cpp \
     ../../src/DWDLogWidget.cpp \
                 ../../src/DWDMainWindow.cpp \
                 ../../src/DWDMap.cpp \
@@ -77,6 +78,7 @@ HEADERS += \
                 ../../src/DWDDescriptonData.h \
                 #../../src/DWD_CheckBox.h \
                 ../../src/DWDDownloader.h \
+	../../src/DWDGraphicsView.h \
     ../../src/DWDLogWidget.h \
                 ../../src/DWDMainWindow.h \
                 ../../src/DWDMap.h \
