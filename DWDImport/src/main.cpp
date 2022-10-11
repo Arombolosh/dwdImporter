@@ -40,12 +40,20 @@ int main(int argc, char* argv[]) {
 	std::string errmsg;
 	messageHandler.openLogFile(QtExt::Directories::globalLogFile().toUtf8().data(), false, errmsg);
 
+	// Set stylsheet
+	QFile darkStyle(":/style/style.qss");
+	darkStyle.open(QFile::ReadOnly);
+	QString styleSheet = QLatin1String(darkStyle.readAll());
+	qApp->setStyleSheet(styleSheet);
+
 
 	// *** Setup and show MainWindow and start event loop ***
 	int res;
 	try { // open scope to control lifetime of main window, ensure that main window instance dies before settings or project handler
 
 		MainWindow w;
+		// Dark style
+
 
 		// add user settings related window resize at program start
 #if defined(Q_OS_WIN)

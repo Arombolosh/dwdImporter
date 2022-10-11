@@ -192,7 +192,7 @@ long long readFunct(	std::istream& inputStream,
 
 					if (notify) {
 						if (fsize > 0)
-							notify->notify((double)(currentPos + readSize)/fsize);
+							notify->notify((double)(currentPos /*! +readSize*/)/fsize);
 						else
 							notify->notify();
 					}

@@ -119,7 +119,7 @@ QVariant DWDTableModel::data(const QModelIndex & index, int role) const {
 
 		// UserRole returns value reference
 		case Qt::UserRole :
-//			return (*m_availableVariables)[(size_t)index.row()].m_fmiValueRef;
+			return dataType;
 		break;
 
 		case Qt::TextAlignmentRole :
@@ -148,6 +148,9 @@ QVariant DWDTableModel::data(const QModelIndex & index, int role) const {
 
 
 QVariant DWDTableModel::headerData(int section, Qt::Orientation orientation, int role) const {
+
+		if(section == -1)
+			return QVariant();
 
 		static QStringList headers = QStringList()
 

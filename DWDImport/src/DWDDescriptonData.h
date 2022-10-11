@@ -9,6 +9,7 @@
 class QStringList;
 
 #include <QDate>
+#include <QColor>
 
 class DWDDescriptonData
 {
@@ -39,20 +40,23 @@ public:
 	};
 
 
-    enum DWDDataType{
-        D_TemperatureAndHumidity,
-        D_Solar,
-        D_Wind,
-        D_Pressure,
-        D_Precipitation,
-        NUM_D
-    };
+	enum DWDDataType{
+		D_TemperatureAndHumidity,
+		D_Solar,
+		D_Wind,
+		D_Pressure,
+		D_Precipitation,
+		NUM_D
+	};
+
 
 	/*! Read predefined (download dwd) description files. */
 	void readAllDescriptions(std::vector<DWDDescriptonData> &dwdDescriptonData);
 
 	/*! Calculate Min and Max Date from all 4 Boundary Conditions ( AirTemp, Pressure, Solar Rad, wind) */
 	void calculateMinMaxDate();
+
+	static QColor color(const DWDDataType &dt);
 
 	/*! Station id. */
 	unsigned int				m_idStation;
@@ -99,6 +103,7 @@ public:
 
 	/*! show database entry in table */
 	bool						m_isVisible;
+
 
 private:
 	void readDescription(const IBK::Path &filepath, std::vector<DWDDescriptonData> & dwdDescriptonData, const DWDDataType &dataType);

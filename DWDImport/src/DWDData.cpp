@@ -16,6 +16,7 @@
 #include <CCM_ClimateDataLoader.h>
 
 #include "Constants.h"
+#include "DWDDescriptonData.h"
 
 
 void DWDData::createData(IBK::NotificationHandler * notify, const std::map<IBK::Path, std::set<DWDData::DataType>> &filenames, unsigned int intervalDuration) {
@@ -34,12 +35,13 @@ void DWDData::createData(IBK::NotificationHandler * notify, const std::map<IBK::
 		//read the file
 		IBK::FileReader fileReader(fileName, 40960);
 		std::vector<std::string> lines;
-        qDebug() << "Start reading file " << QString::fromStdString(fileName.str()) << " ------------------";
+
+		qDebug() << "Reading file " << QString::fromStdString(fileName.str());
+		m_progressDlg->setLabelText(QString("Reading file '%1'").arg(QString::fromStdString(fileName.filename().str() ) ) );
 		fileReader.readAll(fileName, lines, std::vector<std::string>{"\n"}, 0, notify);
 
-        qDebug() << "Read Data of file " << QString::fromStdString(fileName.str()) << " ------------------";
-
-        m_progressDlg->setLabelText( QString("Extract data of file ") + QString::fromStdString(fileName.str() ) );
+		qDebug() << "Extracting data from " << QString::fromStdString(fileName.str());
+		m_progressDlg->setLabelText(QString("Extracting data from '%1'").arg(QString::fromStdString(fileName.filename().str() ) ) );
 		for(unsigned int i=1;i<lines.size(); ++i){
 			addDataLine(lines[i], it->second);
 			notify->notify((double)(i+1)/lines.size() );
@@ -71,6 +73,11 @@ void DWDData::addDataLine(std::string &line, const std::set<DataType> &dataType)
 		return;	//time is not valid
 	}
 
+	//check Enddate
+	if(!m_endTime.isValid()){
+		return;	//time is not valid
+	}
+
 	if(data.size()>2){
 		try {
 			unsigned int idx = 1;
@@ -96,24 +103,23 @@ void DWDData::addDataLine(std::string &line, const std::set<DataType> &dataType)
 	else
 		return;	//if no time point is given return
 
-	double timepoint = m_startTime.secondsUntil(time)/m_intervalDuration;
-	timeNextYear.set(m_startTime.year()+1, 0);
-	double timepointNextYear = timeNextYear.secondsUntil(time)/m_intervalDuration;
+	double timepointStart = m_startTime.secondsUntil(time)/m_intervalDuration;
+	double timepointEnd = m_endTime.secondsUntil(time)/m_intervalDuration;
+
 	//shift all data because startpoint is later
-	unsigned int newTimepoint = static_cast<unsigned int>(timepoint);
-	if(timepoint<0 || timepointNextYear > 0){
+	unsigned int newTimepointStart = static_cast<unsigned int>(timepointStart);
+	unsigned int newTimepointEnd = static_cast<unsigned int>(timepointEnd);
+	if(timepointStart<0 || timepointEnd > 0){
 		return; // data should not be added
 		//adjust start date
 		double timeDiffSec = m_startTime.secondsUntil(time);
 		int yearDiff = (int)(std::abs(timeDiffSec) / (8760*60*60)+1);
 		m_startTime = IBK::Time(m_startTime.year()-yearDiff,0);
-		newTimepoint = m_startTime.secondsUntil(time)/m_intervalDuration;
-
 	}
-	//start point is earlier or perfect
 
-	if(m_data.size()<=newTimepoint){
-		unsigned int aaa =newTimepoint-m_data.size()+1;
+	//start point is earlier or perfect
+	if(m_data.size()<=newTimepointStart){
+		unsigned int aaa =newTimepointStart-m_data.size()+1;
 		m_data.insert(m_data.end(), aaa, IntervalData());
 	}
 
@@ -128,7 +134,7 @@ void DWDData::addDataLine(std::string &line, const std::set<DataType> &dataType)
 			unitFactor = 1/0.36;
 
 		if(col < data.size()){
-			m_data[newTimepoint].setVal(*it, IBK::string2val<double>(data[col])*unitFactor);
+			m_data[newTimepointStart].setVal(*it, IBK::string2val<double>(data[col])*unitFactor);
 		}
 		++it;
 	}
@@ -148,7 +154,7 @@ void DWDData::writeTSV(unsigned int year){
 	}
 }
 
-void DWDData::exportEPW(unsigned int year, double latitudeDeg, double longitudeDeg, const IBK::Path &exportPath) {
+void DWDData::exportEPW(double latitudeDeg, double longitudeDeg, const IBK::Path &exportPath) {
 	FUNCID(exportEPW);
 
 	/*! Mind the time zone. In DWD Data the time zone is set to UTC+0 whereas in our exported epw file
@@ -164,7 +170,7 @@ void DWDData::exportEPW(unsigned int year, double latitudeDeg, double longitudeD
 	loader.m_country = "Germany";
 	loader.m_timeZone = 1;
 	loader.m_elevation = 81;
-	loader.m_startYear = year;
+	loader.m_startYear = m_startTime.year();
 	loader.m_latitudeInDegree = latitudeDeg;
 	loader.m_longitudeInDegree = longitudeDeg;
 	loader.m_comment = "test";
@@ -177,10 +183,12 @@ void DWDData::exportEPW(unsigned int year, double latitudeDeg, double longitudeD
 //		loader.m_data[i] = std::vector<double>(8760, -99);
 //	}
 
-	int idx = m_startTime.secondsUntil(IBK::Time(year, 0))/m_intervalDuration;
-	Q_ASSERT(m_data.size() >= 8760);
+	int idx = m_startTime.secondsUntil(IBK::Time(m_startTime.year(), 0))/m_intervalDuration;
+	int hourCount = m_startTime.secondsUntil(m_endTime)/m_intervalDuration;
 
-	for (int i=0; i<8760;++i, ++idx) {
+	// Q_ASSERT(m_data.size() >= 8760);
+
+	for (int i=0; i<hourCount;++i, ++idx) {
 //		if(idx > m_data.size() || m_data.empty())
 //			break;
 //		if(idx < 0)
@@ -247,7 +255,7 @@ QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numbe
 				return base + "pressure/" + rec2 + "stundenwerte_P0_" + numberString + dateStringNew + rec + ".zip";
 
 			case DT_Precipitation:
-				return base + "precipitation/" + rec2 + "stundenwerte_RR_" + numberString + dateStringNew + rec + ".zip";
+				return base + "precipitation/" + rec2 +  filename;
 
 			case DT_WindSpeed:
 			case DT_WindDirection:
@@ -280,7 +288,6 @@ QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numbe
 			case DT_WindSpeed:
 			case DT_WindDirection:
 				baseSearch = base + "wind/";
-
 			break;
 //			case DT_RadiationDiffuse:
 //			case DT_RadiationGlobal:
@@ -325,7 +332,7 @@ QString DWDData::filename(const DWDData::DataType &type, const QString &numberSt
 }
 
 void DWDData::findFile(const QUrlInfo &url) {
-	qDebug() << url.name();
+	//qDebug() << url.name();
 	m_urls.push_back(url);
 }
 

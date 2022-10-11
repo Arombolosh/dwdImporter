@@ -10,11 +10,11 @@ class DWDDelegate
 	Q_OBJECT
 
 public:
-	DWDDelegate( QObject *parent );
-	~DWDDelegate();
+	DWDDelegate( QObject *parent = nullptr);
+	~DWDDelegate() override;
 
 	void paint( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const;
-//	bool editorEvent( QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index );
+	bool editorEvent( QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index );
 
 private:
 	QModelIndex m_lastClickedIndex;

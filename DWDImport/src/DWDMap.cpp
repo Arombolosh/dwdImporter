@@ -3,6 +3,7 @@
 #include "DWDScene.h"
 
 #include "DWDDescriptonData.h"
+#include "DWDConversions.h"
 
 #include <QMouseEvent>
 #include <QGraphicsEllipseItem>
@@ -11,18 +12,6 @@
 #include <QString>
 #include <QDebug>
 
-/*! Converts IBK Time to QDate. */
-QDate convertIBKTimeToQDate2(const IBK::Time &time) {
-
-	int y;
-	unsigned int m, d;
-	double s;
-
-	time.decomposeDate(y, m, d, s);
-
-	return QDate(y, m+1, d+1);
-
-};
 
 void getPosition(QPointF mapPos, int height, int width, const double &longitude, const double &latitude, double &xPos, double &yPos) {
 
@@ -97,18 +86,11 @@ DWDMap::DWDMap(QWidget *parent) :
 	// view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	// view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-	m_color[DT_Location] = Qt::black;
-	m_color[DT_Wind] = QColor ("#008b8b");
-	m_color[DT_TemperatureAndHumidity] = QColor ("#ffa500");
-	m_color[DT_ShortWaveRadiation] = QColor ("#00ff00");
-	m_color[DT_Pressure] = QColor ("#0000ff");
-	m_color[DT_Precipitation] = QColor ("#ff1493");
-
-	m_ui->checkBoxAirTemp->setStyleSheet("QCheckBox { color: " + m_color[DT_TemperatureAndHumidity].name() + " }");
-	m_ui->checkBoxRadiation->setStyleSheet("QCheckBox { color: " + m_color[DT_ShortWaveRadiation].name() + " }");
-	m_ui->checkBoxPressure->setStyleSheet("QCheckBox { color: " + m_color[DT_Pressure].name() + " }");
-	m_ui->checkBoxWind->setStyleSheet("QCheckBox { color: " + m_color[DT_Wind].name() + " }");
-	m_ui->checkBoxPrecipitation->setStyleSheet("QCheckBox { color: " + m_color[DT_Precipitation].name() + " }");
+	m_ui->checkBoxAirTemp->setStyleSheet("QCheckBox { color: " + DWDDescriptonData::color(DWDDescriptonData::D_TemperatureAndHumidity).name() + " }");
+	m_ui->checkBoxRadiation->setStyleSheet("QCheckBox { color: " + DWDDescriptonData::color(DWDDescriptonData::D_Solar).name() + " }");
+	m_ui->checkBoxPressure->setStyleSheet("QCheckBox { color: " + DWDDescriptonData::color(DWDDescriptonData::D_Pressure).name() + " }");
+	m_ui->checkBoxWind->setStyleSheet("QCheckBox { color: " + DWDDescriptonData::color(DWDDescriptonData::D_Wind).name() + " }");
+	m_ui->checkBoxPrecipitation->setStyleSheet("QCheckBox { color: " + DWDDescriptonData::color(DWDDescriptonData::D_Precipitation).name() + " }");
 
 	m_descTypeToDraw[DT_Location] = true;
 	m_descTypeToDraw[DT_Wind] = true;
@@ -258,11 +240,11 @@ void DWDMap::drawAllDataForYear(unsigned int year){
 			if (!dwdData.m_data[i].m_isAvailable )
 				continue;
 
-			if ( !( convertIBKTimeToQDate2(dwdData.m_minDate) < minDate && convertIBKTimeToQDate2(dwdData.m_maxDate) > maxDate ) )
+			if ( !( DWDConversions::convertIBKTime2QDate(dwdData.m_minDate) < minDate && DWDConversions::convertIBKTime2QDate(dwdData.m_maxDate) > maxDate ) )
 				continue;
 
 			getPosition(m_scene->m_mapItem->pos(), m_size.height(), m_size.width(), (*m_descData)[j].m_longitude, (*m_descData)[j].m_latitude, xPos, yPos);
-			drawDataPoint((DataType)(i+1), m_items[i+1], xPos, yPos, m_radius/2, m_opacity, m_color[i+1]);
+			drawDataPoint((DataType)(i+1), m_items[i+1], xPos, yPos, m_radius/2, m_opacity, DWDDescriptonData::color((DWDDescriptonData::DWDDataType)i));
 		}
 	}
 
@@ -282,7 +264,6 @@ bool DWDMap::getLocation(const std::vector<DWDDescriptonData> & dwdDescData, dou
 	dwdMap.setAllDWDLocations(dwdDescData);
 	dwdMap.drawAllDataForYear(year); // we also want to draw all circles with data to the map
 	dwdMap.setLocation(latitude, longitude, distance);
-
 
 	int res = dwdMap.exec();
 
@@ -354,7 +335,7 @@ void DWDMap::on_lineEditLongitude_textEdited(const QString &lon) {
 	if(ok)
 		m_longitude = tempLat;
 
-	m_ui->lineEditLongitude->setText(QString("%1").arg(m_latitude));
+	m_ui->lineEditLongitude->setText(QString("%1").arg(m_longitude));
 }
 
 

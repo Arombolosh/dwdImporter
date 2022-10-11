@@ -82,7 +82,7 @@ public:
 	void writeTSV(unsigned int year);
 
 	/*! Create an epw-file for one year. */
-	void exportEPW(unsigned int year, double latitudeDeg, double longitudeDeg, const IBK::Path &exportPath);
+	void exportEPW(double latitudeDeg, double longitudeDeg, const IBK::Path &exportPath);
 
 	/*! Returns the complete url as QString needed for download. */
 	QString urlFilename(const DataType &type, const QString &numberString, const std::string &dateString,
@@ -95,12 +95,13 @@ public:
 
 
 
-    IBK::Time						m_startTime;                ///> Start time for the first interval data
-    unsigned int					m_intervalDuration;         ///> Interval duration in sec
-    std::vector<IntervalData>		m_data;                     ///> Vector with interval data
-    IBK::Path						m_filenames[NUM_DT];        ///> Filename
-    std::vector<QUrlInfo>			m_urls;                     ///> urls in ftp directory
-    QProgressDialog					*m_progressDlg = nullptr;   ///> pointer to label
+	IBK::Time						m_startTime;                ///> Start time for the first interval data
+	IBK::Time						m_endTime;                ///> End time for the first interval data
+	unsigned int					m_intervalDuration;         ///> Interval duration in sec
+	std::vector<IntervalData>		m_data;                     ///> Vector with interval data
+	IBK::Path						m_filenames[NUM_DT];        ///> Filename
+	std::vector<QUrlInfo>			m_urls;                     ///> urls in ftp directory
+	QProgressDialog					*m_progressDlg = nullptr;   ///> pointer to label
 
 signals:
 	void progress(int min, int max, int val);

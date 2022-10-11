@@ -56,7 +56,7 @@ public:
 	void initPlots();
 
 	/*! Formats a qwt plot. */
-	void formatQwtPlot(QwtPlot &plot, int year, QString title, QString leftYAxisTitle, double yLeftMin, double yLeftMax, double yLeftStepSize,
+	void formatQwtPlot(QwtPlot &plot, QDate startDate, QDate endDate, QString title, QString leftYAxisTitle, double yLeftMin, double yLeftMax, double yLeftStepSize,
 					   bool hasRightAxis = false, QString rightYAxisTitle = "", double yRightMin = 0, double yRightMax = 100, double yRightStepSize = 0);
 
 
@@ -73,8 +73,6 @@ private slots:
 	void on_radioButtonHistorical_toggled(bool checked);
 
 	void on_lineEditNameFilter_textChanged(const QString &filter);
-
-	void on_comboBoxYear_currentIndexChanged(const QString &arg1);
 
 	void on_horizontalSliderDistance_valueChanged(int value);
 
@@ -100,7 +98,7 @@ private:
 	DWDMap										*m_dwdMap;
 
 	QStandardItemModel							*m_model;
-    QProgressDialog								*m_progressDlg;
+	QProgressDialog								*m_progressDlg;
 
 	/*! Table model instance for dwd data. */
 	DWDTableModel								*m_dwdTableModel = nullptr;

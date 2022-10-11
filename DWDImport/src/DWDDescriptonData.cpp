@@ -67,6 +67,20 @@ void DWDDescriptonData::calculateMinMaxDate() {
 	}
 }
 
+QColor DWDDescriptonData::color(const DWDDataType & dt) {
+
+	/*! Map with colors of data. */
+	std::map<DWDDataType, QColor>	colorData;
+
+	colorData[DWDDataType::D_Solar] = QColor("#E9B44C");
+	colorData[DWDDataType::D_Precipitation] = QColor("#c7f9cc");
+	colorData[DWDDataType::D_Pressure] = QColor("#1C110A");
+	colorData[DWDDataType::D_TemperatureAndHumidity] = QColor("#9B2915");
+	colorData[DWDDataType::D_Wind] = QColor("#004E98");
+
+	return colorData[dt];
+}
+
 void DWDDescriptonData::readDescription(const IBK::Path &filepath, std::vector<DWDDescriptonData> &dwdDescriptonData, const DWDDataType &dataType){
 //	IBK::Path filepath(QtExt::Directories::userDataDir().toStdString() + "filename.txt");
 

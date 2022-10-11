@@ -53,6 +53,8 @@
 #include "DWDDateTimeScaleEngine.h"
 #include "DWDLogWidget.h"
 #include "DWDMessageHandler.h"
+#include "DWDDelegate.h"
+#include "DWDConversions.h"
 
 #include "Constants.h"
 #include "Utilities.h"
@@ -67,6 +69,7 @@ public:
 	{
 		m_dlg->setMaximum(100);
 		m_dlg->show();
+		m_dlg->setMinimumWidth(300);
 	}
 
 	/*! Reimplement this function in derived child 'notification' objects
@@ -77,6 +80,10 @@ public:
 		if(m_dlg->value() == m_value)
 			return;
 		m_dlg->setValue(m_value);
+
+		int val = m_dlg->value();
+		// qDebug() << m_dlg->value() << " | " << m_dlg->maximum();
+
 		qApp->processEvents();
 		if(m_dlg->wasCanceled()){
 			throw IBK::Exception("Canceled", FUNC_ID);
@@ -108,9 +115,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_ui->setupUi(this);
 
 	m_model = new QStandardItemModel();
-	m_ui->radioButtonRecent->blockSignals(true);
-	m_ui->radioButtonRecent->setChecked(true);
-	m_ui->radioButtonRecent->blockSignals(false);
+	m_ui->radioButtonHistorical->blockSignals(true);
+	m_ui->radioButtonHistorical->setChecked(true);
+	m_ui->radioButtonHistorical->blockSignals(false);
 
 
 	m_ui->lineEditDistance->setup(0,1000, "Distance in km", true, true);
@@ -141,11 +148,11 @@ MainWindow::MainWindow(QWidget *parent) :
 	v->setFont(f);
 	v->horizontalHeader()->setFont(f); // Note: on Linux/Mac this won't work until Qt 5.11.1 - this was a bug between Qt 4.8...5.11.1
 
-	// we fill the comboBox
-	for (unsigned int year = 1950; year<2025; year++)
-		m_ui->comboBoxYear->addItem(QString::number(year) );
+	m_ui->dateEditStart->setMinimumDate(QDate(1950,1,1));
+	m_ui->dateEditStart->setMaximumDate(QDate::currentDate());
 
-	m_ui->comboBoxYear->setCurrentText("2020");
+	m_ui->dateEditEnd->setMinimumDate(QDate(1950,1,1));
+	m_ui->dateEditEnd->setMaximumDate(QDate::currentDate());
 
 	on_horizontalSliderDistance_valueChanged(50);
 
@@ -179,6 +186,9 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::loadData(){
+
+	// Message
+	IBK::IBK_Message("Downloading all weather data from DWD Server.", IBK::MSG_PROGRESS);
 
 	// show progress Dlg
 	m_progressDlg->show();
@@ -289,7 +299,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 			QString filename = ""; //only needed by historical
 
 			//only find urls for historical and NO solar data (this is in dataInRows on position 1
-			if(!isRecent && i != 1){
+			if(!isRecent && i != DWDDescriptonData::D_Solar){
 				QFtp *ftp = new QFtp;
 
 				connect(ftp, &QFtp::listInfo, &dwdData, &DWDData::findFile );
@@ -307,6 +317,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 				case 0:	ftp->cd("air_temperature"); break;
 				case 2:	ftp->cd("wind"); break;
 				case 3:	ftp->cd("pressure"); break;
+				case 4:	ftp->cd("precipitation"); break;
 				}
 				ftp->cd("historical");
 				ftp->list();
@@ -329,6 +340,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 				dwdData.m_urls.clear();
 				qDebug() << "\nclear\n";
 			}
+
 			m_manager->m_urls << dwdData.urlFilename(types[i], QString::number(m_descData[idx].m_idStation).rightJustified(5,'0'), dateString, isRecent, filename);
 			qDebug() << m_manager->m_urls.back();
 
@@ -417,7 +429,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 	}
 	//read data
 
-	m_dwdData.m_startTime = IBK::Time(m_ui->comboBoxYear->currentText().toInt(),0);
+	m_dwdData.m_startTime = DWDConversions::convertQDate2IBKTime(m_ui->dateEditStart->date());
 
 	ProgressNotify progressNotify(m_progressDlg);
 
@@ -478,6 +490,10 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 
 	if ( showPreview ) {
 
+		m_ui->plotRadPres->detachItems();
+		m_ui->plotRainWind->detachItems();
+		m_ui->plotTempRelHum->detachItems();
+
 		// create a new curve to be shown in the plot and set some properties
 		QwtPlotCurve *curveTemp = new QwtPlotCurve();
 		QwtPlotCurve *curveRelHum = new QwtPlotCurve();
@@ -486,46 +502,47 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 		QwtPlotCurve *curvePressure = new QwtPlotCurve();
 		QwtPlotCurve *curvePrecipitation = new QwtPlotCurve();
 
-		curveTemp->setPen( Qt::red, 2 ); // color and thickness in pixels
+		QColor penColor = DWDDescriptonData::color(DWDDescriptonData::D_TemperatureAndHumidity);
+		curveTemp->setPen( penColor, 2 ); // color and thickness in pixels
 		curveTemp->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
 
-		curveRelHum->setPen( Qt::blue, 2 ); // color and thickness in pixels
+		penColor.setAlpha(123);
+		curveRelHum->setPen( penColor, 2 ); // color and thickness in pixels
 		curveRelHum->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
 
-		curveRad->setPen( Qt::yellow, 2 ); // color and thickness in pixels
+		curveRad->setPen( DWDDescriptonData::color(DWDDescriptonData::D_Solar), 2 ); // color and thickness in pixels
 		curveRad->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
 
-		curveWind->setPen( QColor(130, 30, 250), 2 ); // color and thickness in pixels
+		curveWind->setPen( DWDDescriptonData::color(DWDDescriptonData::D_Wind), 2 ); // color and thickness in pixels
 		curveWind->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
 
-		curvePressure->setPen( QColor(250, 30, 30), 2 ); // color and thickness in pixels
+		curvePressure->setPen( DWDDescriptonData::color(DWDDescriptonData::D_Pressure), 2 ); // color and thickness in pixels
 		curvePressure->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
 
-		curvePrecipitation->setPen( QColor(250, 30, 30), 2 ); // color and thickness in pixels
+		curvePrecipitation->setPen( DWDDescriptonData::color(DWDDescriptonData::D_Precipitation), 2 ); // color and thickness in pixels
 		curvePrecipitation->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
 
 		// data points
 		QPolygonF pointsTemp, pointsRelHum, pointsRad, pointsWind, pointsPressure, pointsPrecipitation;
 
-		bool ok;
-		int year = m_ui->comboBoxYear->currentText().toInt(&ok);
 
-		if(!ok)
-			return;
-		QDateTime startUTC(QDate(year, 1, 1), QTime(0,0,0,0), Qt::UTC);
-		QDateTime startLocal(QDate(year, 1, 1), QTime(0,0,0,0), Qt::LocalTime);
+		QDateTime startUTC(m_ui->dateEditStart->date(), QTime(0,0,0,0), Qt::UTC);
+		QDateTime startLocal(m_ui->dateEditStart->date(), QTime(0,0,0,0), Qt::LocalTime);
 
-		QDateTime start(QDate(year, 1, 1), QTime(0,0,0,0), Qt::UTC);
-		QDateTime end(QDate(year+1, 1, 1), QTime(0,0,0,0), Qt::UTC);
+		QDateTime start(m_ui->dateEditStart->date(), QTime(0,0,0,0), Qt::UTC);
+		QDateTime end(m_ui->dateEditEnd->date(), QTime(0,0,0,0), Qt::UTC);
 
 		start.setTimeSpec(Qt::UTC);
 		end.setTimeSpec(Qt::UTC);
 
+
+		m_progressDlg->setLabelText("Updating plot charts");
+		// Updating plots
 		for ( size_t i=0; i<m_dwdData.m_data.size(); ++i ) {
 			size_t time = i*3600*1000;
 
 			size_t timeStep = (size_t)start.toMSecsSinceEpoch() /*+ (size_t)60*24*3600*1000*/ + time;
-			qDebug() << time << "\t" << timeStep;
+			// qDebug() << time << "\t" << timeStep;
 
 			DWDData::IntervalData intVal = m_dwdData.m_data[i];
 
@@ -533,8 +550,11 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 			pointsRelHum << QPointF(timeStep , intVal.m_relHum );
 			pointsRad << QPointF(timeStep, intVal.m_globalRad );
 			pointsWind << QPointF(timeStep, intVal.m_windSpeed );
-			pointsPressure << QPointF(timeStep, intVal.m_pressure );
+			pointsPressure << QPointF(timeStep, intVal.m_pressure/1000  ); // in kPa
 			pointsPrecipitation << QPointF(timeStep, intVal.m_precipitaion );
+
+
+			progressNotify.notify((double)(i+1)/m_dwdData.m_data.size() );
 		}
 
 		// give some points to the curve
@@ -581,7 +601,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 			return;
 		}
 		m_progressDlg->hide();
-		m_dwdData.exportEPW(m_ui->comboBoxYear->currentText().toInt(), latiDeg, longiDeg, exportPath);
+		m_dwdData.exportEPW(latiDeg, longiDeg, exportPath);
 		QMessageBox::information(this, QString(), "Export done.");
 	}
 
@@ -594,7 +614,7 @@ void MainWindow::readData() {
 	// read all decription files
 	DWDDescriptonData descData;
 	m_descData.clear();
-	IBK::IBK_Message("Read all weather data...", IBK::MSG_PROGRESS);
+	IBK::IBK_Message("Reading all weather data from DWD Server.", IBK::MSG_PROGRESS);
 
 	descData.readAllDescriptions(m_descData);
 
@@ -614,6 +634,13 @@ void MainWindow::readData() {
 
 	m_dwdTableModel->m_proxyModel = m_proxyModel;
 	m_ui->tableView->resizeColumnsToContents();
+
+
+	m_ui->tableView->setItemDelegateForColumn(DWDTableModel::ColPressure, new DWDDelegate);
+	m_ui->tableView->setItemDelegateForColumn(DWDTableModel::ColRadiation, new DWDDelegate);
+	m_ui->tableView->setItemDelegateForColumn(DWDTableModel::ColAirTemp, new DWDDelegate);
+	m_ui->tableView->setItemDelegateForColumn(DWDTableModel::ColPrecipitation, new DWDDelegate);
+	m_ui->tableView->setItemDelegateForColumn(DWDTableModel::ColWind, new DWDDelegate);
 
 	m_ui->tableView->reset();
 
@@ -661,12 +688,12 @@ void MainWindow::calculateDistances() {
 	// we calculate for each description the distance to the reference location
 	for ( DWDDescriptonData &data : m_descData ) {
 
-
+		// Latitude & Longitutde
 		double lat2 = data.m_latitude;
 		double lon2 = data.m_longitude;
 
-		// https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula
-
+		// Calculate distance between two coordinates
+		// SOURCE: https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula
 		double a = 0.5 - cos((lat2-lat1)*IBK::DEG2RAD)/2 + cos(lat1*IBK::DEG2RAD) * cos(lat2*IBK::DEG2RAD) * (1-cos((lon2-lon1)*IBK::DEG2RAD))/2;
 
 		// calc distance
@@ -675,17 +702,17 @@ void MainWindow::calculateDistances() {
 }
 
 void MainWindow::initPlots() {
-	formatQwtPlot(*m_ui->plotTempRelHum, 2020, "Air Temperature & Rel. Humidity", "C", -10, 40, 10, true, "%", 0, 100, 20);
-	formatQwtPlot(*m_ui->plotRadPres, 2020, "Pressure & Radiation", "kPa", 0, 1.4, 0.2, true, "W/m2", 0, 1400, 200);
-	formatQwtPlot(*m_ui->plotRainWind, 2020, "Precipitation & Wind speed", "mm", 0, 50, 10, true, "m/s", 0, 20, 4);
+	formatQwtPlot(*m_ui->plotTempRelHum, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Air Temperature & Rel. Humidity", "C", -10, 40, 10, true, "%", 0, 100, 20);
+	formatQwtPlot(*m_ui->plotRadPres, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Pressure & Radiation", "kPa", 0, 1.4, 0.2, true, "W/m2", 0, 1400, 200);
+	formatQwtPlot(*m_ui->plotRainWind, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Precipitation & Wind speed", "mm", 0, 50, 10, true, "m/s", 0, 20, 4);
 }
 
-void MainWindow::formatQwtPlot(QwtPlot &plot, int year, QString title, QString leftYAxisTitle, double yLeftMin, double yLeftMax, double yLeftStepSize,
+void MainWindow::formatQwtPlot(QwtPlot &plot, QDate startDate, QDate endDate, QString title, QString leftYAxisTitle, double yLeftMin, double yLeftMax, double yLeftStepSize,
 							   bool hasRightAxis, QString rightYAxisTitle, double yRightMin, double yRightMax, double yRightStepSize) {
 
 	// initialize start and end date
-	QDateTime start(QDate(year, 1, 1), QTime(0,0,0,0), Qt::UTC);
-	QDateTime end(QDate(year+1, 1, 1), QTime(0,0,0,0), Qt::UTC);
+	QDateTime start(startDate, QTime(0,0,0,0), Qt::UTC);
+	QDateTime end(endDate, QTime(0,0,0,0), Qt::UTC);
 
 	// we set also the time spec
 	start.setTimeSpec(Qt::UTC);
@@ -757,20 +784,19 @@ void MainWindow::formatQwtPlot(QwtPlot &plot, int year, QString title, QString l
 	plot.setAxisScaleDraw(QwtPlot::xBottom, scaleDrawTemp);
 	plot.setAxisScaleDiv(QwtPlot::xBottom, scaleDiv);
 
+	plot.setMinimumHeight(150);
+	plot.setMinimumWidth(350);
+
 }
 
 
 void MainWindow::on_pushButtonMap_clicked() {
 	double latitude = m_ui->lineEditLatitude->text().toDouble();
 	double longitude = m_ui->lineEditLongitude->text().toDouble();
-
-	//	m_dwdMap->setAllDWDLocations(m_descData);
-	unsigned int year = m_ui->comboBoxYear->currentText().toUInt();
 	unsigned int distance = m_ui->horizontalSliderDistance->value();
 
+	unsigned int year = 2020;
 	DWDMap::getLocation(m_descData, latitude, longitude, year, distance, this);
-
-	m_ui->comboBoxYear->setCurrentText(QString::number(year) );
 
 	m_ui->lineEditLatitude->setText(QString::number(latitude) );
 	m_ui->lineEditLongitude->setText(QString::number(longitude) );
@@ -809,12 +835,6 @@ void MainWindow::on_lineEditNameFilter_textChanged(const QString &filter) {
 	m_proxyModel->setFilterKeyColumn(4);
 }
 
-void MainWindow::on_comboBoxYear_currentIndexChanged(const QString &arg1) {
-	m_proxyModel->setFilterMinimumDate(QDate(m_ui->comboBoxYear->currentText().toInt(), 1, 1));
-	m_proxyModel->setFilterKeyColumn(6);
-	m_proxyModel->setFilterMaximumDate(QDate(m_ui->comboBoxYear->currentText().toInt(), 12, 31));
-	m_proxyModel->setFilterKeyColumn(7);
-}
 
 void MainWindow::on_horizontalSliderDistance_valueChanged(int value) {
 	m_ui->lineEditDistance->setText(QString::number(value) );
@@ -823,6 +843,8 @@ void MainWindow::on_horizontalSliderDistance_valueChanged(int value) {
 }
 
 void MainWindow::on_pushButtonPreview_clicked() {
+	// init all plots
+	initPlots();
 	setGUIState(false);
 	downloadData(true, false);
 	setGUIState(true);
