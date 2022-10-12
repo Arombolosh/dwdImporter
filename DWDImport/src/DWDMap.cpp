@@ -127,13 +127,6 @@ void DWDMap::mousePressEvent(QMouseEvent *e) {
 
 	QPointF pos = e->pos();
 	QPointF newPos = m_ui->graphicsViewMap->mapToScene(pos.x(), pos.y());
-	m_scene->removeItem(m_scene->m_locationItem);
-	double thickness = 3;
-
-	QGraphicsEllipseItem *item = new QGraphicsEllipseItem(newPos.x() - m_distance/2, newPos.y() - m_distance/2, m_distance, m_distance);
-	item->setPen(QPen(Qt::black, thickness));
-	m_scene->addItem(item);
-	m_scene->m_locationItem = item;
 
 	// set in lineEditFields
 	on_lineEditLatitude_textEdited(QString::number(m_scene->m_latitude) );

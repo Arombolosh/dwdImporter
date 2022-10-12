@@ -38,6 +38,12 @@
    </layout>
   </widget>
   <widget class="QDockWidget" name="dockWidgetSettings">
+   <property name="maximumSize">
+    <size>
+     <width>400</width>
+     <height>524287</height>
+    </size>
+   </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
@@ -55,12 +61,8 @@
         <string>Location</string>
        </property>
        <layout class="QGridLayout" name="gridLayout" columnstretch="0,1,0,0">
-        <item row="4" column="0">
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>Longitude:</string>
-          </property>
-         </widget>
+        <item row="0" column="1" colspan="2">
+         <widget class="QLineEdit" name="lineEditNameFilter"/>
         </item>
         <item row="5" column="0" colspan="4">
          <widget class="QPushButton" name="pushButtonMap">
@@ -69,17 +71,24 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="3">
-         <widget class="QLabel" name="label_4">
+        <item row="2" column="3">
+         <widget class="QLabel" name="label_5">
           <property name="text">
            <string>Deg</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="3">
-         <widget class="QLabel" name="label_5">
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_2">
           <property name="text">
-           <string>Deg</string>
+           <string>Latitude:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_8">
+          <property name="text">
+           <string>Filter Name:</string>
           </property>
          </widget>
         </item>
@@ -93,23 +102,6 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_8">
-          <property name="text">
-           <string>Filter Name:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1" colspan="2">
-         <widget class="QLineEdit" name="lineEditNameFilter"/>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Latitude:</string>
-          </property>
-         </widget>
-        </item>
         <item row="2" column="1" colspan="2">
          <widget class="QtExt::ValidatingLineEdit" name="lineEditLatitude">
           <property name="maximumSize">
@@ -117,6 +109,20 @@
             <width>16777215</width>
             <height>16777215</height>
            </size>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="3">
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Deg</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Longitude:</string>
           </property>
          </widget>
         </item>

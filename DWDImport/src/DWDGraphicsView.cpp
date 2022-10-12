@@ -5,7 +5,7 @@
 DWDGraphicsView::DWDGraphicsView(QWidget *parent) :
 	QGraphicsView(parent)
 {
-
+	setRenderHint(QPainter::Antialiasing);
 }
 
 DWDGraphicsView::~DWDGraphicsView()

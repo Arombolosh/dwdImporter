@@ -164,9 +164,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	resize(1500,800);
 
-	QList<int> sizes;
-	sizes << 1200 << 300;
-	m_ui->splitter->setSizes(sizes);
 
 	// init all plots
 	initPlots();
@@ -178,6 +175,10 @@ MainWindow::MainWindow(QWidget *parent) :
 	// Also connect all IBK::Messages to Log Widget
 	DWDMessageHandler * msgHandler = dynamic_cast<DWDMessageHandler *>(IBK::MessageHandlerRegistry::instance().messageHandler() );
 	connect(msgHandler, &DWDMessageHandler::msgReceived, m_logWidget, &DWDLogWidget::onMsgReceived);
+
+	QList<int> sizes;
+	sizes << 1500 << 300;
+	m_ui->splitter->setSizes(sizes);
 }
 
 
@@ -641,6 +642,15 @@ void MainWindow::readData() {
 	m_ui->tableView->setItemDelegateForColumn(DWDTableModel::ColAirTemp, new DWDDelegate);
 	m_ui->tableView->setItemDelegateForColumn(DWDTableModel::ColPrecipitation, new DWDDelegate);
 	m_ui->tableView->setItemDelegateForColumn(DWDTableModel::ColWind, new DWDDelegate);
+
+	m_ui->tableView->setColumnWidth(DWDTableModel::ColPressure, 100);
+	m_ui->tableView->setColumnWidth(DWDTableModel::ColAirTemp, 100);
+	m_ui->tableView->setColumnWidth(DWDTableModel::ColPrecipitation, 100);
+	m_ui->tableView->setColumnWidth(DWDTableModel::ColRadiation, 100);
+	m_ui->tableView->setColumnWidth(DWDTableModel::ColWind, 100);
+
+	QHeaderView *headerView = m_ui->tableView->horizontalHeader();
+	headerView->setSectionResizeMode(DWDTableModel::ColName, QHeaderView::Stretch);
 
 	m_ui->tableView->reset();
 

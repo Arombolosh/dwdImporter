@@ -21,6 +21,24 @@ public:
 		m_cursor->setPos(0,0);
 	}
 
+	void mousePressEvent(QGraphicsSceneMouseEvent *event) override {
+
+		QPointF point = event->scenePos();
+
+		removeItem(m_locationItem);
+		double thickness = 3;
+
+		QGraphicsEllipseItem *item = new QGraphicsEllipseItem(point.x() - m_radius, point.y() - m_radius, 2*m_radius, 2*m_radius);
+		item->setPen(QPen(Qt::black, 3));
+		QColor color = Qt::red;
+		color.setAlpha(200);
+		item->setBrush(color);
+		addItem(item);
+		m_locationItem = item;
+
+		//addEllipse(point.x()-5, point.y()-5, 10, 10, QPen(), QBrush(Qt::red));
+
+	}
 
 
 	void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override 	{
@@ -50,9 +68,14 @@ public:
 	QGraphicsTextItem			*m_cursor;
 	double						m_latitude;
 	double						m_longitude;
+	double						m_radius = 50;
 
 	QGraphicsItem*				m_mapItem = nullptr;
 	QGraphicsItem*				m_locationItem = nullptr;
+
+
+	// QGraphicsScene interface
+protected:
 };
 
 

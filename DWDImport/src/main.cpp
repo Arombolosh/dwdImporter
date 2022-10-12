@@ -45,6 +45,7 @@ int main(int argc, char* argv[]) {
 	darkStyle.open(QFile::ReadOnly);
 	QString styleSheet = QLatin1String(darkStyle.readAll());
 	qApp->setStyleSheet(styleSheet);
+	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
 
 	// *** Setup and show MainWindow and start event loop ***
