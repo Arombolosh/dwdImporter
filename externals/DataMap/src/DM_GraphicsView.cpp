@@ -1,19 +1,20 @@
-#include "DWDGraphicsView.h"
+#include "DM_GraphicsView.h"
 
 #include <QWheelEvent>
 
-DWDGraphicsView::DWDGraphicsView(QWidget *parent) :
+namespace DM {
+GraphicsView::GraphicsView(QWidget *parent) :
 	QGraphicsView(parent)
 {
 	setRenderHint(QPainter::Antialiasing);
 }
 
-DWDGraphicsView::~DWDGraphicsView()
+GraphicsView::~GraphicsView()
 {
 
 }
 
-void DWDGraphicsView::wheelEvent(QWheelEvent * event) {
+void GraphicsView::wheelEvent(QWheelEvent * event) {
 //	if (event->modifiers() & Qt::ControlModifier) {
 //		// zoom
 //		const ViewportAnchor anchor = transformationAnchor();
@@ -32,7 +33,8 @@ void DWDGraphicsView::wheelEvent(QWheelEvent * event) {
 //	}
 }
 
-void DWDGraphicsView::resizeEvent(QResizeEvent * event) {
+void GraphicsView::resizeEvent(QResizeEvent * event) {
 	fitInView(scene()->sceneRect(), Qt::KeepAspectRatio);
 	setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+}
 }
