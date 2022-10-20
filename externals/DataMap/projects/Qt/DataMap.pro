@@ -31,7 +31,7 @@ SOURCES += \
 	../../src/DM_Data.cpp \
 	../../src/DM_DataItem.cpp \
 	../../src/DM_GraphicsView.cpp \
-	../../src/DM_MapWidget.cpp \
+  ../../src/DM_MapDialog.cpp \
 	../../src/DM_Scene.cpp \
 
 HEADERS += \
@@ -39,11 +39,11 @@ HEADERS += \
 	../../src/DM_Data.h \
 	../../src/DM_DataItem.h \
 	../../src/DM_GraphicsView.h \
-	../../src/DM_MapWidget.h \
+	../../src/DM_MapDialog.h \
 	../../src/DM_Scene.h
 
 FORMS += \
-	../../src/DM_MapWidget.ui
+	../../src/DM_MapDialog.ui
 
 RESOURCES += \
 	../../resources/DataMap.qrc

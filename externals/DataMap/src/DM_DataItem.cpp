@@ -4,8 +4,9 @@
 
 namespace DM {
 
-DataItem::DataItem(const QRectF rect, const QString & str, const double & lat, const double & lon, const Data::DataType &type, int radius) {
-	m_data = Data(str, lat, lon, type);
+DataItem::DataItem(const QRectF rect, const QString & str, const IBK::Time &minDate, const IBK::Time &maxDate,
+				   const double & lat, const double & lon, const Data::DataType &type, int radius) {
+	m_data = Data(str, minDate, maxDate, lat, lon, type);
 
 	QPointF pos = convertCoordinatesToPos(rect, lat, lon);
 	setRect(pos.x()-radius/2, pos.y()-radius/2, radius, radius);

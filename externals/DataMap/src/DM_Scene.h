@@ -8,6 +8,8 @@
 #include <QDebug>
 #include <QWheelEvent>
 
+#include <IBK_Time.h>
+
 #include "DM_Data.h"
 #include "DM_DataItem.h"
 
@@ -18,12 +20,11 @@ class Scene : public QGraphicsScene
 public:
 	explicit Scene(QObject* parent);
 
-	void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
 
-	void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
 
 	/*! Adds a data point to the scene. */
-	void addDwdDataPoint(const Data::DataType &type, const QString & str, const double &lat, const double &lon);
+	void addDwdDataPoint(const Data::DataType &type, const QString & str, const IBK::Time &minDate, const IBK::Time &maxDate,
+						 const double &lat, const double &lon);
 
 	/*! Converts coordinates to a position at the scene. */
 	QPointF convertCoordinatesToPos(const double &lat, const double &lon);
@@ -36,12 +37,15 @@ public:
 
 	QGraphicsItemGroup			*m_dataGroup[Data::NUM_DT];
 
+	double						m_longitude;	///< Longitude of mouse position
+	double						m_latitude;		///< Latitude of mouse position
+
+protected:
+	void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+	void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
 
 private:
 
-
-	// QGraphicsScene interface
-protected:
 };
 }
 

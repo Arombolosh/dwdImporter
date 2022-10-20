@@ -6,6 +6,7 @@
 #include <IBK_FileReader.h>
 #include <IBK_physics.h>
 #include <IBK_MessageHandler.h>
+#include <IBK_Exception.h>.h>
 
 #include <QtExt_Directories.h>
 #include <QtExt_ValidatingLineEdit.h>
@@ -46,7 +47,6 @@
 
 #include "DWDDownloader.h"
 #include "DWDTimePlotPicker.h"
-#include "DWDMap.h"
 // #include "DWDDelegate.h"
 #include "DWDData.h"
 #include "DWDSortFilterProxyModel.h"
@@ -107,7 +107,6 @@ public:
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
 	m_ui(new Ui::MainWindow),
-	m_dwdMap(new DWDMap),
 	m_progressDlg(nullptr),
 	m_dwdTableModel(new DWDTableModel(this)),
 	m_proxyModel(new DWDSortFilterProxyModel(this))
@@ -179,6 +178,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	QList<int> sizes;
 	sizes << 1500 << 300;
 	m_ui->splitter->setSizes(sizes);
+
+	// Init Map Widget
+	m_mapDialog = new DM::MapDialog(this);
 }
 
 
@@ -186,7 +188,7 @@ MainWindow::~MainWindow() {
 	delete m_ui;
 }
 
-void MainWindow::loadData(){
+void MainWindow::loadDataFromDWDServer(){
 
 	// Message
 	IBK::IBK_Message("Downloading all weather data from DWD Server.", IBK::MSG_PROGRESS);
@@ -204,7 +206,7 @@ void MainWindow::loadData(){
 	m_manager->m_urls = urls;
 	m_manager->m_progressDlg = m_progressDlg; // bisschen quatsch
 	m_progressDlg->
-			connect( m_manager, &DWDDownloader::finished, this, &MainWindow::readData );
+			connect( m_manager, &DWDDownloader::finished, this, &MainWindow::convertDwdData );
 
 	m_manager->execute(); // simply registers network requests
 }
@@ -281,7 +283,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 	m_manager->m_progressDlg = m_progressDlg;
 	m_manager->m_urls.clear();
 
-	connect( m_manager, &DWDDownloader::finished, this, &MainWindow::readData );
+	connect( m_manager, &DWDDownloader::finished, this, &MainWindow::convertDwdData );
 	//download the data (zip)
 
 	for(unsigned int i=0; i<DWDDescriptonData::NUM_D; ++i){
@@ -611,7 +613,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 
 
 
-void MainWindow::readData() {
+void MainWindow::convertDwdData() {
 	// read all decription files
 	DWDDescriptonData descData;
 	m_descData.clear();
@@ -621,6 +623,25 @@ void MainWindow::readData() {
 
 	calculateDistances();
 
+	DM::Scene *s = m_mapDialog->m_scene;
+	s->addDwdDataPoint(DM::Data::DT_TemperatureAndHumidity, QString(), IBK::Time(), IBK::Time(), 55.036579, 8.389285);
+
+
+	try {
+		// Convert data to our map dialog
+		for(DWDDescriptonData &d : m_descData) {
+			for(unsigned int i=0; i<DWDDescriptonData::NUM_D; ++i) {
+				if(!d.m_data[i].m_isAvailable)
+					continue;
+
+				DM::Scene *s = m_mapDialog->m_scene;
+				s->addDwdDataPoint((DM::Data::DataType)i, d.m_name.c_str(), d.m_minDate, d.m_maxDate, d.m_latitude, d.m_longitude);
+			}
+		}
+	}
+	catch (IBK::Exception &ex) {
+		IBK::IBK_Message("Error converting data.", IBK::MSG_ERROR);
+	}
 
 	// we give the data to our table model
 	m_dwdTableModel->m_descData = &m_descData;
@@ -806,12 +827,12 @@ void MainWindow::on_pushButtonMap_clicked() {
 	unsigned int distance = m_ui->horizontalSliderDistance->value();
 
 	unsigned int year = 2020;
-	DWDMap::getLocation(m_descData, latitude, longitude, year, distance, this);
+	//DWDMap::getLocation(m_descData, latitude, longitude, year, distance, this);
 
-	m_ui->lineEditLatitude->setText(QString::number(latitude) );
-	m_ui->lineEditLongitude->setText(QString::number(longitude) );
+	m_mapDialog->exec();
 
-
+//	m_ui->lineEditLatitude->setText(QString::number(latitude) );
+//	m_ui->lineEditLongitude->setText(QString::number(longitude) );
 
 	calculateDistances();
 
@@ -833,7 +854,7 @@ void MainWindow::setProgress(int min, int max, int val) {
 }
 
 void MainWindow::on_radioButtonHistorical_toggled(bool checked) {
-	loadData();
+	loadDataFromDWDServer();
 
 	m_ui->tableView->reset();
 }

@@ -2,13 +2,13 @@ TEMPLATE = subdirs
 
 SUBDIRS = \
                 IBK \
-                #IBKMK \
                 QtExt \
                 QuaZIP \
                 CCM \
                 TiCPP \
                 qtftp \
                 qwt \
+                DataMap \
                 ClimateDataGenerator
 
 
@@ -23,8 +23,7 @@ CCM.file = ../../externals/CCM/projects/Qt/CCM.pro
 TiCPP.file = ../../externals/TiCPP/projects/Qt/TiCPP.pro
 qtftp.file = ../../externals/qftp/projects/Qt/qftp.pro
 qwt.file = ../../externals/qwt/projects/Qt/qwt.pro
-
-
+DataMap.file = ../../externals/DataMap/projects/Qt/DataMap.pro
 
 ClimateDataGenerator.file = ../../ClimateDataGenerator/projects/Qt/ClimateDataGenerator.pro
 
@@ -35,5 +34,6 @@ QtExt.depends = IBK
 QuaZIP.depends = IBK
 CCM.depends = IBK TiCPP
 TiCPP.depends = IBK
-ClimateDataGenerator.depends = IBK QtExt qtftp qwt #IBKMK
+DataMap.depends = IBK QtExt
+ClimateDataGenerator.depends = IBK QtExt qtftp qwt DataMap
 

@@ -18,7 +18,7 @@ class DWDProgressBar;
 
 class DWDData : public QObject
 {
-Q_OBJECT
+	Q_OBJECT
 
 public:
 
@@ -96,7 +96,7 @@ public:
 
 
 	IBK::Time						m_startTime;                ///> Start time for the first interval data
-	IBK::Time						m_endTime;                ///> End time for the first interval data
+	IBK::Time						m_endTime;					///> End time for the first interval data
 	unsigned int					m_intervalDuration;         ///> Interval duration in sec
 	std::vector<IntervalData>		m_data;                     ///> Vector with interval data
 	IBK::Path						m_filenames[NUM_DT];        ///> Filename

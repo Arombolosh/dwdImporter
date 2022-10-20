@@ -18,6 +18,7 @@ LIBS += -L../../../lib$${DIR_PREFIX} \
 				-lTiCPP \
 				-lIBK \
 				-lqwt6 \
+                                -lDataMap \
 				-lqftp
 
 INCLUDEPATH = \
@@ -29,6 +30,7 @@ INCLUDEPATH = \
 				../../../externals/TiCPP/src \
 				../../../externals/QuaZIP/src \
 				../../../externals/qwt/src \
+                                ../../../externals/DataMap/src \
 				../../../externals/qftp/src
 
 win32 {
@@ -55,10 +57,8 @@ SOURCES += \
 				../../src/DWDDescriptonData.cpp \
 				#../../src/DWD_CheckBox.cpp \
 				../../src/DWDDownloader.cpp \
-				../../src/DWDGraphicsView.cpp \
 				../../src/DWDLogWidget.cpp \
 				../../src/DWDMainWindow.cpp \
-				../../src/DWDMap.cpp \
 				../../src/DWDMessageHandler.cpp \
 				../../src/DWDSortFilterProxyModel.cpp \
 				../../src/main.cpp \
@@ -70,8 +70,7 @@ SOURCES += \
 
 FORMS += \
 				../../src/DWDLogWidget.ui \
-				../../src/DWDMainWindow.ui \
-				../../src/DWDMap.ui
+				../../src/DWDMainWindow.ui
 
 HEADERS += \
 				../../src/Constants.h \
@@ -81,12 +80,9 @@ HEADERS += \
 				../../src/DWDDescriptonData.h \
 				#../../src/DWD_CheckBox.h \
 				../../src/DWDDownloader.h \
-				../../src/DWDGraphicsView.h \
 				../../src/DWDLogWidget.h \
 				../../src/DWDMainWindow.h \
-				../../src/DWDMap.h \
 				../../src/DWDMessageHandler.h \
-				../../src/DWDScene.h \
 				../../src/DWDSortFilterProxyModel.h \
 				../../src/DWDTableModel.h \
 				../../src/DWDTimePlotPicker.h \

@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>gfx/Karte_Deutschland.svg</file>
         <file>gfx/Germany_location_map.svg</file>
+        <file>gfx/Deutschland.svg</file>
     </qresource>
 </RCC>

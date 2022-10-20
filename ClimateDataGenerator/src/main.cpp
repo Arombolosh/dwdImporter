@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
 	std::string errmsg;
 	messageHandler.openLogFile(QtExt::Directories::globalLogFile().toUtf8().data(), false, errmsg);
 
-	// Set stylsheet
+	// Set stylsheet with dark style
 	QFile darkStyle(":/style/style.qss");
 	darkStyle.open(QFile::ReadOnly);
 	QString styleSheet = QLatin1String(darkStyle.readAll());
@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
 		w.show();
 #endif
 		// we set the data to the tableWidget
-		w.loadData();
+		w.loadDataFromDWDServer();
 
 		// start event loop
 		res = a.exec();

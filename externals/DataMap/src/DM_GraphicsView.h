@@ -3,6 +3,8 @@
 
 #include <QGraphicsView>
 
+#include "DM_Scene.h"
+
 namespace DM {
 
 class GraphicsView : public QGraphicsView
@@ -14,13 +16,12 @@ public:
 
 	~GraphicsView();
 
-
-
-
-	// QWidget interface
 protected:
 	void wheelEvent(QWheelEvent * event) override;
 	void resizeEvent(QResizeEvent * event) override;
+
+
+
 };
 
 }

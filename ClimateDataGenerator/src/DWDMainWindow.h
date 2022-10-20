@@ -13,6 +13,8 @@
 #include <IBK_Time.h>
 #include <IBK_Path.h>
 
+#include <DM_MapDialog.h>
+
 #include "DWDDescriptonData.h"
 #include "DWDData.h"
 #include "DWDTableModel.h"
@@ -20,7 +22,7 @@
 #include <qwt_plot.h>
 
 namespace Ui {
-	class MainWindow;
+class MainWindow;
 }
 
 class QProgressDialog;
@@ -41,10 +43,13 @@ public:
 	explicit MainWindow(QWidget *parent = nullptr);
 	~MainWindow();
 
-	void loadData();
+	/*! Download data from DWD server. */
+	void loadDataFromDWDServer();
 
+	/*! Sets all GUI states. */
 	void setGUIState(bool guiState);
 
+	/*! Downloads all dwd data. */
 	void downloadData(bool showPreview = true, bool exportEPW = false);
 
 	void addToList(const QUrlInfo qUrlI);
@@ -61,7 +66,7 @@ public:
 
 
 private slots:
-	void readData();
+	void convertDwdData();
 
 
 	void on_pushButtonDownload_clicked();
@@ -83,12 +88,16 @@ private slots:
 
 private:
 
-	Ui::MainWindow						*m_ui;
+	Ui::MainWindow								*m_ui;
 
-	DWDDownloader						*m_manager = nullptr;
+	/*! Pointer to download manager. */
+	DWDDownloader								*m_manager = nullptr;
 
-	/*! Description input of all stations.
-		key of map is station id
+	/*! Pointer to Map Widget. */
+	DM::MapDialog								*m_mapDialog = nullptr;
+
+	/*! Description input of all existing DWD stations.
+		\param key: station id
 	*/
 	std::vector<DWDDescriptonData>				m_descData;
 	DWDData										m_dwdData;
