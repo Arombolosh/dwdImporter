@@ -37,3 +37,4 @@ Makefile
 /externals/qwt/projects/Qt/Makefile.qwt
 /externals/qwt/projects/Qt/Makefile.qwt.Debug
 /externals/qwt/projects/Qt/Makefile.qwt.Release
+qrc_*.cpp
