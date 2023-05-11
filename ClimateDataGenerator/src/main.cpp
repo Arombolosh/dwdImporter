@@ -41,10 +41,10 @@ int main(int argc, char* argv[]) {
 	messageHandler.openLogFile(QtExt::Directories::globalLogFile().toUtf8().data(), false, errmsg);
 
 	// Set stylsheet with dark style
-	QFile darkStyle(":/style/style.qss");
-	darkStyle.open(QFile::ReadOnly);
-	QString styleSheet = QLatin1String(darkStyle.readAll());
-	qApp->setStyleSheet(styleSheet);
+//	QFile darkStyle(":/style/style.qss");
+//	darkStyle.open(QFile::ReadOnly);
+//	QString styleSheet = QLatin1String(darkStyle.readAll());
+//	qApp->setStyleSheet(styleSheet);
 	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
 
