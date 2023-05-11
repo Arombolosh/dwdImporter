@@ -3,7 +3,6 @@
 
 #include <QGraphicsView>
 
-#include "DM_Scene.h"
 
 namespace DM {
 

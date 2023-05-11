@@ -4,6 +4,7 @@
 #include <QDialog>
 
 #include "DM_GraphicsView.h"
+#include "DM_Scene.h"
 
 namespace DM {
 

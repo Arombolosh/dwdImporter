@@ -23,7 +23,7 @@ static QPointF convertCoordinatesToPos(QRectF rect, const double &lat, const dou
 
 
 	double diffLon = -0.1 + DIFF - 2*DIFF * (lat - MIN_LAT)/(MAX_LAT - MIN_LAT);
-	double diffLat = * (lat - MIN_LON)/(MAX_LON - MIN_LON);
+    double diffLat = lat * (lat - MIN_LON)/(MAX_LON - MIN_LON);
 
 	MIN_LON = MIN_LON + diffLon;
 	MAX_LON = MAX_LON - diffLon;

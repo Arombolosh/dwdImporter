@@ -31,7 +31,7 @@ SOURCES += \
 	../../src/DM_Data.cpp \
 	../../src/DM_DataItem.cpp \
 	../../src/DM_GraphicsView.cpp \
-  ../../src/DM_MapDialog.cpp \
+	../../src/DM_MapDialog.cpp \
 	../../src/DM_Scene.cpp \
 
 HEADERS += \
