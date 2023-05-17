@@ -18,6 +18,7 @@
 #include "DWDDescriptonData.h"
 #include "DWDData.h"
 #include "DWDTableModel.h"
+#include "DWDConversions.h"
 
 #include <qwt_plot.h>
 
@@ -85,6 +86,10 @@ private slots:
 
 	void on_toolButtonOpenDirectory_clicked();
 
+
+	void on_dateEditStart_userDateChanged(const QDate &date);
+
+	void on_dateEditEnd_userDateChanged(const QDate &date);
 
 private:
 

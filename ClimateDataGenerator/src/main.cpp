@@ -11,7 +11,7 @@
 #include "DWDMainWindow.h"
 #include "DWDMessageHandler.h"
 
-#include "Constants.h"
+#include "DWDConstants.h"
 
 /*! qDebug() message handler function, redirects debug messages to IBK::IBK_Message(). */
 void qDebugMsgHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {

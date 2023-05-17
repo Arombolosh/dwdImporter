@@ -5,7 +5,7 @@
 #include <QFontMetrics>
 #include <QPalette>
 
-#include "Utilities.h"
+#include "DWDUtilities.h"
 
 QwtScaleDiv DWDDateTimeScaleEngine::divideScale(double x1, double x2,
 		int , int , double ) const

@@ -37,6 +37,8 @@ public:
 		NUM_DT
 	};
 
+	// TODO SWITCH TO STATIC ARRAY
+
 	struct IntervalData{
 
 		void setVal(const DataType &dt, double val){
@@ -55,6 +57,21 @@ public:
 			}
 		}
 
+		double data(const DataType &dt) {
+			switch (dt) {
+				case DT_AirTemperature:						return m_airTemp;		break;
+				case DT_RelativeHumidity:					return m_relHum;		break;
+				case DT_RadiationDiffuse:					return m_diffRad;		break;
+				case DT_RadiationGlobal:					return m_globalRad;		break;
+				case DT_RadiationLongWave:					return m_counterRad;	break;
+				case DT_ZenithAngle:						return m_zenithAngle;	break;
+				case DT_WindDirection:						return m_windDirection;	break;
+				case DT_WindSpeed:							return m_windSpeed;		break;
+				case DT_Pressure:							return m_pressure;		break;
+				case DT_Precipitation:						return m_precipitaion;	break;
+
+			}
+		}
 
 		double				m_airTemp		= -999;		///< Air temperature in C
 		double				m_relHum		= -999;		///< Relative humidity in %
@@ -91,7 +108,8 @@ public:
 	/*! Returns the filename of the downloaded zip-archive */
 	QString filename(const DWDData::DataType &type, const QString &numberString, const std::string &dateString, bool isRecent=true) const;
 
-
+	/*! Returns interval data. */
+	std::vector<IntervalData>	data() const;
 
 
 
@@ -102,6 +120,7 @@ public:
 	IBK::Path						m_filenames[NUM_DT];        ///> Filename
 	std::vector<QUrlInfo>			m_urls;                     ///> urls in ftp directory
 	QProgressDialog					*m_progressDlg = nullptr;   ///> pointer to label
+
 
 signals:
 	void progress(int min, int max, int val);

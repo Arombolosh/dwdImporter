@@ -29,4 +29,31 @@ MapDialog::~MapDialog() {
 	delete m_ui;
 }
 
+
+void MapDialog::on_checkBoxAirTemp_toggled(bool checked) {
+	m_scene->setItemGroupVisiblity(Data::DT_TemperatureAndHumidity, checked);
+}
+
+
+void MapDialog::on_checkBoxRadiation_toggled(bool checked) {
+	m_scene->setItemGroupVisiblity(Data::DT_Solar, checked);
+}
+
+
+void MapDialog::on_checkBoxPressure_toggled(bool checked) {
+	m_scene->setItemGroupVisiblity(Data::DT_Pressure, checked);
+}
+
+
+void MapDialog::on_checkBoxWind_toggled(bool checked) {
+	m_scene->setItemGroupVisiblity(Data::DT_Wind, checked);
+}
+
+
+void MapDialog::on_checkBoxPrecipitation_toggled(bool checked) {
+	m_scene->setItemGroupVisiblity(Data::DT_Precipitation, checked);
+}
+
+
+
 } // namespace DM

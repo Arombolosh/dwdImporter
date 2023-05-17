@@ -6,7 +6,7 @@
 #include <IBK_FileReader.h>
 #include <IBK_physics.h>
 #include <IBK_MessageHandler.h>
-#include <IBK_Exception.h>.h>
+#include <IBK_Exception.h>
 
 #include <QtExt_Directories.h>
 #include <QtExt_ValidatingLineEdit.h>
@@ -46,11 +46,9 @@
 #include <JlCompress.h>
 
 #include "DWDDownloader.h"
-#include "DWDTimePlotPicker.h"
 // #include "DWDDelegate.h"
 #include "DWDData.h"
 #include "DWDSortFilterProxyModel.h"
-#include "DWDDateTimeScaleEngine.h"
 #include "DWDLogWidget.h"
 #include "DWDMessageHandler.h"
 #include "DWDDelegate.h"
@@ -124,6 +122,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_ui->lineEditLongitude->setup(-180,180, "Longitude in Deg", true, true);
 	m_ui->lineEditLatitude->setText("51.03");
 	m_ui->lineEditLongitude->setText("13.7");
+
+	m_ui->dateEditStart->setDate(QDate(2020,1,1));
+	m_ui->dateEditEnd->setDate(QDate(2021,1,1));
 
 	//	m_ui->lineEditYear->setup(1950,2023,tr("Year of interest."), true, true);
 	//	m_ui->lineEditYear->setText("2020");
@@ -236,9 +237,12 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 		return;
 	}
 
-	m_ui->plotTempRelHum->setEnabled(false);
-	m_ui->plotRadPres->setEnabled(false);
-	m_ui->plotRainWind->setEnabled(false);
+	m_ui->plotRelHum->setEnabled(false);
+	m_ui->plotPres->setEnabled(false);
+	m_ui->plotRain->setEnabled(false);
+	m_ui->plotWind->setEnabled(false);
+	m_ui->plotRad->setEnabled(false);
+	m_ui->plotTemp->setEnabled(false);
 
 	std::vector<int> dataInRows(DWDDescriptonData::NUM_D,-1);
 	//find selected elements
@@ -253,15 +257,19 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 
 				switch (j) {
 				case DWDDescriptonData::D_TemperatureAndHumidity:
-					m_ui->plotTempRelHum->setEnabled(isChecked);
+					m_ui->plotRelHum->setEnabled(isChecked);
 					break;
 				case DWDDescriptonData::D_Solar:
+					m_ui->plotRad->setEnabled(isChecked);
+					break;
 				case DWDDescriptonData::D_Pressure:
-					m_ui->plotRadPres->setEnabled(isChecked);
+					m_ui->plotPres->setEnabled(isChecked);
 					break;
 				case DWDDescriptonData::D_Wind:
+					m_ui->plotRain->setEnabled(isChecked);
+					break;
 				case DWDDescriptonData::D_Precipitation:
-					m_ui->plotRainWind->setEnabled(isChecked);
+					m_ui->plotRain->setEnabled(isChecked);
 					break;
 				}
 			}
@@ -493,9 +501,12 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 
 	if ( showPreview ) {
 
-		m_ui->plotRadPres->detachItems();
-		m_ui->plotRainWind->detachItems();
-		m_ui->plotTempRelHum->detachItems();
+		m_ui->plotPres->detachItems();
+		m_ui->plotRain->detachItems();
+		m_ui->plotRelHum->detachItems();
+		m_ui->plotTemp->detachItems();
+		m_ui->plotWind->detachItems();
+		m_ui->plotRad->detachItems();
 
 		// create a new curve to be shown in the plot and set some properties
 		QwtPlotCurve *curveTemp = new QwtPlotCurve();
@@ -556,7 +567,6 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 			pointsPressure << QPointF(timeStep, intVal.m_pressure/1000  ); // in kPa
 			pointsPrecipitation << QPointF(timeStep, intVal.m_precipitaion );
 
-
 			progressNotify.notify((double)(i+1)/m_dwdData.m_data.size() );
 		}
 
@@ -569,29 +579,35 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 		curvePrecipitation->setSamples(pointsPrecipitation);
 
 		// set the curve in the plot
-		curveRelHum->attach(m_ui->plotTempRelHum);
-		curveRelHum->setYAxis(QwtPlot::yRight);
+		curveRelHum->attach(m_ui->plotRelHum);
 
-		curveTemp->attach(m_ui->plotTempRelHum);
+		curveTemp->attach(m_ui->plotTemp);
 
-		curveRad->attach( m_ui->plotRadPres );
-		curveRad->setYAxis(QwtPlot::yRight);
+		curveRad->attach( m_ui->plotRad );
 
-		curvePressure->attach( m_ui->plotRadPres );
+		curvePressure->attach( m_ui->plotPres );
 
-		curvePrecipitation->attach( m_ui->plotRainWind );
+		curvePrecipitation->attach( m_ui->plotRain );
 
-		curveWind->attach(m_ui->plotRainWind);
-		curveWind->setYAxis(QwtPlot::yRight);
+		curveWind->attach( m_ui->plotWind );
 
-		m_ui->plotTempRelHum->replot();
-		m_ui->plotTempRelHum->show();
+		m_ui->plotRelHum->replot();
+		m_ui->plotRelHum->show();
 
-		m_ui->plotRadPres->replot();
-		m_ui->plotRadPres->show();
+		m_ui->plotPres->replot();
+		m_ui->plotPres->show();
 
-		m_ui->plotRainWind->replot();
-		m_ui->plotRainWind->show();
+		m_ui->plotRain->replot();
+		m_ui->plotRain->show();
+
+		m_ui->plotRad->replot();
+		m_ui->plotRad->show();
+
+		m_ui->plotWind->replot();
+		m_ui->plotWind->show();
+
+		m_ui->plotTemp->replot();
+		m_ui->plotTemp->show();
 	}
 
 	if ( exportEPW ) {
@@ -733,9 +749,12 @@ void MainWindow::calculateDistances() {
 }
 
 void MainWindow::initPlots() {
-	formatQwtPlot(*m_ui->plotTempRelHum, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Air Temperature & Rel. Humidity", "C", -10, 40, 10, true, "%", 0, 100, 20);
-	formatQwtPlot(*m_ui->plotRadPres, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Pressure & Radiation", "kPa", 0, 1.4, 0.2, true, "W/m2", 0, 1400, 200);
-	formatQwtPlot(*m_ui->plotRainWind, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Precipitation & Wind speed", "mm", 0, 50, 10, true, "m/s", 0, 20, 4);
+	formatQwtPlot(*m_ui->plotTemp, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Air Temperature", "C", -20, 40, 20, false);
+	formatQwtPlot(*m_ui->plotPres, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Pressure", "kPa", 0, 1.4, 0.2, false);
+	formatQwtPlot(*m_ui->plotRad, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Shortwave Radiation", "W/m2", 0, 1400, 200, false);
+	formatQwtPlot(*m_ui->plotRain, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Precipitation", "mm", 0, 50, 10, false);
+	formatQwtPlot(*m_ui->plotWind, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Wind speed", "m/s", 0, 100, 20, false);
+	formatQwtPlot(*m_ui->plotRelHum, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Relative Humidity", "%", 0, 100, 20, false);
 }
 
 void MainWindow::formatQwtPlot(QwtPlot &plot, QDate startDate, QDate endDate, QString title, QString leftYAxisTitle, double yLeftMin, double yLeftMax, double yLeftStepSize,
@@ -753,7 +772,12 @@ void MainWindow::formatQwtPlot(QwtPlot &plot, QDate startDate, QDate endDate, QS
 	QList<double> majorTicks;
 	majorTicks.push_back(start.toMSecsSinceEpoch() );
 
-	for(unsigned int i=0; i<12; ++i)
+	unsigned int days = start.daysTo(end);
+
+	// assume an average month has 30 days
+	unsigned int months = days / 30;
+
+	for(unsigned int i=0; i<months; ++i)
 		majorTicks.push_back(QwtDate::toDouble(start.addMonths(i) ) );
 
 	// Init Scale Divider
@@ -809,7 +833,8 @@ void MainWindow::formatQwtPlot(QwtPlot &plot, QDate startDate, QDate endDate, QS
 
 	// Init Scale draw engine
 	QwtDateScaleDraw *scaleDrawTemp = new QwtDateScaleDraw(Qt::UTC);
-	scaleDrawTemp->setDateFormat(QwtDate::Month, "MMM");
+	scaleDrawTemp->setDateFormat(QwtDate::Month, "MMM.yyyy");
+	scaleDrawTemp->setDateFormat(QwtDate::Year, "yyyy");
 
 	// Set scale draw engine
 	plot.setAxisScaleDraw(QwtPlot::xBottom, scaleDrawTemp);
@@ -822,17 +847,17 @@ void MainWindow::formatQwtPlot(QwtPlot &plot, QDate startDate, QDate endDate, QS
 
 
 void MainWindow::on_pushButtonMap_clicked() {
-	double latitude = m_ui->lineEditLatitude->text().toDouble();
-	double longitude = m_ui->lineEditLongitude->text().toDouble();
-	unsigned int distance = m_ui->horizontalSliderDistance->value();
+	//	double latitude = m_ui->lineEditLatitude->text().toDouble();
+	//	double longitude = m_ui->lineEditLongitude->text().toDouble();
+	//	unsigned int distance = m_ui->horizontalSliderDistance->value();
 
-	unsigned int year = 2020;
+	//	unsigned int year = 2020;
 	//DWDMap::getLocation(m_descData, latitude, longitude, year, distance, this);
 
 	m_mapDialog->exec();
 
-//	m_ui->lineEditLatitude->setText(QString::number(latitude) );
-//	m_ui->lineEditLongitude->setText(QString::number(longitude) );
+	//	m_ui->lineEditLatitude->setText(QString::number(latitude) );
+	//	m_ui->lineEditLongitude->setText(QString::number(longitude) );
 
 	calculateDistances();
 
@@ -846,7 +871,7 @@ void MainWindow::on_pushButtonMap_clicked() {
 
 
 void MainWindow::setProgress(int min, int max, int val) {
-	FUNCID(setProgress);
+	//	FUNCID(setProgress);
 
 	m_progressDlg->setMaximum(val);
 
@@ -895,5 +920,17 @@ void MainWindow::on_toolButtonOpenDirectory_clicked() {
 	m_fileName = filename;
 
 	m_ui->lineEditFile->setText(filename);
+}
+
+
+void MainWindow::on_dateEditStart_userDateChanged(const QDate &date) {
+	m_dwdData.m_startTime.set(date.year(), 0);
+	m_proxyModel->setFilterMinimumDate(date);
+}
+
+
+void MainWindow::on_dateEditEnd_userDateChanged(const QDate &date) {
+	m_dwdData.m_endTime.set(date.year(), 0);
+	m_proxyModel->setFilterMaximumDate(date);
 }
 

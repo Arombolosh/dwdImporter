@@ -22,7 +22,7 @@
 #include <QFontMetrics>
 #include <QPalette>
 
-#include "Utilities.h"
+#include "DWDUtilities.h"
 
 DWDDateTimeScaleDraw::DWDDateTimeScaleDraw() {
 		longMonthNames[0] = tr("January");

@@ -29,6 +29,9 @@ public:
 	/*! Converts coordinates to a position at the scene. */
 	QPointF convertCoordinatesToPos(const double &lat, const double &lon);
 
+	/*! Sets an item group with all graphics scene items visivle or invisible. */
+	void setItemGroupVisiblity(const Data::DataType &type, bool visible);
+
 
 	QGraphicsTextItem			*m_cursor;
 

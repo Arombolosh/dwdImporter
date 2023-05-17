@@ -62,7 +62,7 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 
 	m_cursor->setPlainText(string);
 	m_cursor->setZValue(99); // always on top
-	m_cursor->setDefaultTextColor(Qt::gray);
+	m_cursor->setDefaultTextColor(Qt::black);
 
 	// Set the new position of the cursor
 	m_cursor->setPos(event->scenePos().x() + 20, event->scenePos().y() + 20 );
@@ -74,6 +74,10 @@ void Scene::addDwdDataPoint(const Data::DataType & type, const QString &str, con
 	m_dataGroup[type]->addToGroup(item);
 
 	update();
+}
+
+void Scene::setItemGroupVisiblity(const Data::DataType &type, bool visible) {
+	m_dataGroup[type]->setVisible(visible);
 }
 
 

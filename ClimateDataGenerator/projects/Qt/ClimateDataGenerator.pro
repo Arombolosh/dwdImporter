@@ -51,7 +51,7 @@ RESOURCES += \
 
 
 SOURCES += \
-				../../src/Constants.cpp \
+    ../../src/DWDConstants.cpp \
 				../../src/DWDData.cpp \
 				../../src/DWDDelegate.cpp \
 				../../src/DWDDescriptonData.cpp \
@@ -61,19 +61,19 @@ SOURCES += \
 				../../src/DWDMainWindow.cpp \
 				../../src/DWDMessageHandler.cpp \
 				../../src/DWDSortFilterProxyModel.cpp \
+    ../../src/DWDUtilities.cpp \
 				../../src/main.cpp \
 				 ../../src/DWDTableModel.cpp \
 				../../src/DWDTimePlotPicker.cpp \
 				../../src/DWDDateTimeScaleEngine.cpp \
-				../../src/DWDDateTimeScaleDraw.cpp \
-				../../src/Utilities.cpp
+				../../src/DWDDateTimeScaleDraw.cpp
 
 FORMS += \
 				../../src/DWDLogWidget.ui \
 				../../src/DWDMainWindow.ui
 
 HEADERS += \
-				../../src/Constants.h \
+				../../src/DWDConstants.h \
 				../../src/DWDConversions.h \
 				../../src/DWDData.h \
 				../../src/DWDDelegate.h \
@@ -88,7 +88,7 @@ HEADERS += \
 				../../src/DWDTimePlotPicker.h \
 				../../src/DWDDateTimeScaleEngine.h \
 				../../src/DWDDateTimeScaleDraw.h \
-				../../src/Utilities.h \
+				../../src/DWDUtilities.h \
 				../../ôsrc/DWDConversions.h
 
 DISTFILES +=

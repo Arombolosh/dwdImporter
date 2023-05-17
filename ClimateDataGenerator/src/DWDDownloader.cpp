@@ -1,6 +1,6 @@
 #include "DWDDownloader.h"
 
-#include "Constants.h"
+#include "DWDConstants.h"
 
 #include <QMessageBox>
 

@@ -24,6 +24,7 @@ unix|mac {
 LIBS += -lIBK -lTiCPP -lQtExt
 
 INCLUDEPATH +=	\
+    ../../src/ \
 	../../../IBK/src \
 	../../../QtExt/src
 
@@ -32,7 +33,7 @@ SOURCES += \
 	../../src/DM_DataItem.cpp \
 	../../src/DM_GraphicsView.cpp \
 	../../src/DM_MapDialog.cpp \
-	../../src/DM_Scene.cpp \
+	../../src/DM_Scene.cpp
 
 HEADERS += \
 	../../src/DM_Conversions.h \
