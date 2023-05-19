@@ -258,6 +258,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 				switch (j) {
 				case DWDDescriptonData::D_TemperatureAndHumidity:
 					m_ui->plotRelHum->setEnabled(isChecked);
+					m_ui->plotTemp->setEnabled(isChecked);
 					break;
 				case DWDDescriptonData::D_Solar:
 					m_ui->plotRad->setEnabled(isChecked);
@@ -266,7 +267,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 					m_ui->plotPres->setEnabled(isChecked);
 					break;
 				case DWDDescriptonData::D_Wind:
-					m_ui->plotRain->setEnabled(isChecked);
+					m_ui->plotWind->setEnabled(isChecked);
 					break;
 				case DWDDescriptonData::D_Precipitation:
 					m_ui->plotRain->setEnabled(isChecked);
