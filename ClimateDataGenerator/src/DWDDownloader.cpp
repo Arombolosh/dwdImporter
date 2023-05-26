@@ -1,12 +1,13 @@
 #include "DWDDownloader.h"
 
-#include "DWDConstants.h"
-
 #include <QMessageBox>
+
+#include "QtExt_Directories.h"
 
 DWDDownloader::DWDDownloader(QWidget *parent) {
 	connect(&m_manager, SIGNAL(finished(QNetworkReply*)),
 			SLOT(downloadFinished(QNetworkReply*)));
+	this->setFilepath(IBK::Path(QtExt::Directories().userDataDir().toStdString() + "/downloads"));
 
 }
 
@@ -50,7 +51,8 @@ QString DWDDownloader::saveFileName(const QUrl &url) {
 }
 
 bool DWDDownloader::saveToDisk(const QString &filename, QIODevice *data) {
-	QFile file(QString(DATA_DIR) + "Tests/" + filename);
+	QFile file(QString(m_filepath.c_str()) + "/" + filename);
+
 	if (!file.open(QIODevice::WriteOnly)) {
 		fprintf(stderr, "Could not open %s for writing: %s\n",
 				qPrintable(filename),
@@ -125,4 +127,8 @@ void DWDDownloader::downloadFinished(QNetworkReply *reply) {
 		m_isRunning = false;
 //		QCoreApplication::instance()->quit();
 	}
+}
+
+void DWDDownloader::setFilepath(IBK::Path filepath){
+	m_filepath = filepath;
 }

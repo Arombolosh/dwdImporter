@@ -6,6 +6,8 @@
 
 #include "Constants.h"
 
+#include "QtExt_Directories.h"
+
 QStringList DWDDescriptonData::downloadDescriptionFiles(bool isRecent){
 	QString baseDirFTP = "ftp://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/hourly/";
 
@@ -26,19 +28,19 @@ QStringList DWDDescriptonData::downloadDescriptionFiles(bool isRecent){
 
 void DWDDescriptonData::readAllDescriptions(std::vector<DWDDescriptonData> &dwdDescriptonData){
 
-	IBK::Path filepath(std::string(DATA_DIR) + "Tests/TU_Stundenwerte_Beschreibung_Stationen.txt");
+	IBK::Path filepath(QtExt::Directories().userDataDir().toStdString() + "/downloads/TU_Stundenwerte_Beschreibung_Stationen.txt");
 	readDescription(filepath, dwdDescriptonData, D_TemperatureAndHumidity);
 
-	filepath= IBK::Path (std::string(DATA_DIR) + "Tests/P0_Stundenwerte_Beschreibung_Stationen.txt");
+	filepath= IBK::Path (QtExt::Directories().userDataDir().toStdString() + "/downloads/P0_Stundenwerte_Beschreibung_Stationen.txt");
 	readDescription(filepath, dwdDescriptonData, D_Pressure);
 
-	filepath= IBK::Path (std::string(DATA_DIR) + "Tests/ST_Stundenwerte_Beschreibung_Stationen.txt");
+	filepath= IBK::Path (QtExt::Directories().userDataDir().toStdString() + "/downloads/ST_Stundenwerte_Beschreibung_Stationen.txt");
 	readDescription(filepath, dwdDescriptonData, D_Solar);
 
-	filepath= IBK::Path (std::string(DATA_DIR) + "Tests/FF_Stundenwerte_Beschreibung_Stationen.txt");
+	filepath= IBK::Path (QtExt::Directories().userDataDir().toStdString() + "/downloads/FF_Stundenwerte_Beschreibung_Stationen.txt");
 	readDescription(filepath, dwdDescriptonData, D_Wind);
 
-	filepath= IBK::Path (std::string(DATA_DIR) + "Tests/RR_Stundenwerte_Beschreibung_Stationen.txt");
+	filepath= IBK::Path (QtExt::Directories().userDataDir().toStdString() + "/downloads/RR_Stundenwerte_Beschreibung_Stationen.txt");
 	readDescription(filepath, dwdDescriptonData, D_Precipitation);
 
 	for ( DWDDescriptonData &dwdData : dwdDescriptonData )

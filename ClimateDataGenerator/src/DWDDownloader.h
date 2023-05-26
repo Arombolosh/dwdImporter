@@ -10,6 +10,7 @@
 #include <QThread>
 #include <QProgressDialog>
 #include <QLabel>
+#include "IBK_Path.h"
 
 class DWDProgressBar;
 
@@ -23,15 +24,17 @@ public:
 	static QString saveFileName(const QUrl &url);
 	bool saveToDisk(const QString &filename, QIODevice *data);
 	static bool isHttpRedirect(QNetworkReply *reply);
+	void setFilepath(IBK::Path filepath);
 
 	QStringList					m_urls;
 	qint64						m_bytesReceived = 0;
 	qint64						m_bytesTotal = 0;
 	bool						m_isRunning = true;
 	int							m_finishedDownloads;
+	IBK::Path					m_filepath;
 
-    /*! Progress Dialog. */
-    QProgressDialog				*m_progressDlg;
+	/*! Progress Dialog. */
+	QProgressDialog				*m_progressDlg;
 signals:
 	void finished();
 	QNetworkRequest request();

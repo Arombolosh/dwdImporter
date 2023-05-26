@@ -296,7 +296,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 	//download the data (zip)
 
 	for(unsigned int i=0; i<DWDDescriptonData::NUM_D; ++i){
-		if(dataInRows[i] != -1){
+		if(dataInRows[i] != -1){	// if this column contains any selected entries
 			DWDData dwdData;
 			std::string dateString;
 
@@ -377,7 +377,8 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 	for(unsigned int i=0; i<DWDDescriptonData::NUM_D; ++i){
 		if(dataInRows[i] == -1)
 			continue;
-		IBK::Path checkfile(std::string(DATA_DIR) + "Tests/" + filenames[i].toStdString() + ".zip");
+		IBK::Path checkfile(QtExt::Directories().userDataDir().toStdString() + "/downloads/" + filenames[i].toStdString() + ".zip"); //!TODO Pfad setzen
+
 		if(!checkfile.exists()){
 			QString cat;
 			switch (types[i]) {
@@ -387,7 +388,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 			case DWDData::DT_Pressure:			cat = "Pressure";								break;
 			case DWDData::DT_Precipitation:		cat = "Precipitation";							break;
 			}
-			QMessageBox::warning(this, QString(), QString("Download of file '%1' was not successfull. Category: '%2'").arg(filenames[i]+".zip").arg(cat));
+			QMessageBox::warning(this, QString(), QString("Download of file '%1' was not successful. Category: '%2'").arg(filenames[i]+".zip").arg(cat));
 		}
 		else
 			validFiles[i] = checkfile;
@@ -412,9 +413,9 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 				// we found the file
 				textFile = fileName;
 				// we extract the file
-				QString fileExtracted = JlCompress::extractFile( validFiles[i].str().c_str(), fileName, QString(DATA_DIR) + "Tests/extractedFiles/" + textFile);
+				QString fileExtracted = JlCompress::extractFile( validFiles[i].str().c_str(), fileName, QtExt::Directories().userDataDir() + "/downloads/extractedFiles/" + textFile);
 				filesExtracted << fileExtracted;
-				checkedFileNames[i] = IBK::Path(std::string(DATA_DIR) + "Tests/extractedFiles/" + textFile.toStdString() );
+				checkedFileNames[i] = IBK::Path(QtExt::Directories().userDataDir().toStdString() + "/downloads/extractedFiles/" + textFile.toStdString() );
 				// was the exraction successful
 				if ( fileExtracted.isEmpty() )
 					QMessageBox::warning(this, QString(), QString("File %1 could not be extracted").arg(textFile));
@@ -834,7 +835,7 @@ void MainWindow::formatQwtPlot(QwtPlot &plot, QDate startDate, QDate endDate, QS
 
 	// Init Scale draw engine
 	QwtDateScaleDraw *scaleDrawTemp = new QwtDateScaleDraw(Qt::UTC);
-	scaleDrawTemp->setDateFormat(QwtDate::Month, "MMM.yyyy");
+	scaleDrawTemp->setDateFormat(QwtDate::Month, "MMM");
 	scaleDrawTemp->setDateFormat(QwtDate::Year, "yyyy");
 
 	// Set scale draw engine
