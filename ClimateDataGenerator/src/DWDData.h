@@ -14,6 +14,8 @@
 #include <IBK_Path.h>
 #include <IBK_NotificationHandler.h>
 
+#include "QtExt_Directories.h"
+
 class DWDProgressBar;
 
 class DWDData : public QObject

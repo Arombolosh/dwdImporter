@@ -219,7 +219,7 @@ void DWDData::exportEPW(double latitudeDeg, double longitudeDeg, const IBK::Path
 	}
 
 	try {
-		loader.writeClimateDataEPW(IBK::Path(std::string(DATA_DIR)+ "export.epw"));
+		loader.writeClimateDataEPW(IBK::Path(QtExt::Directories().userDataDir().toStdString()+ "export.epw"));
 	} catch (IBK::Exception &ex) {
 		throw IBK::Exception( "Could not write epw file", FUNC_ID);
 	}
