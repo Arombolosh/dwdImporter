@@ -25,6 +25,8 @@ void DWDData::createData(IBK::NotificationHandler * notify, const std::map<IBK::
 
 	m_intervalDuration = intervalDuration;
 
+	m_data.clear();
+
 	for(std::map<IBK::Path, std::set<DWDData::DataType>>::const_iterator	it=filenames.begin();
 																			it!=filenames.end(); ++it){
 		//check if file exist
