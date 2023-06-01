@@ -204,7 +204,7 @@ void MainWindow::loadDataFromDWDServer(){
 
 	// initiate download manager
 	m_manager = new DWDDownloader(this);
-	m_manager->setFilepath(m_downloadDir);
+	m_manager->setFilepath(IBK::Path(QtExt::Directories().userDataDir().toStdString()));
 
 	m_manager->m_urls = urls;
 	m_manager->m_progressDlg = m_progressDlg; // bisschen quatsch
