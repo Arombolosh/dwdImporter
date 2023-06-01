@@ -204,12 +204,17 @@ void MainWindow::loadDataFromDWDServer(){
 
 	// initiate download manager
 	m_manager = new DWDDownloader(this);
+	m_manager->setFilepath(m_downloadDir);
+
 	m_manager->m_urls = urls;
 	m_manager->m_progressDlg = m_progressDlg; // bisschen quatsch
 	m_progressDlg->
 			connect( m_manager, &DWDDownloader::finished, this, &MainWindow::convertDwdData );
 
 	m_manager->execute(); // simply registers network requests
+
+	// initialize lineEdit with userDataDir on StartUp
+	m_ui->lineEditDownloads->setText(m_manager->m_filepath.c_str());
 }
 
 void MainWindow::setGUIState(bool guiState) {
@@ -289,6 +294,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 				DWDData::DT_WindDirection, DWDData::DT_Pressure, DWDData::DT_Precipitation};
 
 	m_manager = new DWDDownloader(this);
+	m_manager->setFilepath(m_downloadDir);
 	m_manager->m_progressDlg = m_progressDlg;
 	m_manager->m_urls.clear();
 
@@ -377,7 +383,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 	for(unsigned int i=0; i<DWDDescriptonData::NUM_D; ++i){
 		if(dataInRows[i] == -1)
 			continue;
-		IBK::Path checkfile(QtExt::Directories().userDataDir().toStdString() + "/downloads/" + filenames[i].toStdString() + ".zip"); //!TODO Pfad setzen
+		IBK::Path checkfile(m_downloadDir.str() + "/" + filenames[i].toStdString() + ".zip");
 
 		if(!checkfile.exists()){
 			QString cat;
@@ -413,9 +419,9 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 				// we found the file
 				textFile = fileName;
 				// we extract the file
-				QString fileExtracted = JlCompress::extractFile( validFiles[i].str().c_str(), fileName, QtExt::Directories().userDataDir() + "/downloads/extractedFiles/" + textFile);
+				QString fileExtracted = JlCompress::extractFile( validFiles[i].str().c_str(), fileName, QString(m_downloadDir.c_str()) + "/extractedFiles/" + textFile);
 				filesExtracted << fileExtracted;
-				checkedFileNames[i] = IBK::Path(QtExt::Directories().userDataDir().toStdString() + "/downloads/extractedFiles/" + textFile.toStdString() );
+				checkedFileNames[i] = IBK::Path(m_downloadDir.str() + "/extractedFiles/" + textFile.toStdString());
 				// was the exraction successful
 				if ( fileExtracted.isEmpty() )
 					QMessageBox::warning(this, QString(), QString("File %1 could not be extracted").arg(textFile));
@@ -941,5 +947,23 @@ void MainWindow::on_dateEditStart_userDateChanged(const QDate &date) {
 void MainWindow::on_dateEditEnd_userDateChanged(const QDate &date) {
 	m_dwdData.m_endTime.set(date.year(), 0);
 	m_proxyModel->setFilterMaximumDate(date);
+}
+
+
+void MainWindow::on_toolButtonDownloadDir_clicked()
+{
+	// request directory
+	QString directory = QFileDialog::getExistingDirectory (
+				this,
+				tr("Set Downloads Directory"),
+				m_downloadDir.c_str(),
+			QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+	if (directory.isEmpty()) return;
+
+	m_downloadDir = IBK::Path(directory.toStdString());
+
+	m_ui->lineEditDownloads->setText(directory);
+
 }
 

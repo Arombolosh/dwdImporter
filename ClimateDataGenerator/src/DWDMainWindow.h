@@ -20,6 +20,8 @@
 #include "DWDTableModel.h"
 #include "DWDConversions.h"
 
+#include "QtExt_Directories.h"
+
 #include <qwt_plot.h>
 
 namespace Ui {
@@ -91,6 +93,8 @@ private slots:
 
 	void on_dateEditEnd_userDateChanged(const QDate &date);
 
+	void on_toolButtonDownloadDir_clicked();
+
 private:
 
 	Ui::MainWindow								*m_ui;
@@ -122,6 +126,8 @@ private:
 	QString										m_fileName;
 
 	DWDLogWidget                               *m_logWidget = nullptr;
+
+	IBK::Path									m_downloadDir = IBK::Path(QtExt::Directories().userDataDir().toStdString() + "/downloads");
 
 };
 

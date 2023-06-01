@@ -2,12 +2,9 @@
 
 #include <QMessageBox>
 
-#include "QtExt_Directories.h"
-
 DWDDownloader::DWDDownloader(QWidget *parent) {
 	connect(&m_manager, SIGNAL(finished(QNetworkReply*)),
 			SLOT(downloadFinished(QNetworkReply*)));
-	this->setFilepath(IBK::Path(QtExt::Directories().userDataDir().toStdString() + "/downloads"));
 
 }
 
