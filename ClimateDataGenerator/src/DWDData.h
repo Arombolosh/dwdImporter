@@ -54,7 +54,7 @@ public:
 				case DT_WindDirection:						m_windDirection= val;	break;
 				case DT_WindSpeed:							m_windSpeed= val;		break;
 				case DT_Pressure:							m_pressure= val;		break;
-				case DT_Precipitation:						m_precipitaion= val;	break;
+				case DT_Precipitation:						m_precipitation= val;	break;
 
 			}
 		}
@@ -70,7 +70,7 @@ public:
 				case DT_WindDirection:						return m_windDirection;	break;
 				case DT_WindSpeed:							return m_windSpeed;		break;
 				case DT_Pressure:							return m_pressure;		break;
-				case DT_Precipitation:						return m_precipitaion;	break;
+				case DT_Precipitation:						return m_precipitation;	break;
 
 			}
 		}
@@ -85,7 +85,7 @@ public:
 		double				m_windSpeed		= -999;		///< Wind speed in m/s
 		double				m_windDirection	= -999;		///< Wind direction in Deg
 		double				m_pressure		= -999;		///< Pressure in Pa
-		double				m_precipitaion	= -999;		///< Precipitation in mm
+		double				m_precipitation	= -999;		///< Precipitation in mm
 
 
 	};

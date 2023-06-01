@@ -473,8 +473,8 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 				intVal.m_windSpeed = 4;
 			if(intVal.m_pressure < 0 || intVal.m_pressure > 2000)
 				intVal.m_pressure = 1013;
-			if(intVal.m_precipitaion < 0 || intVal.m_precipitaion > 2000)
-				intVal.m_precipitaion = 0;
+			if(intVal.m_precipitation < 0 || intVal.m_precipitation > 2000)
+				intVal.m_precipitation = 0;
 		}
 		else{
 			//take air temperature of last timepoint
@@ -490,8 +490,8 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 				intVal.m_windSpeed = m_dwdData.m_data[i-1].m_windSpeed;
 			if(intVal.m_pressure< 0 || intVal.m_pressure> 2000)
 				intVal.m_pressure = m_dwdData.m_data[i-1].m_pressure;
-			if(intVal.m_precipitaion< 0 || intVal.m_precipitaion> 2000)
-				intVal.m_precipitaion = m_dwdData.m_data[i-1].m_precipitaion;
+			if(intVal.m_precipitation< 0 || intVal.m_precipitation> 2000)
+				intVal.m_precipitation = m_dwdData.m_data[i-1].m_precipitation;
 		}
 		//only radiation
 		if(i<=24){
@@ -574,7 +574,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 			pointsRad << QPointF(timeStep, intVal.m_globalRad );
 			pointsWind << QPointF(timeStep, intVal.m_windSpeed );
 			pointsPressure << QPointF(timeStep, intVal.m_pressure/1000  ); // in kPa
-			pointsPrecipitation << QPointF(timeStep, intVal.m_precipitaion );
+			pointsPrecipitation << QPointF(timeStep, intVal.m_precipitation );
 
 			progressNotify.notify((double)(i+1)/m_dwdData.m_data.size() );
 		}
