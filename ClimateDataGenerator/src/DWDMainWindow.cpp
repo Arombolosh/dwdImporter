@@ -284,6 +284,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 
 
 	if(dataInRows == std::vector<int>(DWDDescriptonData::NUM_D,-1)){
+		m_progressDlg->hide();
 		QMessageBox::information(this, "Download Error.", "Download aborted. Please select at least one climate entry e.g. temperature, radiation, ... ");
 		setGUIState(true);
 		return;

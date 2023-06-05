@@ -28,19 +28,19 @@ QStringList DWDDescriptonData::downloadDescriptionFiles(bool isRecent){
 
 void DWDDescriptonData::readAllDescriptions(std::vector<DWDDescriptonData> &dwdDescriptonData){
 
-	IBK::Path filepath(QtExt::Directories().userDataDir().toStdString() + "/downloads/TU_Stundenwerte_Beschreibung_Stationen.txt");
+	IBK::Path filepath(QtExt::Directories().userDataDir().toStdString() + "/TU_Stundenwerte_Beschreibung_Stationen.txt");
 	readDescription(filepath, dwdDescriptonData, D_TemperatureAndHumidity);
 
-	filepath= IBK::Path (QtExt::Directories().userDataDir().toStdString() + "/downloads/P0_Stundenwerte_Beschreibung_Stationen.txt");
+	filepath= IBK::Path (QtExt::Directories().userDataDir().toStdString() + "/P0_Stundenwerte_Beschreibung_Stationen.txt");
 	readDescription(filepath, dwdDescriptonData, D_Pressure);
 
-	filepath= IBK::Path (QtExt::Directories().userDataDir().toStdString() + "/downloads/ST_Stundenwerte_Beschreibung_Stationen.txt");
+	filepath= IBK::Path (QtExt::Directories().userDataDir().toStdString() + "/ST_Stundenwerte_Beschreibung_Stationen.txt");
 	readDescription(filepath, dwdDescriptonData, D_Solar);
 
-	filepath= IBK::Path (QtExt::Directories().userDataDir().toStdString() + "/downloads/FF_Stundenwerte_Beschreibung_Stationen.txt");
+	filepath= IBK::Path (QtExt::Directories().userDataDir().toStdString() + "/FF_Stundenwerte_Beschreibung_Stationen.txt");
 	readDescription(filepath, dwdDescriptonData, D_Wind);
 
-	filepath= IBK::Path (QtExt::Directories().userDataDir().toStdString() + "/downloads/RR_Stundenwerte_Beschreibung_Stationen.txt");
+	filepath= IBK::Path (QtExt::Directories().userDataDir().toStdString() + "/RR_Stundenwerte_Beschreibung_Stationen.txt");
 	readDescription(filepath, dwdDescriptonData, D_Precipitation);
 
 	for ( DWDDescriptonData &dwdData : dwdDescriptonData )
