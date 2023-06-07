@@ -251,8 +251,8 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 
 	std::vector<int> dataInRows(DWDDescriptonData::NUM_D,-1);
 	//find selected elements
-	for ( unsigned int i = 0; i<m_descData.size(); ++i ) {
-		for ( unsigned int j = 0; j<DWDDescriptonData::NUM_D; ++j ) {
+	for ( unsigned int i = 0; i<m_descData.size(); ++i ) {	// iterate over stations
+		for ( unsigned int j = 0; j<DWDDescriptonData::NUM_D; ++j ) {	// iterate over categories/types
 			DWDDescriptonData &dwdData = m_descData[i];
 
 			bool isChecked = dwdData.m_data[j].m_isChecked;
@@ -294,6 +294,19 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 	std::vector<DWDData::DataType>	types{	DWDData::DT_AirTemperature, DWDData::DT_RadiationDiffuse,
 				DWDData::DT_WindDirection, DWDData::DT_Pressure, DWDData::DT_Precipitation};
 
+	// iterate over local files and create list
+	std::vector<std::string> localFileList;
+	std::string prefix = "stundenwerte_";
+	QDirIterator it(m_downloadDir.c_str(), QDir::Files | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+	while (it.hasNext()) {
+		QString localFilePath = it.next();
+		std::string localFileName = localFilePath.toStdString().substr(m_downloadDir.str().size()+1);
+		if (localFileName.substr(0,prefix.size()) == prefix) {
+			//localFileList.push_back(fileName.substr(prefix.size(),std::string("FF_01234").size()));
+			localFileList.push_back(localFileName);
+		}
+	}
+
 	m_manager = new DWDDownloader(this);
 	m_manager->setFilepath(m_downloadDir);
 	m_manager->m_progressDlg = m_progressDlg;
@@ -304,6 +317,17 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 
 	for(unsigned int i=0; i<DWDDescriptonData::NUM_D; ++i){
 		if(dataInRows[i] != -1){	// if this column contains any selected entries
+
+			// set auxiliary "type" to compare against local files
+			std::string type = "";
+			switch(i){
+			case 0:	type = "TU"; break;
+			case 1: type = "ST"; break;
+			case 2:	type = "FF"; break;
+			case 3:	type = "P0"; break;
+			case 4:	type = "RR"; break;
+			}
+
 			DWDData dwdData;
 			std::string dateString;
 
@@ -312,72 +336,91 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 			unsigned int stationId = QString::number(m_descData[idx].m_idStation).rightJustified(5,'0').toUInt();
 			// find our descData
 
-			dateString = "_" + m_descData[idx].m_startDateString + "_" + m_descData[idx].m_endDateString;
-
-			bool isRecent = m_ui->radioButtonRecent->isChecked();
-			QString filename = ""; //only needed by historical
-
-			//only find urls for historical and NO solar data (this is in dataInRows on position 1
-			if(!isRecent && i != DWDDescriptonData::D_Solar){
-				QFtp *ftp = new QFtp;
-
-				connect(ftp, &QFtp::listInfo, &dwdData, &DWDData::findFile );
-
-				ftp->connectToHost("opendata.dwd.de", 21);
-				ftp->login("anonymous", "anonymous@opendata.dwd.de");
-				ftp->cd("climate_environment");
-				ftp->cd("CDC");
-				ftp->cd("observations_germany");
-				ftp->cd("climate");
-				ftp->cd("hourly");
-
-
-				switch(i){
-				case 0:	ftp->cd("air_temperature"); break;
-				case 2:	ftp->cd("wind"); break;
-				case 3:	ftp->cd("pressure"); break;
-				case 4:	ftp->cd("precipitation"); break;
+			// test if requested file is present in localFileList
+			std::string localFileName;
+			std::string currentRequest = (QString::fromStdString(type + "_") + QString::number(stationId).rightJustified(5,'0')).toStdString();
+			bool localFilePresent = false;
+			for(unsigned int i=0; i<localFileList.size(); ++i){
+				if (localFileList[i].substr(prefix.length(),std::string("FF_01234").length()) == currentRequest) {
+					localFilePresent = true;
+					localFileName = localFileList[i];
+					break;
 				}
-				ftp->cd("historical");
-				ftp->list();
-
-				while(ftp->hasPendingCommands() || ftp->currentCommand()!=QFtp::None)
-					qApp->processEvents();
-
-				//				while( dwdData.m_urls.empty() )
-				//					qApp->processEvents();
-
-				//now search through all urls for the right file
-				for(unsigned int j=0; j<dwdData.m_urls.size(); ++j){
-					filename = dwdData.m_urls[j].name();
-					//stundenwerte_ST_00183_row.zip
-					if((filename.mid(QString("stundenwerte_ST_").length(),5)).toUInt() == stationId){
-						qDebug() << "Gefunden: " << filename;
-						break;
-					}
-				}
-				dwdData.m_urls.clear();
-				qDebug() << "\nclear\n";
 			}
+			if (localFilePresent) {
+				filenames[i] = QString::fromStdString(localFileName).mid(0, localFileName.length()-4);
+				IBK::IBK_Message("Found local file " + localFileName, IBK::MSG_PROGRESS);
 
-			m_manager->m_urls << dwdData.urlFilename(types[i], QString::number(m_descData[idx].m_idStation).rightJustified(5,'0'), dateString, isRecent, filename);
-			qDebug() << m_manager->m_urls.back();
+			} else {
 
-			if(isRecent || i==1)
-				filenames[i] = dwdData.filename(types[i], QString::number(m_descData[idx].m_idStation).rightJustified(5,'0'),dateString, isRecent);
-			else
-				filenames[i] = filename.mid(0, filename.length()-4);
+				dateString = "_" + m_descData[idx].m_startDateString + "_" + m_descData[idx].m_endDateString;
+
+				bool isRecent = m_ui->radioButtonRecent->isChecked();
+				QString filename = ""; //only needed by historical
+
+				//only find urls for historical and NO solar data (this is in dataInRows on position 1
+				if(!isRecent && i != DWDDescriptonData::D_Solar){
+					QFtp *ftp = new QFtp;
+
+					connect(ftp, &QFtp::listInfo, &dwdData, &DWDData::findFile );
+
+					ftp->connectToHost("opendata.dwd.de", 21);
+					ftp->login("anonymous", "anonymous@opendata.dwd.de");
+					ftp->cd("climate_environment");
+					ftp->cd("CDC");
+					ftp->cd("observations_germany");
+					ftp->cd("climate");
+					ftp->cd("hourly");
+
+
+					switch(i){
+					case 0:	ftp->cd("air_temperature"); break;
+					case 2:	ftp->cd("wind"); break;
+					case 3:	ftp->cd("pressure"); break;
+					case 4:	ftp->cd("precipitation"); break;
+					}
+					ftp->cd("historical");
+					ftp->list();
+
+					while(ftp->hasPendingCommands() || ftp->currentCommand()!=QFtp::None)
+						qApp->processEvents();
+
+					//				while( dwdData.m_urls.empty() )
+					//					qApp->processEvents();
+
+					//now search through all urls for the right file
+					for(unsigned int j=0; j<dwdData.m_urls.size(); ++j){
+						filename = dwdData.m_urls[j].name();
+						//stundenwerte_ST_00183_row.zip
+						if((filename.mid(QString("stundenwerte_ST_").length(),5)).toUInt() == stationId){
+							qDebug() << "Gefunden: " << filename;
+							break;
+						}
+					}
+					dwdData.m_urls.clear();
+					qDebug() << "\nclear\n";
+				}
+
+				m_manager->m_urls << dwdData.urlFilename(types[i], QString::number(m_descData[idx].m_idStation).rightJustified(5,'0'), dateString, isRecent, filename);
+				qDebug() << m_manager->m_urls.back();
+
+				if(isRecent || i==1)
+					filenames[i] = dwdData.filename(types[i], QString::number(m_descData[idx].m_idStation).rightJustified(5,'0'),dateString, isRecent);
+				else
+					filenames[i] = filename.mid(0, filename.length()-4);
+			}
 		}
 	}
 
 	IBK::IBK_Message("Start downloading Weather Data...", IBK::MSG_PROGRESS);
 
-	if(!m_manager->m_urls.empty())
+	if(!m_manager->m_urls.empty()) {
 		m_manager->execute();
 
-	while ( m_manager->m_isRunning )
-		qApp->processEvents();
-
+		while ( m_manager->m_isRunning ) {
+			qApp->processEvents();
+		}
+	}
 	//Check if all downloaded files are valid
 	//create a vector with valid files
 	std::vector<IBK::Path>	validFiles(DWDDescriptonData::NUM_D);
