@@ -222,6 +222,7 @@ void MainWindow::setGUIState(bool guiState) {
 	m_ui->groupBoxLocation->setEnabled(guiState);
 	m_ui->groupBoxTime->setEnabled(guiState);
 	m_ui->groupBoxDistance->setEnabled(guiState);
+	m_ui->groupBoxDir->setEnabled(guiState);
 	m_ui->pushButtonPreview->setEnabled(guiState);
 	m_ui->pushButtonMap->setEnabled(guiState);
 	m_ui->pushButtonDownload->setEnabled(guiState);
