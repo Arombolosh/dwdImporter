@@ -207,6 +207,9 @@ void MainWindow::loadDataFromDWDServer(){
 	// Message
 	IBK::IBK_Message("Downloading all weather data from DWD Server.", IBK::MSG_PROGRESS);
 
+	// initialize local file list on startup
+	updateLocalFileList();
+
 	// show progress Dlg
 	m_progressDlg->show();
 	//download all files
@@ -307,8 +310,6 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 	std::vector<QString> filenames(DWDDescriptonData::NUM_D); //hold filenames for download
 	std::vector<DWDData::DataType>	types{	DWDData::DT_AirTemperature, DWDData::DT_RadiationDiffuse,
 				DWDData::DT_WindDirection, DWDData::DT_Pressure, DWDData::DT_Precipitation};
-
-	updateLocalFileList();
 
 	m_manager = new DWDDownloader(this);
 	m_manager->setFilepath(m_downloadDir);
@@ -475,6 +476,9 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 			}
 		}
 	}
+
+	// there might be new local files after downloading
+	updateLocalFileList();
 
 	//create extract folder
 	for(unsigned int i=0; i<DWDDescriptonData::NUM_D; ++i){
