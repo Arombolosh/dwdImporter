@@ -46,6 +46,9 @@ public:
 	explicit MainWindow(QWidget *parent = nullptr);
 	~MainWindow();
 
+	/*! Iterates over local files in m_downloadDir and writes to m_localFileList */
+	void updateLocalFileList();
+
 	/*! Download data from DWD server. */
 	void loadDataFromDWDServer();
 
@@ -125,9 +128,10 @@ private:
 
 	QString										m_fileName;
 
-	DWDLogWidget                               *m_logWidget = nullptr;
+	DWDLogWidget                                *m_logWidget = nullptr;
 
 	IBK::Path									m_downloadDir = IBK::Path(QtExt::Directories().userDataDir().toStdString() + "/downloads");
+	std::vector<std::string>					m_localFileList;
 
 };
 

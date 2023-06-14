@@ -189,6 +189,19 @@ MainWindow::~MainWindow() {
 	delete m_ui;
 }
 
+void MainWindow::updateLocalFileList() {
+	// iterate over local files and write to m_localFileList
+	m_localFileList.clear();
+	std::string prefix = "stundenwerte_";
+	QDirIterator it(m_downloadDir.c_str(), QDir::Files | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+	while (it.hasNext()) {
+		QString localFilePath = it.next();
+		std::string localFileName = localFilePath.toStdString().substr(m_downloadDir.str().size()+1);
+		if (localFileName.substr(0,prefix.size()) == prefix) {
+			m_localFileList.push_back(localFileName);
+		}
+	}
+}
 void MainWindow::loadDataFromDWDServer(){
 
 	// Message
@@ -295,18 +308,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 	std::vector<DWDData::DataType>	types{	DWDData::DT_AirTemperature, DWDData::DT_RadiationDiffuse,
 				DWDData::DT_WindDirection, DWDData::DT_Pressure, DWDData::DT_Precipitation};
 
-	// iterate over local files and create list
-	std::vector<std::string> localFileList;
-	std::string prefix = "stundenwerte_";
-	QDirIterator it(m_downloadDir.c_str(), QDir::Files | QDir::NoSymLinks | QDir::NoDotAndDotDot);
-	while (it.hasNext()) {
-		QString localFilePath = it.next();
-		std::string localFileName = localFilePath.toStdString().substr(m_downloadDir.str().size()+1);
-		if (localFileName.substr(0,prefix.size()) == prefix) {
-			//localFileList.push_back(fileName.substr(prefix.size(),std::string("FF_01234").size()));
-			localFileList.push_back(localFileName);
-		}
-	}
+	updateLocalFileList();
 
 	m_manager = new DWDDownloader(this);
 	m_manager->setFilepath(m_downloadDir);
@@ -341,10 +343,10 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 			std::string localFileName;
 			std::string currentRequest = (QString::fromStdString(type + "_") + QString::number(stationId).rightJustified(5,'0')).toStdString();
 			bool localFilePresent = false;
-			for(unsigned int i=0; i<localFileList.size(); ++i){
-				if (localFileList[i].substr(prefix.length(),std::string("FF_01234").length()) == currentRequest) {
+			for(unsigned int i=0; i<m_localFileList.size(); ++i){
+				if (m_localFileList[i].substr(std::string("stundenwerte_").length(),std::string("FF_01234").length()) == currentRequest) {
 					localFilePresent = true;
-					localFileName = localFileList[i];
+					localFileName = m_localFileList[i];
 					break;
 				}
 			}
