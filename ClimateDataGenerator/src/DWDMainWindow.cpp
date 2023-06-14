@@ -311,6 +311,10 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 	std::vector<DWDData::DataType>	types{	DWDData::DT_AirTemperature, DWDData::DT_RadiationDiffuse,
 				DWDData::DT_WindDirection, DWDData::DT_Pressure, DWDData::DT_Precipitation};
 
+	// create downloadDir if necessary
+	if (!QDir(m_downloadDir.c_str()).exists())
+	QDir().mkdir(m_downloadDir.c_str());
+
 	m_manager = new DWDDownloader(this);
 	m_manager->setFilepath(m_downloadDir);
 	m_manager->m_progressDlg = m_progressDlg;
