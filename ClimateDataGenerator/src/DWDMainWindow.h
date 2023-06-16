@@ -46,6 +46,9 @@ public:
 	explicit MainWindow(QWidget *parent = nullptr);
 	~MainWindow();
 
+	/*! If each datatype has one local file checked, enable button */
+	void updateDownloadButton();
+
 	/*! Iterates over local files in m_downloadDir and writes to m_localFileList */
 	void updateLocalFileList();
 
@@ -115,6 +118,9 @@ private:
 	DWDData										m_dwdData;
 
 	QStringList									m_filelist;
+
+	bool										m_guiState = true;
+	bool										m_generateEpwEnabled = false;
 
 	DWDMap										*m_dwdMap;
 

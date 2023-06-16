@@ -18,7 +18,7 @@ public:
 	DWDDescriptonData()
 	{
 		for (unsigned int i=0; i<NUM_D; ++i)
-			m_data[i] = DWDDataManager(false, false);
+			m_data[i] = DWDDataManager(false, false, false);
 
 	};
 
@@ -30,13 +30,15 @@ public:
 		DWDDataManager(){}
 
 
-		DWDDataManager(bool isAvailable, bool isChecked) :
+		DWDDataManager(bool isAvailable, bool isChecked, bool isLocal) :
 			m_isAvailable(isAvailable),
-			m_isChecked(isChecked)
+			m_isChecked(isChecked),
+			m_isLocal(isLocal)
 		{}
 
 		bool			m_isAvailable;
 		bool			m_isChecked;
+		bool			m_isLocal;
 	};
 
 

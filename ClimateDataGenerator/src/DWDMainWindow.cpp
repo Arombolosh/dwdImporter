@@ -161,7 +161,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_progressDlg->setModal(true);
 
 	connect( &m_dwdData, &DWDData::progress, this, &MainWindow::setProgress );
-
+	connect( m_dwdTableModel, &DWDTableModel::dataChanged, this, &MainWindow::updateDownloadButton);
 	resize(1500,800);
 
 
@@ -189,6 +189,31 @@ MainWindow::~MainWindow() {
 	delete m_ui;
 }
 
+void MainWindow::updateDownloadButton() {
+	// This function checks if every category has 1 selected entry that is available locally, and if so, enables the download button
+
+	std::vector<int> dataInRows(DWDDescriptonData::NUM_D,-1);
+
+	//find selected and local elements
+	for ( unsigned int i = 0; i<m_descData.size(); ++i ) {	// iterate over stations
+		for ( unsigned int j = 0; j<DWDDescriptonData::NUM_D; ++j ) {	// iterate over categories/types
+			DWDDescriptonData &dwdData = m_descData[i];
+			if (dwdData.m_data[j].m_isChecked && dwdData.m_data[j].m_isLocal) {
+				dataInRows[j] = i;
+			}
+		}
+	}
+	if (std::find(dataInRows.begin(), dataInRows.end(), -1) != dataInRows.end()) {
+		m_generateEpwEnabled = false;
+		setGUIState(m_guiState); //update ui
+
+	}
+	else {
+		m_generateEpwEnabled = true;
+		setGUIState(m_guiState); //update ui
+	}
+}
+
 void MainWindow::updateLocalFileList() {
 	// iterate over local files and write to m_localFileList
 	m_localFileList.clear();
@@ -201,14 +226,41 @@ void MainWindow::updateLocalFileList() {
 			m_localFileList.push_back(localFileName);
 		}
 	}
+
+	// reset all flags in case the folder changed or files were deleted
+	for(unsigned int i=0; i<m_descData.size(); ++i) {
+		for(unsigned int j=0; j<=4; ++j) {
+			m_descData[i].m_data[j].m_isLocal = false;
+		}
+	}
+
+	for(unsigned int i=0; i<m_localFileList.size(); ++i) {
+		try {
+			int stationId = std::stoi(m_localFileList[i].substr(std::string("stundenwerte_FF_").length(),5));
+			std::string type = m_localFileList[i].substr(std::string("stundenwerte_").length(),2);
+			int typeId = -1;
+			if (type == "TU") typeId = 0;
+			if (type == "ST") typeId = 1;
+			if (type == "FF") typeId = 2;
+			if (type == "P0") typeId = 3;
+			if (type == "RR") typeId = 4;
+
+			for(unsigned int j=0; j<m_descData.size(); ++j) {
+				if (m_descData[j].m_idStation == stationId) {
+					m_descData[j].m_data[typeId].m_isLocal = true;
+					break;
+				}
+
+			}
+		} catch (IBK::Exception &ex) {continue;}
+	}
+	updateDownloadButton();
 }
+
 void MainWindow::loadDataFromDWDServer(){
 
 	// Message
 	IBK::IBK_Message("Downloading all weather data from DWD Server.", IBK::MSG_PROGRESS);
-
-	// initialize local file list on startup
-	updateLocalFileList();
 
 	// show progress Dlg
 	m_progressDlg->show();
@@ -234,6 +286,7 @@ void MainWindow::loadDataFromDWDServer(){
 }
 
 void MainWindow::setGUIState(bool guiState) {
+	m_guiState = guiState;
 	m_ui->tableView->setEnabled(guiState);
 	m_ui->groupBoxLocation->setEnabled(guiState);
 	m_ui->groupBoxTime->setEnabled(guiState);
@@ -241,7 +294,7 @@ void MainWindow::setGUIState(bool guiState) {
 	m_ui->groupBoxDir->setEnabled(guiState);
 	m_ui->pushButtonPreview->setEnabled(guiState);
 	m_ui->pushButtonMap->setEnabled(guiState);
-	m_ui->pushButtonDownload->setEnabled(guiState);
+	m_ui->pushButtonDownload->setEnabled(guiState && m_generateEpwEnabled);
 }
 
 void MainWindow::downloadData(bool showPreview, bool exportEPW) {
@@ -320,13 +373,13 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 	m_manager->m_progressDlg = m_progressDlg;
 	m_manager->m_urls.clear();
 
-	connect( m_manager, &DWDDownloader::finished, this, &MainWindow::convertDwdData );
+	//connect( m_manager, &DWDDownloader::finished, this, &MainWindow::convertDwdData );
 	//download the data (zip)
 
 	for(unsigned int i=0; i<DWDDescriptonData::NUM_D; ++i){
 		if(dataInRows[i] != -1){	// if this column contains any selected entries
 
-			// set auxiliary "type" to compare against local files
+			// set auxiliary "type" string of current file to compare against local files
 			std::string type = "";
 			switch(i){
 			case 0:	type = "TU"; break;
@@ -693,8 +746,6 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 		m_dwdData.exportEPW(latiDeg, longiDeg, exportPath);
 		QMessageBox::information(this, QString(), "Export done.");
 	}
-
-
 }
 
 
@@ -760,6 +811,10 @@ void MainWindow::convertDwdData() {
 	headerView->setSectionResizeMode(DWDTableModel::ColName, QHeaderView::Stretch);
 
 	m_ui->tableView->reset();
+
+	// initialize local file list on startup
+	// this can only be done after m_descData is filled, so the isLocal flags can be set correctly
+	updateLocalFileList();
 
 	m_progressDlg->hide();
 }
@@ -1019,6 +1074,8 @@ void MainWindow::on_toolButtonDownloadDir_clicked()
 	m_downloadDir = IBK::Path(directory.toStdString());
 
 	m_ui->lineEditDownloads->setText(directory);
+
+	updateLocalFileList();
 
 }
 

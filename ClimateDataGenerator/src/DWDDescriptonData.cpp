@@ -138,7 +138,7 @@ void DWDDescriptonData::readDescription(const IBK::Path &filepath, std::vector<D
 		try {
 			//extract all informations
 			dwd.m_idStation = id;
-			dwd.m_data[dataType] = DWDDataManager(true, false);
+			dwd.m_data[dataType] = DWDDataManager(true, false, false);
 
 			// Example for an entry:
 			// =======================================================================================================================
