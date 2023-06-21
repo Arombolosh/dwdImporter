@@ -7,7 +7,6 @@
 
 namespace DM {
 
-
 /*! Converts coordinates to a position at the scene. */
 static QPointF convertCoordinatesToPos(QRectF rect, const double &lat, const double &lon) {
 	double height = rect.height();
