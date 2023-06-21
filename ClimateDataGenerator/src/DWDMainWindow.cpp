@@ -39,6 +39,7 @@
 #include <qwt_plot_grid.h>
 #include <qwt_date_scale_engine.h>
 #include <qwt_scale_div.h>
+#include "qwt_scale_widget.h"
 
 
 #include <qftp.h>
@@ -815,6 +816,21 @@ void MainWindow::convertDwdData() {
 	// initialize local file list on startup
 	// this can only be done after m_descData is filled, so the isLocal flags can be set correctly
 	updateLocalFileList();
+
+	// reformat the now initialized plots to align left axes
+	int maxAxisWidth = std::max({m_ui->plotPres->axisWidget(QwtPlot::yLeft)->width(),
+								m_ui->plotRain->axisWidget(QwtPlot::yLeft)->width(),
+								m_ui->plotRelHum->axisWidget(QwtPlot::yLeft)->width(),
+								m_ui->plotTemp->axisWidget(QwtPlot::yLeft)->width(),
+								m_ui->plotWind->axisWidget(QwtPlot::yLeft)->width(),
+								m_ui->plotRad->axisWidget(QwtPlot::yLeft)->width()});
+
+	m_ui->plotPres->setContentsMargins(maxAxisWidth-m_ui->plotPres->axisWidget(QwtPlot::yLeft)->width(),0,0,0);
+	m_ui->plotRain->setContentsMargins(maxAxisWidth-m_ui->plotRain->axisWidget(QwtPlot::yLeft)->width(),0,0,0);
+	m_ui->plotRelHum->setContentsMargins(maxAxisWidth-m_ui->plotRelHum->axisWidget(QwtPlot::yLeft)->width(),0,0,0);
+	m_ui->plotTemp->setContentsMargins(maxAxisWidth-m_ui->plotTemp->axisWidget(QwtPlot::yLeft)->width(),0,0,0);
+	m_ui->plotWind->setContentsMargins(maxAxisWidth-m_ui->plotWind->axisWidget(QwtPlot::yLeft)->width(),0,0,0);
+	m_ui->plotRad->setContentsMargins(maxAxisWidth-m_ui->plotRad->axisWidget(QwtPlot::yLeft)->width(),0,0,0);
 
 	m_progressDlg->hide();
 }
