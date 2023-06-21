@@ -20,8 +20,8 @@ void DWDDownloader::doDownload(const QUrl &url) {
 	connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
 			SLOT(downloadProgress(qint64,qint64)));
 
-    m_progressDlg->setLabelText(url.toDisplayString());
-    m_progressDlg->setWindowTitle("Downloading DWD Data...");
+	m_progressDlg->setLabelText(QString("Downloading Location Data from DWD Server\n%1").arg(url.toString()));
+	m_progressDlg->setWindowTitle("Download in progress");
 
 	m_currentDownloads.append(reply);
 
