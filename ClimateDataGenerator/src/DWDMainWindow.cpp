@@ -1,5 +1,4 @@
 #include "DWDMainWindow.h"
-#include "qwt_scale_widget.h"
 #include "ui_DWDMainWindow.h"
 
 #include <IBK_NotificationHandler.h>
@@ -40,6 +39,7 @@
 #include <qwt_plot_grid.h>
 #include <qwt_date_scale_engine.h>
 #include <qwt_scale_div.h>
+#include "qwt_scale_widget.h"
 
 
 #include <qftp.h>
