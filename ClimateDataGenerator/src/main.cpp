@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
 		//w.showMaximized();
 		w.showMaximized();
 #elif defined(Q_OS_LINUX)
-		w.show();
+		w.showMaximized();
 #else
 		w.show();
 #endif
