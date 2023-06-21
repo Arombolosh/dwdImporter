@@ -7,7 +7,7 @@ TEMPLATE = app
 # this pri must be sourced from all our applications
 include( ../../../externals/IBK/projects/Qt/IBK.pri )
 
-QT += xml core gui network printsupport widgets svg
+QT += xml core gui network printsupport widgets svg charts
 CONFIG += console
 
 LIBS += -L../../../lib$${DIR_PREFIX} \
@@ -51,6 +51,8 @@ RESOURCES += \
 
 
 SOURCES += \
+    ../../src/DWDChart.cpp \
+	../../src/DWDChartView.cpp \
     ../../src/DWDConstants.cpp \
 				../../src/DWDData.cpp \
 				../../src/DWDDelegate.cpp \
@@ -65,14 +67,15 @@ SOURCES += \
 				../../src/main.cpp \
 				 ../../src/DWDTableModel.cpp \
 				../../src/DWDTimePlotPicker.cpp \
-				../../src/DWDDateTimeScaleEngine.cpp \
-				../../src/DWDDateTimeScaleDraw.cpp
+				../../src/DWDDateTimeScaleEngine.cpp
 
 FORMS += \
 				../../src/DWDLogWidget.ui \
 				../../src/DWDMainWindow.ui
 
 HEADERS += \
+				../../src/DWDChart.h \
+				../../src/DWDChartView.h \
 				../../src/DWDConstants.h \
 				../../src/DWDConversions.h \
 				../../src/DWDData.h \
@@ -83,11 +86,11 @@ HEADERS += \
 				../../src/DWDLogWidget.h \
 				../../src/DWDMainWindow.h \
 				../../src/DWDMessageHandler.h \
+				../../src/DWDPlotZoomer.h \
 				../../src/DWDSortFilterProxyModel.h \
 				../../src/DWDTableModel.h \
 				../../src/DWDTimePlotPicker.h \
 				../../src/DWDDateTimeScaleEngine.h \
-				../../src/DWDDateTimeScaleDraw.h \
 				../../src/DWDUtilities.h \
 				../../ôsrc/DWDConversions.h
 
