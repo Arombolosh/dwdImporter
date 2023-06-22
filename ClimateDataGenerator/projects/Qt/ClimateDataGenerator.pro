@@ -51,8 +51,7 @@ RESOURCES += \
 
 
 SOURCES += \
-
-    			../../src/DWDChart.cpp \
+				../../src/DWDChart.cpp \
 				../../src/DWDChartView.cpp \
     			../../src/DWDConstants.cpp \
 				../../src/DWDData.cpp \
