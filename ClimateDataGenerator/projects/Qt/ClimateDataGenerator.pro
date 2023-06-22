@@ -7,7 +7,7 @@ TEMPLATE = app
 # this pri must be sourced from all our applications
 include( ../../../externals/IBK/projects/Qt/IBK.pri )
 
-QT += xml core gui network printsupport widgets svg
+QT += xml core gui network printsupport widgets svg opengl
 CONFIG += console
 
 LIBS += -L../../../lib$${DIR_PREFIX} \
@@ -18,7 +18,7 @@ LIBS += -L../../../lib$${DIR_PREFIX} \
 				-lTiCPP \
 				-lIBK \
 				-lqwt6 \
-                                -lDataMap \
+				-lDataMap \
 				-lqftp
 
 INCLUDEPATH = \
@@ -30,7 +30,7 @@ INCLUDEPATH = \
 				../../../externals/TiCPP/src \
 				../../../externals/QuaZIP/src \
 				../../../externals/qwt/src \
-                                ../../../externals/DataMap/src \
+				../../../externals/DataMap/src \
 				../../../externals/qftp/src
 
 win32 {
@@ -51,7 +51,7 @@ RESOURCES += \
 
 
 SOURCES += \
-    ../../src/DWDConstants.cpp \
+				../../src/DWDConstants.cpp \
 				../../src/DWDData.cpp \
 				../../src/DWDDelegate.cpp \
 				../../src/DWDDescriptonData.cpp \
@@ -61,7 +61,7 @@ SOURCES += \
 				../../src/DWDMainWindow.cpp \
 				../../src/DWDMessageHandler.cpp \
 				../../src/DWDSortFilterProxyModel.cpp \
-    ../../src/DWDUtilities.cpp \
+				../../src/DWDUtilities.cpp \
 				../../src/main.cpp \
 				 ../../src/DWDTableModel.cpp \
 				../../src/DWDTimePlotPicker.cpp \

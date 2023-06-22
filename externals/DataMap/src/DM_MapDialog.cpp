@@ -17,6 +17,9 @@ MapDialog::MapDialog(QWidget *parent) :
 	m_ui->graphicsViewMap->setScene(m_scene);
 	m_scene->setSceneRect(m_scene->sceneRect());
 
+	m_ui->lineEditLatitude->setup(-90,90, "Latitude in Deg", true, true);
+	m_ui->lineEditLongitude->setup(-180,180, "Longitude in Deg", true, true);
+
 	// fit scene in view
 	m_ui->graphicsViewMap->fitInView(m_scene->sceneRect(), Qt::KeepAspectRatio);
 
@@ -27,6 +30,11 @@ MapDialog::MapDialog(QWidget *parent) :
 
 MapDialog::~MapDialog() {
 	delete m_ui;
+}
+
+void MapDialog::setCoordinates(double latitude, double longitude) {
+	m_ui->lineEditLatitude->setText(QString::fromStdString(std::to_string(latitude)));
+	m_ui->lineEditLongitude->setText(QString::fromStdString(std::to_string(longitude)));
 }
 
 

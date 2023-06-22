@@ -9,7 +9,7 @@ TEMPLATE = lib
 # it contains all functions defined for casual libraries
 include( ../../../IBK/projects/Qt/IBK.pri )
 
-QT += core gui svg printsupport concurrent
+QT += core gui svg printsupport concurrent opengl
 
 unix|mac {
 	VER_MAJ = 6
