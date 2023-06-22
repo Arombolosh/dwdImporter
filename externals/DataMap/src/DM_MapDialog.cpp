@@ -1,4 +1,5 @@
 #include "DM_MapDialog.h"
+#include "DM_Conversions.h"
 #include "ui_DM_MapDialog.h"
 
 #include "DM_Scene.h"
@@ -20,6 +21,7 @@ MapDialog::MapDialog(QWidget *parent) :
 	m_ui->lineEditLatitude->setup(-90,90, "Latitude in Deg", true, true);
 	m_ui->lineEditLongitude->setup(-180,180, "Longitude in Deg", true, true);
 
+	connect(m_scene, &DM::Scene::updatedLocation, this, &DM::MapDialog::onUpdateLocation);
 	// draw al data points
 //	for(const Data &d : m_data)
 //		m_scene->addDwdDataPoint(d.m_type, d.m_name, d.m_minDate, d.m_maxDate, d.m_latitude, d.m_longitude);
@@ -32,6 +34,10 @@ MapDialog::~MapDialog() {
 void MapDialog::setCoordinates(double latitude, double longitude) {
 	m_ui->lineEditLatitude->setText(QString::fromStdString(std::to_string(latitude)));
 	m_ui->lineEditLongitude->setText(QString::fromStdString(std::to_string(longitude)));
+}
+
+void MapDialog::onUpdateLocation() {
+	setCoordinates(m_scene->m_latitude, m_scene->m_longitude);
 }
 
 

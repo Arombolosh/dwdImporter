@@ -30,6 +30,8 @@ public:
 
 
 private slots:
+	void onUpdateLocation();
+
 	void on_checkBoxAirTemp_toggled(bool checked);
 
 	void on_checkBoxRadiation_toggled(bool checked);
