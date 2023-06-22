@@ -163,8 +163,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	connect( &m_dwdData, &DWDData::progress, this, &MainWindow::setProgress );
 	connect( m_dwdTableModel, &DWDTableModel::dataChanged, this, &MainWindow::updateDownloadButton);
-	resize(1500,800);
-
+	double scaleFactor = this->devicePixelRatioF();
+	resize(scaleFactor*1900, scaleFactor*1000);
 
 	// init all plots
 	initPlots();
@@ -178,7 +178,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(msgHandler, &DWDMessageHandler::msgReceived, m_logWidget, &DWDLogWidget::onMsgReceived);
 
 	QList<int> sizes;
-	sizes << 1300 << 200 << 300;
+	sizes << 1400 << 150 << 350;
 	m_ui->splitter->setSizes(sizes);
 
 	// Init Map Widget
@@ -299,6 +299,18 @@ void MainWindow::setGUIState(bool guiState) {
 }
 
 void MainWindow::downloadData(bool showPreview, bool exportEPW) {
+	IBK::Path exportPath;
+	if ( exportEPW ) {
+		QString path = m_ui->lineEditFile->text();
+		exportPath = IBK::Path(path.toStdString());
+
+		if(!exportPath.isValid()) {
+			m_progressDlg->hide();
+			QMessageBox::warning(this, "Select EPW file path.", "Please select a file path first for the export of the EPW - file.");
+			return;
+		}
+	}
+
 	m_progressDlg->show();
 
 	//check longitude and latitude
@@ -367,7 +379,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 
 	// create downloadDir if necessary
 	if (!QDir(m_downloadDir.c_str()).exists())
-	QDir().mkdir(m_downloadDir.c_str());
+		QDir().mkdir(m_downloadDir.c_str());
 
 	m_manager = new DWDDownloader(this);
 	m_manager->setFilepath(m_downloadDir);
@@ -555,22 +567,21 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 			filenamesForReading[checkedFileNames[i]] = std::set<DWDData::DataType>{DWDData::DT_Precipitation}; break;
 		}
 	}
-	//read data
-
-	m_dwdData.m_startTime = DWDConversions::convertQDate2IBKTime(m_ui->dateEditStart->date());
 
 	ProgressNotify progressNotify(m_progressDlg);
 
-	m_dwdData.m_progressDlg = m_progressDlg;
-	m_dwdData.createData(&progressNotify, filenamesForReading);
+	if (!exportEPW) {
+		//read data
+		m_dwdData.m_startTime = DWDConversions::convertQDate2IBKTime(m_ui->dateEditStart->date());
+		m_dwdData.m_progressDlg = m_progressDlg;
+		m_dwdData.createData(&progressNotify, filenamesForReading);
+	}
 
 	//copy all data in range and create an epw
 	double latiDeg = m_ui->lineEditLatitude->text().toDouble();
 	double longiDeg = m_ui->lineEditLongitude->text().toDouble();
 
 	///TODO take coordinates from radiation if exists --> zenith angle
-
-
 	//check data
 	for(unsigned int i=0; i<m_dwdData.m_data.size(); ++i){
 		DWDData::IntervalData &intVal = m_dwdData.m_data[i];
@@ -734,15 +745,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 		m_ui->plotTemp->show();
 	}
 
-	if ( exportEPW ) {
-		QString path = m_ui->lineEditFile->text();
-		IBK::Path exportPath(path.toStdString());
-
-		if(!exportPath.isValid()) {
-			m_progressDlg->hide();
-			QMessageBox::warning(this, "Select EPW file path.", "Please select a file path first for the export of the EPW - file.");
-			return;
-		}
+	if (exportEPW) {
 		m_progressDlg->hide();
 		m_dwdData.exportEPW(latiDeg, longiDeg, exportPath);
 		QMessageBox::information(this, QString(), "Export done.");
@@ -802,11 +805,12 @@ void MainWindow::convertDwdData() {
 	m_ui->tableView->setItemDelegateForColumn(DWDTableModel::ColPrecipitation, new DWDDelegate);
 	m_ui->tableView->setItemDelegateForColumn(DWDTableModel::ColWind, new DWDDelegate);
 
-	m_ui->tableView->setColumnWidth(DWDTableModel::ColPressure, 200);
-	m_ui->tableView->setColumnWidth(DWDTableModel::ColAirTemp, 200);
-	m_ui->tableView->setColumnWidth(DWDTableModel::ColPrecipitation, 200);
-	m_ui->tableView->setColumnWidth(DWDTableModel::ColRadiation, 200);
-	m_ui->tableView->setColumnWidth(DWDTableModel::ColWind, 200);
+	double scaleFactor = this->devicePixelRatioFScale();
+	m_ui->tableView->setColumnWidth(DWDTableModel::ColPressure, scaleFactor*100);
+	m_ui->tableView->setColumnWidth(DWDTableModel::ColAirTemp, scaleFactor*100);
+	m_ui->tableView->setColumnWidth(DWDTableModel::ColPrecipitation, scaleFactor*100);
+	m_ui->tableView->setColumnWidth(DWDTableModel::ColRadiation, scaleFactor*100);
+	m_ui->tableView->setColumnWidth(DWDTableModel::ColWind, scaleFactor*100);
 
 	QHeaderView *headerView = m_ui->tableView->horizontalHeader();
 	headerView->setSectionResizeMode(DWDTableModel::ColName, QHeaderView::Stretch);
