@@ -299,12 +299,8 @@ void MainWindow::setGUIState(bool guiState) {
 }
 
 void MainWindow::downloadData(bool showPreview, bool exportEPW) {
-	IBK::Path exportPath;
 	if ( exportEPW ) {
-		QString path = m_ui->lineEditFile->text();
-		exportPath = IBK::Path(path.toStdString());
-
-		if(!exportPath.isValid()) {
+		if(!m_exportPath.isValid()) {
 			m_progressDlg->hide();
 			QMessageBox::warning(this, "Select EPW file path.", "Please select a file path first for the export of the EPW - file.");
 			return;
@@ -655,7 +651,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 		curveTemp->setPen( penColor, 2 ); // color and thickness in pixels
 		curveTemp->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
 
-		penColor.setAlpha(123);
+		penColor = QColor("#7F2AFF");
 		curveRelHum->setPen( penColor, 2 ); // color and thickness in pixels
 		curveRelHum->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
 
@@ -747,8 +743,8 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 
 	if (exportEPW) {
 		m_progressDlg->hide();
-		m_dwdData.exportEPW(latiDeg, longiDeg, exportPath);
-		QMessageBox::information(this, QString(), "Export done.");
+		m_dwdData.exportEPW(latiDeg, longiDeg, m_exportPath);
+		QMessageBox::information(this, QString("EPW-Export"), tr("Export succesfully done.\n%1").arg(QString::fromStdString(m_exportPath.str())));
 	}
 }
 
@@ -877,6 +873,24 @@ void MainWindow::updateMaximumHeightOfPlots() {
 
 
 void MainWindow::on_pushButtonDownload_clicked(){
+
+	// request file name
+	QString filename = QFileDialog::getSaveFileName(
+				this,
+				tr("Save EPW File"),
+				"",
+				tr("EPW Weather file (.epw);;All files (*.*)") );
+
+	if (filename.isEmpty()) {
+		QMessageBox::warning(this, tr("Export-Error"), tr("Please Select a valid file name for the exporting weather-data (epw)."));
+		return;
+	}
+
+	if (!filename.endsWith(".epw"))
+		filename.append(".epw");
+
+	m_exportPath = IBK::Path(filename.toStdString());
+
 	downloadData(true, true);
 }
 
@@ -1076,18 +1090,6 @@ void MainWindow::on_pushButtonPreview_clicked() {
 
 void MainWindow::on_toolButtonOpenDirectory_clicked() {
 
-	// request file name
-	QString filename = QFileDialog::getSaveFileName(
-				this,
-				tr("Save EPW File"),
-				"",
-				tr("EPW Weather file (.epw);;All files (*.*)") );
-
-	if (filename.isEmpty()) return;
-
-	m_fileName = filename;
-
-	m_ui->lineEditFile->setText(filename);
 }
 
 

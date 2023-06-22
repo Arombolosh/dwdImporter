@@ -139,7 +139,7 @@ private:
 	DWDSortFilterProxyModel						*m_proxyModel = nullptr;
 	QAbstractProxyModel							*m_abstractProxyModel = nullptr;
 
-	QString										m_fileName;
+	IBK::Path									m_exportPath;
 
 	DWDLogWidget                                *m_logWidget = nullptr;
 
