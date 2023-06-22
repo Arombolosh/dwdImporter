@@ -780,9 +780,14 @@ void MainWindow::convertDwdData() {
 		IBK::IBK_Message("Error converting data.", IBK::MSG_ERROR);
 	}
 
+	s->m_dataGroup[DM::Data::DT_Precipitation]->setZValue(1);
+	s->m_dataGroup[DM::Data::DT_Pressure]->setZValue(3);
+	s->m_dataGroup[DM::Data::DT_Solar]->setZValue(10);
+	s->m_dataGroup[DM::Data::DT_TemperatureAndHumidity]->setZValue(5);
+	s->m_dataGroup[DM::Data::DT_Wind]->setZValue(2);
+
 	// we give the data to our table model
 	m_dwdTableModel->m_descData = &m_descData;
-
 
 	m_proxyModel->setSourceModel( m_dwdTableModel );
 
@@ -1036,6 +1041,7 @@ void MainWindow::on_pushButtonMap_clicked() {
 	//	unsigned int year = 2020;
 	//DWDMap::getLocation(m_descData, latitude, longitude, year, distance, this);
 	m_mapDialog->setCoordinates(latitude, longitude);
+	m_mapDialog->showMaximized();
 	m_mapDialog->exec();
 
 	//	m_ui->lineEditLatitude->setText(QString::number(latitude) );
