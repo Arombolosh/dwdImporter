@@ -32,13 +32,13 @@ Scene::Scene(QObject * parent) :
 	item->setPos(0,0);
 	addItem(item); // add the item to the scene
 
-	QGraphicsEllipseItem *ellipse = addEllipse(0-10,0-10,20,20, QPen(Qt::red), Qt::blue);
+	//QGraphicsEllipseItem *ellipse = addEllipse(0-10,0-10,20,20, QPen(Qt::red), Qt::blue);
 	// Hold the pointer
 	m_mapSvgItem = item;
 
-	QRectF rectSvgItem = item->sceneBoundingRect();
+	//QRectF rectSvgItem = item->sceneBoundingRect();
 
-	addRect(rectSvgItem, QPen(Qt::red));
+	//addRect(rectSvgItem, QPen(Qt::red));
 
 }
 
