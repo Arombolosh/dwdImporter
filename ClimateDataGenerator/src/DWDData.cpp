@@ -163,7 +163,7 @@ void DWDData::writeTSV(unsigned int year){
 	}
 }
 
-void DWDData::exportEPW(double latitudeDeg, double longitudeDeg, const IBK::Path &exportPath) {
+void DWDData::exportEPW(double latitudeDeg, double longitudeDeg, IBK::Path &exportPath) {
 	FUNCID(exportEPW);
 
 	/*! Mind the time zone. In DWD Data the time zone is set to UTC+0 whereas in our exported epw file
@@ -228,7 +228,10 @@ void DWDData::exportEPW(double latitudeDeg, double longitudeDeg, const IBK::Path
 	}
 
 	try {
-		loader.writeClimateDataEPW(IBK::Path(QtExt::Directories().userDataDir().toStdString()+ "/export.epw"));
+		if (exportPath.extension() != ".epw")
+			exportPath.addExtension(".epw");
+
+		loader.writeClimateDataEPW(exportPath);
 	} catch (IBK::Exception &ex) {
 		throw IBK::Exception( "Could not write epw file", FUNC_ID);
 	}

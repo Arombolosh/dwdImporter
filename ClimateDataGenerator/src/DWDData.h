@@ -101,7 +101,7 @@ public:
 	void writeTSV(unsigned int year);
 
 	/*! Create an epw-file for one year. */
-	void exportEPW(double latitudeDeg, double longitudeDeg, const IBK::Path &exportPath);
+	void exportEPW(double latitudeDeg, double longitudeDeg, IBK::Path &exportPath);
 
 	/*! Returns the complete url as QString needed for download. */
 	QString urlFilename(const DataType &type, const QString &numberString, const std::string &dateString,
