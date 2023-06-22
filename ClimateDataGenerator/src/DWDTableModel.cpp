@@ -138,7 +138,7 @@ QVariant DWDTableModel::data(const QModelIndex & index, int role) const {
 					return Qt::AlignCenter;
 				case ColCountry:
 				case ColName:
-					return Qt::AlignLeft;
+					return Qt::AlignVCenter;
 			}
 		break;
 	}
