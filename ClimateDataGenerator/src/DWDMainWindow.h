@@ -73,10 +73,15 @@ public:
 	void formatQwtPlot(QwtPlot &plot, QDate startDate, QDate endDate, QString title, QString leftYAxisTitle, double yLeftMin, double yLeftMax, double yLeftStepSize,
 					   bool hasRightAxis = false, QString rightYAxisTitle = "", double yRightMin = 0, double yRightMax = 100, double yRightStepSize = 0);
 
+protected:
+	/*! Override resize event. */
+	void resizeEvent(QResizeEvent* event) override;
 
 private slots:
 	void convertDwdData();
 
+	/*! Updates the Maximum height of the plots, when the main window is beeing resized. */
+	void updateMaximumHeightOfPlots();
 
 	void on_pushButtonDownload_clicked();
 
@@ -100,6 +105,8 @@ private slots:
 	void on_dateEditEnd_userDateChanged(const QDate &date);
 
 	void on_toolButtonDownloadDir_clicked();
+
+
 
 private:
 

@@ -836,6 +836,18 @@ void MainWindow::convertDwdData() {
 }
 
 
+void MainWindow::updateMaximumHeightOfPlots() {
+	int height = m_ui->plotLayout->contentsRect().height();
+
+	qDebug() << height;
+
+	m_ui->plotPres->setMaximumHeight(height/6);
+	m_ui->plotRad->setMaximumHeight(height/6);
+	m_ui->plotRain->setMaximumHeight(height/6);
+	m_ui->plotRelHum->setMaximumHeight(height/6);
+	m_ui->plotTemp->setMaximumHeight(height/6);
+	m_ui->plotWind->setMaximumHeight(height/6);
+}
 
 
 /// TODO
@@ -975,8 +987,6 @@ void MainWindow::formatQwtPlot(QwtPlot &plot, QDate startDate, QDate endDate, QS
 	plot.setAxisScaleDraw(QwtPlot::xBottom, scaleDrawTemp);
 	//plot.setAxisScaleDiv(QwtPlot::xBottom, scaleDiv);
 	plot.setAxisScaleEngine(QwtPlot::xBottom, scaleEngine);
-
-	//plot.setMinimumHeight(150);
 	plot.setMinimumWidth(350);
 
 	// Init Grid
@@ -992,6 +1002,11 @@ void MainWindow::formatQwtPlot(QwtPlot &plot, QDate startDate, QDate endDate, QS
 
 
 	plot.replot();
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event){
+	updateMaximumHeightOfPlots();
+	QMainWindow::resizeEvent(event);
 }
 
 

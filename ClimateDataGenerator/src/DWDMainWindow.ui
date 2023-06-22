@@ -292,14 +292,27 @@
        </layout>
       </widget>
       <widget class="QWidget" name="layoutWidget">
-       <layout class="QVBoxLayout" name="verticalLayout">
+       <layout class="QVBoxLayout" name="plotLayout">
+        <item>
+         <widget class="QwtPlot" name="plotTemp" native="true">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>16777215</height>
+           </size>
+          </property>
+         </widget>
+        </item>
         <item>
          <widget class="QwtPlot" name="plotRelHum" native="true">
           <property name="enabled">
            <bool>false</bool>
           </property>
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -313,7 +326,7 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>250</width>
+            <width>0</width>
             <height>0</height>
            </size>
           </property>
@@ -332,22 +345,9 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>250</width>
+            <width>0</width>
             <height>0</height>
            </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>16777215</height>
-           </size>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QwtPlot" name="plotTemp" native="true">
-          <property name="enabled">
-           <bool>false</bool>
           </property>
           <property name="maximumSize">
            <size>
