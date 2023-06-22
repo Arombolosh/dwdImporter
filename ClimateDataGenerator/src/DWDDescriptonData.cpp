@@ -77,7 +77,7 @@ QColor DWDDescriptonData::color(const DWDDataType & dt) {
 	colorData[DWDDataType::D_Solar]				= QColor("#E9B44C");
 	colorData[DWDDataType::D_Precipitation]		= QColor("#008000");
 	colorData[DWDDataType::D_Pressure]			= QColor("#D45500");
-	colorData[DWDDataType::D_TemperatureAndHumidity] = QColor("#9B2915");
+	colorData[DWDDataType::D_TemperatureAndHumidity] = QColor("#AA0000");
 	colorData[DWDDataType::D_Wind]				= QColor("#004E98");
 
 	return colorData[dt];

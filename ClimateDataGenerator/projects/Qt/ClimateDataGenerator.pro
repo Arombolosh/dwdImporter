@@ -51,8 +51,8 @@ RESOURCES += \
 
 
 SOURCES += \
-    ../../src/DWDChart.cpp \
-	../../src/DWDChartView.cpp \
+#    ../../src/DWDChart.cpp \
+#	../../src/DWDChartView.cpp \
     ../../src/DWDConstants.cpp \
 				../../src/DWDData.cpp \
 				../../src/DWDDelegate.cpp \
@@ -74,8 +74,8 @@ FORMS += \
 				../../src/DWDMainWindow.ui
 
 HEADERS += \
-				../../src/DWDChart.h \
-				../../src/DWDChartView.h \
+#				../../src/DWDChart.h \
+#				../../src/DWDChartView.h \
 				../../src/DWDConstants.h \
 				../../src/DWDConversions.h \
 				../../src/DWDData.h \

@@ -802,11 +802,11 @@ void MainWindow::convertDwdData() {
 	m_ui->tableView->setItemDelegateForColumn(DWDTableModel::ColPrecipitation, new DWDDelegate);
 	m_ui->tableView->setItemDelegateForColumn(DWDTableModel::ColWind, new DWDDelegate);
 
-	m_ui->tableView->setColumnWidth(DWDTableModel::ColPressure, 100);
-	m_ui->tableView->setColumnWidth(DWDTableModel::ColAirTemp, 100);
-	m_ui->tableView->setColumnWidth(DWDTableModel::ColPrecipitation, 100);
-	m_ui->tableView->setColumnWidth(DWDTableModel::ColRadiation, 100);
-	m_ui->tableView->setColumnWidth(DWDTableModel::ColWind, 100);
+	m_ui->tableView->setColumnWidth(DWDTableModel::ColPressure, 200);
+	m_ui->tableView->setColumnWidth(DWDTableModel::ColAirTemp, 200);
+	m_ui->tableView->setColumnWidth(DWDTableModel::ColPrecipitation, 200);
+	m_ui->tableView->setColumnWidth(DWDTableModel::ColRadiation, 200);
+	m_ui->tableView->setColumnWidth(DWDTableModel::ColWind, 200);
 
 	QHeaderView *headerView = m_ui->tableView->horizontalHeader();
 	headerView->setSectionResizeMode(DWDTableModel::ColName, QHeaderView::Stretch);
@@ -924,14 +924,6 @@ void MainWindow::formatQwtPlot(QwtPlot &plot, QDate startDate, QDate endDate, QS
 	// Init Scale Divider
 	QwtScaleDiv scaleDiv(QwtDate::toDouble(start), QwtDate::toDouble(end), QList<double>(), QList<double>(), majorTicks);
 
-	// Init Grid
-	QwtPlotGrid *grid = new QwtPlotGrid;
-	grid->enableXMin(true);
-	grid->setXDiv(scaleDiv);
-	grid->setMajorPen(QPen(Qt::gray, 0, Qt::DotLine));
-	grid->setMinorPen(QPen(Qt::lightGray, 0 , Qt::DotLine));
-	grid->attach(&plot);
-
 	// inti plot title
 	QFont font;
 	font.setPointSize(10);
@@ -977,13 +969,29 @@ void MainWindow::formatQwtPlot(QwtPlot &plot, QDate startDate, QDate endDate, QS
 	scaleDrawTemp->setDateFormat(QwtDate::Month, "MMM");
 	scaleDrawTemp->setDateFormat(QwtDate::Year, "yyyy");
 
+	QwtDateScaleEngine *scaleEngine = new QwtDateScaleEngine(Qt::UTC);
+
 	// Set scale draw engine
 	plot.setAxisScaleDraw(QwtPlot::xBottom, scaleDrawTemp);
-	plot.setAxisScaleDiv(QwtPlot::xBottom, scaleDiv);
+	//plot.setAxisScaleDiv(QwtPlot::xBottom, scaleDiv);
+	plot.setAxisScaleEngine(QwtPlot::xBottom, scaleEngine);
 
 	//plot.setMinimumHeight(150);
 	plot.setMinimumWidth(350);
 
+	// Init Grid
+	QwtPlotGrid *grid = new QwtPlotGrid;
+	grid->enableXMin(true);
+	grid->enableYMin(true);
+	grid->enableX(true);
+	grid->enableY(true);
+	grid->setVisible(true);
+	grid->setMajorPen(QPen(Qt::gray, 0, Qt::DotLine));
+	grid->setMinorPen(QPen(Qt::lightGray, 0 , Qt::DotLine));
+	grid->attach(&plot);
+
+
+	plot.replot();
 }
 
 
@@ -1040,11 +1048,11 @@ void MainWindow::on_horizontalSliderDistance_valueChanged(int value) {
 }
 
 void MainWindow::on_pushButtonPreview_clicked() {
-	// init all plots
-	initPlots();
 	setGUIState(false);
 	downloadData(true, false);
 	setGUIState(true);
+	// update formatting
+	initPlots();
 }
 
 void MainWindow::on_toolButtonOpenDirectory_clicked() {
