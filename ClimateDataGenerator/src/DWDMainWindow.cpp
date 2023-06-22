@@ -178,7 +178,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(msgHandler, &DWDMessageHandler::msgReceived, m_logWidget, &DWDLogWidget::onMsgReceived);
 
 	QList<int> sizes;
-	sizes << 1200 << 300 << 300;
+	sizes << 1300 << 200 << 300;
 	m_ui->splitter->setSizes(sizes);
 
 	// Init Map Widget
