@@ -24,6 +24,10 @@ void qDebugMsgHandler(QtMsgType type, const QMessageLogContext &context, const Q
 
 int main(int argc, char* argv[]) {
 	FUNCID(main);
+
+	QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+	QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+
 	QApplication a( argc, argv );
 
 	// install message handler to catch qDebug()
@@ -40,31 +44,13 @@ int main(int argc, char* argv[]) {
 	std::string errmsg;
 	messageHandler.openLogFile(QtExt::Directories::globalLogFile().toUtf8().data(), false, errmsg);
 
-	// Set stylsheet with dark style
-//	QFile darkStyle(":/style/style.qss");
-//	darkStyle.open(QFile::ReadOnly);
-//	QString styleSheet = QLatin1String(darkStyle.readAll());
-//	qApp->setStyleSheet(styleSheet);
-	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-
-
 	// *** Setup and show MainWindow and start event loop ***
 	int res;
 	try { // open scope to control lifetime of main window, ensure that main window instance dies before settings or project handler
 
 		MainWindow w;
-		// Dark style
-
-
 		// add user settings related window resize at program start
-#if defined(Q_OS_WIN)
-		//w.showMaximized();
 		w.showMaximized();
-#elif defined(Q_OS_LINUX)
-		w.showMaximized();
-#else
-		w.show();
-#endif
 		// we set the data to the tableWidget
 		w.loadDataFromDWDServer();
 
