@@ -13,7 +13,7 @@
 namespace DM {
 
 /*! Class for all Graphics Items in Scene. */
-class DataItem : public QGraphicsEllipseItem
+class DataItem : public QGraphicsItemGroup
 {
 public:
 

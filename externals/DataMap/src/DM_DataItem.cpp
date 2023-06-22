@@ -9,8 +9,23 @@ DataItem::DataItem(const QRectF rect, const QString & str, const IBK::Time &minD
 	m_data = Data(str, minDate, maxDate, lat, lon, type);
 
 	QPointF pos = convertCoordinatesToPos(rect, lat, lon);
-	setRect(pos.x()-radius/2, pos.y()-radius/2, radius, radius);
-	setBrush(colorFromDataType(type));
+
+
+	// Erstelle den Stiel des Pins als Rechteck
+	QGraphicsLineItem* line1 = new QGraphicsLineItem(-radius/2, -radius/2,  radius/2,  radius/2);
+	QGraphicsLineItem* line2 = new QGraphicsLineItem(-radius/2,  radius/2,  radius/2, -radius/2);
+
+	QPen pen(colorFromDataType(type), 2);
+
+	line1->setPen(pen);
+	line2->setPen(pen);
+
+	line1->moveBy(pos.x(), pos.y());
+	line2->moveBy(pos.x(), pos.y());
+
+	addToGroup(line1);
+	addToGroup(line2);
+
 }
 
 void DataItem::moveItem(const QPointF & pos) {
