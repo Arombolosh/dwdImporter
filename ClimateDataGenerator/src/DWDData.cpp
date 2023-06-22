@@ -228,12 +228,9 @@ void DWDData::exportEPW(double latitudeDeg, double longitudeDeg, IBK::Path &expo
 	}
 
 	try {
-		if (exportPath.extension() != ".epw")
-			exportPath.addExtension(".epw");
-
 		loader.writeClimateDataEPW(exportPath);
 	} catch (IBK::Exception &ex) {
-		throw IBK::Exception( "Could not write epw file", FUNC_ID);
+		throw IBK::Exception("Could not write epw file", FUNC_ID);
 	}
 }
 
