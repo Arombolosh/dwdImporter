@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QLabel>
 #include <QApplication>
+#include <QMessageBox>
 
 #include <IBK_StringUtils.h>
 #include <IBK_FileReader.h>
@@ -19,7 +20,8 @@
 #include "DWDDescriptonData.h"
 
 
-void DWDData::createData(IBK::NotificationHandler * notify, const std::map<IBK::Path, std::set<DWDData::DataType>> &filenames, unsigned int intervalDuration) {
+void DWDData::createData(IBK::NotificationHandler * notify, const std::map<IBK::Path,
+						 std::set<DWDData::DataType>> &filenames, unsigned int intervalDuration) {
 
 	FUNCID(createData);
 
@@ -27,8 +29,10 @@ void DWDData::createData(IBK::NotificationHandler * notify, const std::map<IBK::
 
 	m_data.clear();
 
+	unsigned int counter = 0;
+	unsigned int size = filenames.size();
 	for(std::map<IBK::Path, std::set<DWDData::DataType>>::const_iterator	it=filenames.begin();
-																			it!=filenames.end(); ++it){
+		it!=filenames.end(); ++it){
 		//check if file exist
 		IBK::Path fileName = it->first;
 		if(!fileName.exists())
@@ -43,12 +47,15 @@ void DWDData::createData(IBK::NotificationHandler * notify, const std::map<IBK::
 		fileReader.readAll(fileName, lines, std::vector<std::string>{"\n"}, 0, notify);
 
 		qDebug() << "Extracting data from " << QString::fromStdString(fileName.str());
-		m_progressDlg->setLabelText(QString("Extracting data from '%1'").arg(QString::fromStdString(fileName.filename().str() ) ) );
+		m_progressDlg->setLabelText(QString("Converting data of file '%1'").arg(QString::fromStdString(fileName.filename().str() ) ) );
 		for(unsigned int i=1;i<lines.size(); ++i){
 			addDataLine(lines[i], it->second);
-			notify->notify((double)(i+1)/lines.size() );
+			notify->notify((double)counter/size * (double)(i)/lines.size());
 		}
+
+		++counter;
 	}
+
 }
 
 
@@ -181,9 +188,9 @@ void DWDData::exportEPW(double latitudeDeg, double longitudeDeg, const IBK::Path
 	solMod.m_climateDataLoader = loader;
 
 	// remove existing data
-//	for (int i=0; i<CCM::ClimateDataLoader::NumClimateComponents; ++i) {
-//		loader.m_data[i] = std::vector<double>(8760, -99);
-//	}
+	//	for (int i=0; i<CCM::ClimateDataLoader::NumClimateComponents; ++i) {
+	//		loader.m_data[i] = std::vector<double>(8760, -99);
+	//	}
 
 	int idx = m_startTime.secondsUntil(IBK::Time(m_startTime.year(), 0))/m_intervalDuration;
 	int hourCount = m_startTime.secondsUntil(m_endTime)/m_intervalDuration;
@@ -191,10 +198,10 @@ void DWDData::exportEPW(double latitudeDeg, double longitudeDeg, const IBK::Path
 	// Q_ASSERT(m_data.size() >= 8760);
 
 	for (int i=0; i<hourCount;++i, ++idx) {
-//		if(idx > m_data.size() || m_data.empty())
-//			break;
-//		if(idx < 0)
-//			continue;
+		//		if(idx > m_data.size() || m_data.empty())
+		//			break;
+		//		if(idx < 0)
+		//			continue;
 		///TODO Fehlerbetrachtung muss dann woanders gemacht werden
 		IntervalData intVal = m_data[i];
 		loader.m_data[CCM::ClimateDataLoader::Temperature][i] = (intVal.m_airTemp == -999 ? 0 : intVal.m_airTemp);
@@ -246,28 +253,28 @@ QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numbe
 	if( isRecent || (type == DT_RadiationDiffuse || type == DT_RadiationGlobal || type == DT_RadiationLongWave || type == DT_Precipitation)) {
 
 		switch (type) {
-			case DT_AirTemperature:
-			case DT_RelativeHumidity:
-				return base + "air_temperature/" + rec2 + "stundenwerte_TU_" + numberString + dateStringNew + rec + ".zip";
-				// recent --> stundenwerte_TU_00142_akt.zip
-				// historical --> stundenwerte_TU_00078_20041101_20201231_hist.zip
-				// neu hinzu "_20041101_20201231" >> dateString
+		case DT_AirTemperature:
+		case DT_RelativeHumidity:
+			return base + "air_temperature/" + rec2 + "stundenwerte_TU_" + numberString + dateStringNew + rec + ".zip";
+			// recent --> stundenwerte_TU_00142_akt.zip
+			// historical --> stundenwerte_TU_00078_20041101_20201231_hist.zip
+			// neu hinzu "_20041101_20201231" >> dateString
 
-			case DT_Pressure:
-				return base + "pressure/" + rec2 + "stundenwerte_P0_" + numberString + dateStringNew + rec + ".zip";
+		case DT_Pressure:
+			return base + "pressure/" + rec2 + "stundenwerte_P0_" + numberString + dateStringNew + rec + ".zip";
 
-			case DT_Precipitation:
-				return base + "precipitation/" + rec2 +  filename;
+		case DT_Precipitation:
+			return base + "precipitation/" + rec2 +  filename;
 
-			case DT_WindSpeed:
-			case DT_WindDirection:
-				return base + "wind/" + rec2 + "stundenwerte_FF_" + numberString + dateStringNew + rec + ".zip";
+		case DT_WindSpeed:
+		case DT_WindDirection:
+			return base + "wind/" + rec2 + "stundenwerte_FF_" + numberString + dateStringNew + rec + ".zip";
 
-			case DT_RadiationDiffuse:
-			case DT_RadiationGlobal:
-			case DT_RadiationLongWave:
-			case DT_ZenithAngle:
-				return base + "solar/" + "stundenwerte_ST_" + numberString + "_row.zip";
+		case DT_RadiationDiffuse:
+		case DT_RadiationGlobal:
+		case DT_RadiationLongWave:
+		case DT_ZenithAngle:
+			return base + "solar/" + "stundenwerte_ST_" + numberString + "_row.zip";
 		}
 
 	} else {
@@ -275,27 +282,27 @@ QString DWDData::urlFilename(const DWDData::DataType &type, const QString &numbe
 		QString baseSearch;
 
 		switch (type) {
-			case DT_AirTemperature:
-			case DT_RelativeHumidity:
-				baseSearch = base + "air_temperature/";
-				// recent --> stundenwerte_TU_00142_akt.zip
-				// historical --> stundenwerte_TU_00078_20041101_20201231_hist.zip
-				// neu hinzu "_20041101_20201231" >> dateString
+		case DT_AirTemperature:
+		case DT_RelativeHumidity:
+			baseSearch = base + "air_temperature/";
+			// recent --> stundenwerte_TU_00142_akt.zip
+			// historical --> stundenwerte_TU_00078_20041101_20201231_hist.zip
+			// neu hinzu "_20041101_20201231" >> dateString
 
 			break;
-			case DT_Pressure:
-				baseSearch = base + "pressure/";
+		case DT_Pressure:
+			baseSearch = base + "pressure/";
 
 			break;
-			case DT_WindSpeed:
-			case DT_WindDirection:
-				baseSearch = base + "wind/";
+		case DT_WindSpeed:
+		case DT_WindDirection:
+			baseSearch = base + "wind/";
 			break;
-//			case DT_RadiationDiffuse:
-//			case DT_RadiationGlobal:
-//			case DT_RadiationLongWave:
-//			case DT_ZenithAngle:
-//				baseSearch = base + "solar/";
+			//			case DT_RadiationDiffuse:
+			//			case DT_RadiationGlobal:
+			//			case DT_RadiationLongWave:
+			//			case DT_ZenithAngle:
+			//				baseSearch = base + "solar/";
 		}
 		return baseSearch + rec2 + filename;
 
@@ -340,16 +347,16 @@ void DWDData::findFile(const QUrlInfo &url) {
 
 unsigned int DWDData::getColumnDWD(const DataType &dt){
 	switch (dt) {
-		case DT_AirTemperature:					return 3;
-		case DT_RelativeHumidity:				return 4;
-		case DT_RadiationLongWave:				return 3;
-		case DT_RadiationDiffuse:				return 4;
-		case DT_RadiationGlobal:				return 5;
-		case DT_ZenithAngle:					return 7;
-		case DT_WindSpeed:						return 3;
-		case DT_WindDirection:					return 4;
-		case DT_Pressure:						return 4;
-		case DT_Precipitation:					return 3;
+	case DT_AirTemperature:					return 3;
+	case DT_RelativeHumidity:				return 4;
+	case DT_RadiationLongWave:				return 3;
+	case DT_RadiationDiffuse:				return 4;
+	case DT_RadiationGlobal:				return 5;
+	case DT_ZenithAngle:					return 7;
+	case DT_WindSpeed:						return 3;
+	case DT_WindDirection:					return 4;
+	case DT_Pressure:						return 4;
+	case DT_Precipitation:					return 3;
 	}
 	return 0;
 }

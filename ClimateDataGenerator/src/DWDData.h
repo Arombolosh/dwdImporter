@@ -122,6 +122,7 @@ public:
 	IBK::Path						m_filenames[NUM_DT];        ///> Filename
 	std::vector<QUrlInfo>			m_urls;                     ///> urls in ftp directory
 	QProgressDialog					*m_progressDlg = nullptr;   ///> pointer to label
+	QString							dataString[6];
 
 
 signals:
