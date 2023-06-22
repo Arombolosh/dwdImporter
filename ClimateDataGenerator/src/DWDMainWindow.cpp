@@ -178,7 +178,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(msgHandler, &DWDMessageHandler::msgReceived, m_logWidget, &DWDLogWidget::onMsgReceived);
 
 	QList<int> sizes;
-	sizes << 1500 << 300;
+	sizes << 1200 << 300 << 300;
 	m_ui->splitter->setSizes(sizes);
 
 	// Init Map Widget
@@ -981,7 +981,7 @@ void MainWindow::formatQwtPlot(QwtPlot &plot, QDate startDate, QDate endDate, QS
 	plot.setAxisScaleDraw(QwtPlot::xBottom, scaleDrawTemp);
 	plot.setAxisScaleDiv(QwtPlot::xBottom, scaleDiv);
 
-	plot.setMinimumHeight(150);
+	//plot.setMinimumHeight(150);
 	plot.setMinimumWidth(350);
 
 }
