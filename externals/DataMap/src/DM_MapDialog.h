@@ -45,6 +45,7 @@ private:
 
 protected:
 	void showEvent(QShowEvent *event) override;
+	void resizeEvent(QResizeEvent *event) override;
 };
 
 } // namespace DM

@@ -64,4 +64,8 @@ void MapDialog::showEvent(QShowEvent * event) {
 	m_ui->graphicsViewMap->fitInView(m_scene->sceneRect(), Qt::KeepAspectRatio);
 }
 
+void MapDialog::resizeEvent(QResizeEvent *event) {
+	m_ui->graphicsViewMap->fitInView(m_scene->sceneRect(), Qt::KeepAspectRatio);
+}
+
 } // namespace DM
