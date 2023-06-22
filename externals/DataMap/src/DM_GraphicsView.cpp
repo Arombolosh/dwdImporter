@@ -14,26 +14,26 @@ GraphicsView::~GraphicsView() {
 }
 
 void GraphicsView::wheelEvent(QWheelEvent * event) {
-	if (event->modifiers() & Qt::ControlModifier) {
-		// zoom
-		const ViewportAnchor anchor = transformationAnchor();
-		setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-		int angle = event->angleDelta().y();
-		qreal factor;
-		if (angle > 0) {
-			factor = 1.1;
-		} else {
-			factor = 0.9;
-		}
-		scale(factor, factor);
-		setTransformationAnchor(anchor);
+
+	// zoom
+	const ViewportAnchor anchor = transformationAnchor();
+	setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+	int angle = event->angleDelta().y();
+	qreal factor;
+	if (angle > 0) {
+		factor = 1.1;
 	} else {
-		QGraphicsView::wheelEvent(event);
+		factor = 0.9;
 	}
+	scale(factor, factor);
+	setTransformationAnchor(anchor);
+
+	return;
+
+	QGraphicsView::wheelEvent(event);
 }
 
 void GraphicsView::resizeEvent(QResizeEvent * event) {
-	//fitInView(scene()->sceneRect(), Qt::KeepAspectRatio);
 	setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 }
 }
