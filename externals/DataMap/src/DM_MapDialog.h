@@ -43,6 +43,8 @@ private slots:
 private:
 	Ui::MapDialog			*m_ui;
 
+protected:
+	void showEvent(QShowEvent *event) override;
 };
 
 } // namespace DM

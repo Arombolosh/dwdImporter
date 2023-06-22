@@ -12,7 +12,6 @@ Scene::Scene(QObject * parent) :
 	m_cursor = new QGraphicsTextItem("0, 0"); //Fixed at 0, 0
 	addItem(m_cursor);
 	m_cursor->setPos(0,0);
-	m_cursor->setPos(0,0);
 
 	// Initialize all item groups
 	for (unsigned int i=0; i<Data::NUM_DT; ++i) {

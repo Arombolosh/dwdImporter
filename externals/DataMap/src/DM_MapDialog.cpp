@@ -20,9 +20,6 @@ MapDialog::MapDialog(QWidget *parent) :
 	m_ui->lineEditLatitude->setup(-90,90, "Latitude in Deg", true, true);
 	m_ui->lineEditLongitude->setup(-180,180, "Longitude in Deg", true, true);
 
-	// fit scene in view
-	m_ui->graphicsViewMap->fitInView(m_scene->sceneRect(), Qt::KeepAspectRatio);
-
 	// draw al data points
 //	for(const Data &d : m_data)
 //		m_scene->addDwdDataPoint(d.m_type, d.m_name, d.m_minDate, d.m_maxDate, d.m_latitude, d.m_longitude);
@@ -62,6 +59,9 @@ void MapDialog::on_checkBoxPrecipitation_toggled(bool checked) {
 	m_scene->setItemGroupVisiblity(Data::DT_Precipitation, checked);
 }
 
-
+void MapDialog::showEvent(QShowEvent * event) {
+	// fit scene in view
+	m_ui->graphicsViewMap->fitInView(m_scene->sceneRect(), Qt::KeepAspectRatio);
+}
 
 } // namespace DM
