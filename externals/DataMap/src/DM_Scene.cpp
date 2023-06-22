@@ -36,14 +36,24 @@ Scene::Scene(QObject * parent) :
 	// Hold the pointer
 	m_mapSvgItem = item;
 
-	//QRectF rectSvgItem = item->sceneBoundingRect();
+	m_locationItem = new QGraphicsEllipseItem(-5,-5,10,10);
+	m_locationItem->setBrush(Qt::black);
+	m_locationItem->setZValue(100);
 
-	//addRect(rectSvgItem, QPen(Qt::red));
-
+	addItem(m_locationItem);
 }
 
 void Scene::mousePressEvent(QGraphicsSceneMouseEvent * event) {
+	QPointF pos = event->scenePos() - m_locationItem->scenePos();
 
+	m_locationItem->moveBy(pos.x(), pos.y());
+
+	int height = m_mapSvgItem->boundingRect().size().height();
+	int width = m_mapSvgItem->boundingRect().size().width();
+
+	convertPosToCoordinates(event->scenePos() + m_mapSvgItem->scenePos(), height, width, m_latitude, m_longitude);
+
+	emit updatedLocation();
 }
 
 void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
@@ -51,7 +61,7 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 	int height = m_mapSvgItem->boundingRect().size().height();
 	int width = m_mapSvgItem->boundingRect().size().width();
 
-	QPointF pointPos = event->scenePos() + m_mapSvgItem->pos();;
+	QPointF pointPos = event->scenePos() + m_mapSvgItem->pos();
 
 	convertPosToCoordinates(pointPos, height, width, m_latitude, m_longitude);
 

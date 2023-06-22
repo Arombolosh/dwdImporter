@@ -21,7 +21,6 @@ public:
 	explicit Scene(QObject* parent);
 
 
-
 	/*! Adds a data point to the scene. */
 	void addDwdDataPoint(const Data::DataType &type, const QString & str, const IBK::Time &minDate, const IBK::Time &maxDate,
 						 const double &lat, const double &lon);
@@ -36,16 +35,21 @@ public:
 	QGraphicsTextItem			*m_cursor;
 
 	QGraphicsItem*				m_mapSvgItem = nullptr;
-	DataItem*					m_locationItem = nullptr;
+	QGraphicsEllipseItem*		m_locationItem = nullptr;
 
 	QGraphicsItemGroup			*m_dataGroup[Data::NUM_DT];
 
 	double						m_longitude;	///< Longitude of mouse position
 	double						m_latitude;		///< Latitude of mouse position
 
+signals:
+	void updatedLocation();
+
 protected:
 	void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
 	void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
+
+
 
 private:
 
