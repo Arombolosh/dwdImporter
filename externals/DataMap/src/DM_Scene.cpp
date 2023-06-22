@@ -57,8 +57,8 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 	convertPosToCoordinates(pointPos, height, width, m_latitude, m_longitude);
 
 	QString string = QString("%1° N,\n%2° O")
-			.arg(pointPos.x())
-			.arg(pointPos.y());
+			.arg(m_latitude)
+			.arg(m_longitude);
 
 	m_cursor->setPlainText(string);
 	m_cursor->setZValue(99); // always on top
