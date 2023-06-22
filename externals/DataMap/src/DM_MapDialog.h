@@ -23,6 +23,11 @@ public:
 	/*! Pointer to Scene. */
 	DM::Scene				*m_scene = nullptr;
 
+	double					m_latitude;
+	double					m_longitude;
+
+	void setCoordinates(double latitude, double longitude);
+
 
 private slots:
 	void on_checkBoxAirTemp_toggled(bool checked);

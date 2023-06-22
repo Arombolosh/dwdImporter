@@ -996,13 +996,13 @@ void MainWindow::formatQwtPlot(QwtPlot &plot, QDate startDate, QDate endDate, QS
 
 
 void MainWindow::on_pushButtonMap_clicked() {
-	//	double latitude = m_ui->lineEditLatitude->text().toDouble();
-	//	double longitude = m_ui->lineEditLongitude->text().toDouble();
+	double latitude = m_ui->lineEditLatitude->text().toDouble();
+	double longitude = m_ui->lineEditLongitude->text().toDouble();
 	//	unsigned int distance = m_ui->horizontalSliderDistance->value();
 
 	//	unsigned int year = 2020;
 	//DWDMap::getLocation(m_descData, latitude, longitude, year, distance, this);
-
+	m_mapDialog->setCoordinates(latitude, longitude);
 	m_mapDialog->exec();
 
 	//	m_ui->lineEditLatitude->setText(QString::number(latitude) );
