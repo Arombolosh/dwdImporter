@@ -64,6 +64,7 @@ SOURCES += \
 				../../src/DWDMessageHandler.cpp \
 				../../src/DWDSortFilterProxyModel.cpp \
 				../../src/DWDUtilities.cpp \
+    ../../src/MetaDataEditWidget.cpp \
 				../../src/main.cpp \
 				 ../../src/DWDTableModel.cpp \
 				../../src/DWDTimePlotPicker.cpp \
@@ -71,7 +72,8 @@ SOURCES += \
 
 FORMS += \
 				../../src/DWDLogWidget.ui \
-				../../src/DWDMainWindow.ui
+				../../src/DWDMainWindow.ui \
+				../../src/MetaDataEditWidget.ui
 
 HEADERS += \
 #				../../src/DWDChart.h \
@@ -92,6 +94,7 @@ HEADERS += \
 				../../src/DWDTimePlotPicker.h \
 				../../src/DWDDateTimeScaleEngine.h \
 				../../src/DWDUtilities.h \
+				../../src/MetaDataEditWidget.h \
 				../../ôsrc/DWDConversions.h
 
 DISTFILES +=
