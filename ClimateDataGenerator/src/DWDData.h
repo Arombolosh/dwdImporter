@@ -14,6 +14,8 @@
 #include <IBK_Path.h>
 #include <IBK_NotificationHandler.h>
 
+#include <CCM_ClimateDataLoader.h>
+
 #include "QtExt_Directories.h"
 
 class DWDProgressBar;
@@ -101,7 +103,10 @@ public:
 	void writeTSV(unsigned int year);
 
 	/*! Create an epw-file for one year. */
-	void exportEPW(double latitudeDeg, double longitudeDeg, IBK::Path &exportPath);
+	void exportEPW(CCM::ClimateDataLoader &loader, double latitudeDeg, double longitudeDeg, IBK::Path &exportPath);
+
+	/*! Creat an c6b-file with continous data. */
+	void exportC6B(CCM::ClimateDataLoader &loader, double latitudeDeg, double longitudeDeg, IBK::Path &exportPath);
 
 	/*! Returns the complete url as QString needed for download. */
 	QString urlFilename(const DataType &type, const QString &numberString, const std::string &dateString,

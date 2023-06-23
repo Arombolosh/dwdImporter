@@ -163,7 +163,7 @@ void DWDData::writeTSV(unsigned int year){
 	}
 }
 
-void DWDData::exportEPW(double latitudeDeg, double longitudeDeg, IBK::Path &exportPath) {
+void DWDData::exportEPW(CCM::ClimateDataLoader &loader, double latitudeDeg, double longitudeDeg, IBK::Path &exportPath) {
 	FUNCID(exportEPW);
 
 	/*! Mind the time zone. In DWD Data the time zone is set to UTC+0 whereas in our exported epw file
@@ -171,18 +171,10 @@ void DWDData::exportEPW(double latitudeDeg, double longitudeDeg, IBK::Path &expo
 		-> DWD: 01012020 00:00 --> EPW: 01012020 01:00
 	*/
 
-	CCM::ClimateDataLoader loader;
 	//all data is invalid initialized
 	loader.initDataWithDefault();
-	loader.m_city = "Generic Location";
-	loader.m_source = "DWDImporter";
-	loader.m_country = "Germany";
-	loader.m_timeZone = 1;
-	loader.m_elevation = 81;
-	loader.m_startYear = m_startTime.year();
 	loader.m_latitudeInDegree = latitudeDeg;
 	loader.m_longitudeInDegree = longitudeDeg;
-	loader.m_comment = "test";
 
 	CCM::SolarRadiationModel solMod;
 	solMod.m_climateDataLoader = loader;
@@ -195,7 +187,7 @@ void DWDData::exportEPW(double latitudeDeg, double longitudeDeg, IBK::Path &expo
 	int idx = m_startTime.secondsUntil(IBK::Time(m_startTime.year(), 0))/m_intervalDuration;
 	int hourCount = m_startTime.secondsUntil(m_endTime)/m_intervalDuration;
 
-	// Q_ASSERT(m_data.size() >= 8760);
+	Q_ASSERT(hourCount < 8761);
 
 	for (int i=0; i<hourCount;++i, ++idx) {
 		//		if(idx > m_data.size() || m_data.empty())
@@ -219,6 +211,7 @@ void DWDData::exportEPW(double latitudeDeg, double longitudeDeg, IBK::Path &expo
 		loader.m_data[CCM::ClimateDataLoader::DirectRadiationNormal][i] = dirN;
 		loader.m_data[CCM::ClimateDataLoader::DiffuseRadiationHorizontal][i] = intVal.m_diffRad;
 		loader.m_data[CCM::ClimateDataLoader::LongWaveCounterRadiation][i] = intVal.m_counterRad;
+		loader.m_data[CCM::ClimateDataLoader::Rain][i] = intVal.m_precipitation;
 
 #if 0
 		loader.m_data[CCM::ClimateDataLoader::WindVelocity][i] = std::max<double>( 90.0 - intVal.m_zenithAngle, 0);
@@ -230,7 +223,73 @@ void DWDData::exportEPW(double latitudeDeg, double longitudeDeg, IBK::Path &expo
 	try {
 		loader.writeClimateDataEPW(exportPath);
 	} catch (IBK::Exception &ex) {
-		throw IBK::Exception("Could not write epw file", FUNC_ID);
+		throw IBK::Exception("Could not write climate file (epw)", FUNC_ID);
+	}
+}
+
+void DWDData::exportC6B(CCM::ClimateDataLoader &loader, double latitudeDeg, double longitudeDeg, IBK::Path &exportPath) {
+	FUNCID(exportEPW);
+
+	/*! Mind the time zone. In DWD Data the time zone is set to UTC+0 whereas in our exported epw file
+		the time zone is set to UTC+1 thus we have to shift the time stamp for one hour (+1)
+		-> DWD: 01012020 00:00 --> EPW: 01012020 01:00
+	*/
+
+	//all data is invalid initialized
+	loader.initDataWithDefault();
+	loader.m_latitudeInDegree = latitudeDeg;
+	loader.m_longitudeInDegree = longitudeDeg;
+
+	CCM::SolarRadiationModel solMod;
+	solMod.m_climateDataLoader = loader;
+
+	// remove existing data
+	//	for (int i=0; i<CCM::ClimateDataLoader::NumClimateComponents; ++i) {
+	//		loader.m_data[i] = std::vector<double>(8760, -99);
+	//	}
+
+	unsigned int idx = m_startTime.seconds();
+	unsigned int hourCount = m_startTime.secondsUntil(m_endTime)/m_intervalDuration;
+
+	std::vector<double> dataTimePoints(hourCount);
+	// Init all timesteps of climateloader
+	for (unsigned int i=0; i<hourCount; ++i) {
+		dataTimePoints[i] = idx + 3600.0 * i; // current time in seconds
+	}
+	loader.m_dataTimePoints = dataTimePoints;
+	loader.initDataWithDefault();
+
+	for (unsigned int i=0; i<hourCount;++i, ++idx) {
+		/// TODO Fehlerbetrachtung muss dann woanders gemacht werden
+		IntervalData intVal = m_data[i];
+		loader.m_data[CCM::ClimateDataLoader::Temperature][i] = (intVal.m_airTemp == -999 ? 0 : intVal.m_airTemp);
+		loader.m_data[CCM::ClimateDataLoader::RelativeHumidity][i] = intVal.m_relHum < 0 ? 0 : intVal.m_relHum;
+
+		loader.m_data[CCM::ClimateDataLoader::WindVelocity][i] = intVal.m_windSpeed;
+		loader.m_data[CCM::ClimateDataLoader::WindDirection][i] = intVal.m_windDirection;
+
+		loader.m_data[CCM::ClimateDataLoader::AirPressure][i] = intVal.m_pressure;
+
+		double dirH = intVal.m_globalRad - intVal.m_diffRad;
+		double dirN;
+		solMod.convertHorizontalToNormalRadiation(m_intervalDuration*(idx-0.5), dirH, dirN);
+
+		loader.m_data[CCM::ClimateDataLoader::DirectRadiationNormal][i] = dirN;
+		loader.m_data[CCM::ClimateDataLoader::DiffuseRadiationHorizontal][i] = intVal.m_diffRad;
+		loader.m_data[CCM::ClimateDataLoader::LongWaveCounterRadiation][i] = intVal.m_counterRad;
+		loader.m_data[CCM::ClimateDataLoader::Rain][i] = intVal.m_precipitation;
+
+#if 0
+		loader.m_data[CCM::ClimateDataLoader::WindVelocity][i] = std::max<double>( 90.0 - intVal.m_zenithAngle, 0);
+		loader.m_data[CCM::ClimateDataLoader::LongWaveCounterRadiation][i] = dirH/ ( std::cos(intVal.m_zenithAngle*IBK::DEG2RAD)< 1e-04 ? 1 : std::cos(intVal.m_zenithAngle*IBK::DEG2RAD) );
+		loader.m_data[CCM::ClimateDataLoader::WindDirection][i] = std::max<double>(solMod.m_sunPositionModel.m_elevation/IBK::DEG2RAD, 0);
+#endif
+	}
+
+	try {
+		loader.writeClimateDataIBK(exportPath);
+	} catch (IBK::Exception &ex) {
+		throw IBK::Exception("Could not write climate file (c6b)", FUNC_ID);
 	}
 }
 
