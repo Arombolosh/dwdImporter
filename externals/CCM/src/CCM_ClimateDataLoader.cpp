@@ -1319,6 +1319,8 @@ void ClimateDataLoader::writeClimateDataIBK(const IBK::Path & fname) {
 	}
 
 	IBK::write_vector_binary(out, m_dataTimePoints);
+
+	out.close();
 }
 
 
@@ -1372,6 +1374,7 @@ void ClimateDataLoader::writeClimateDataTSV(const IBK::Path & fname) {
 			out << std::endl;
 		}
 	}
+	out.close();
 }
 
 void ClimateDataLoader::writeClimateDataEPW(const IBK::Path & fname) {
