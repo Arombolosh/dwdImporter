@@ -97,28 +97,28 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
-           <widget class="QComboBox" name="comboBoxYear"/>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Year:</string>
+            </property>
+           </widget>
           </item>
           <item row="2" column="1">
            <widget class="QtExt::ValidatingLineEdit" name="lineEditLongitude"/>
           </item>
-          <item row="1" column="0">
+          <item row="5" column="1">
+           <widget class="QComboBox" name="comboBoxYear"/>
+          </item>
+          <item row="3" column="0">
            <widget class="QLabel" name="label">
             <property name="text">
              <string>Latitude:</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
+          <item row="3" column="1">
            <widget class="QtExt::ValidatingLineEdit" name="lineEditLatitude"/>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_3">
-            <property name="text">
-             <string>Year:</string>
-            </property>
-           </widget>
           </item>
          </layout>
         </item>

@@ -25,6 +25,12 @@ MapDialog::MapDialog(QWidget *parent) :
 	// draw al data points
 //	for(const Data &d : m_data)
 //		m_scene->addDwdDataPoint(d.m_type, d.m_name, d.m_minDate, d.m_maxDate, d.m_latitude, d.m_longitude);
+
+	m_ui->checkBoxAirTemp->setStyleSheet( QString("QCheckBox { color: %1; }").arg(colorFromDataType(DM::Data::DT_TemperatureAndHumidity).name()));
+	m_ui->checkBoxPrecipitation->setStyleSheet( QString("QCheckBox { color: %1; }").arg(colorFromDataType(DM::Data::DT_Precipitation).name()));
+	m_ui->checkBoxPressure->setStyleSheet( QString("QCheckBox { color: %1; }").arg(colorFromDataType(DM::Data::DT_Pressure).name()));
+	m_ui->checkBoxRadiation->setStyleSheet( QString("QCheckBox { color: %1; }").arg(colorFromDataType(DM::Data::DT_Solar).name()));
+	m_ui->checkBoxWind->setStyleSheet( QString("QCheckBox { color: %1; }").arg(colorFromDataType(DM::Data::DT_Wind).name()));
 }
 
 MapDialog::~MapDialog() {
@@ -34,6 +40,9 @@ MapDialog::~MapDialog() {
 void MapDialog::setCoordinates(double latitude, double longitude) {
 	m_ui->lineEditLatitude->setText(QString::fromStdString(std::to_string(latitude)));
 	m_ui->lineEditLongitude->setText(QString::fromStdString(std::to_string(longitude)));
+
+	m_longitude = longitude;
+	m_latitude = latitude;
 }
 
 void MapDialog::onUpdateLocation() {
