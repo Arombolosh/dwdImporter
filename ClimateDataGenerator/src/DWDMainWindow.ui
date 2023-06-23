@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1106</width>
-    <height>708</height>
+    <height>1068</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -32,40 +32,77 @@
         <item>
          <widget class="QGroupBox" name="groupBoxDir">
           <property name="title">
-           <string>Working directory</string>
+           <string>General Settings</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_4">
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_9">
-             <property name="text">
-              <string>Export Path:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="2">
-            <widget class="QToolButton" name="toolButtonOpenDirectory">
-             <property name="text">
-              <string>...</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QLineEdit" name="lineEditFile"/>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLineEdit" name="lineEditDownloads"/>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_11">
-             <property name="text">
-              <string>Downloads:</string>
+           <item row="4" column="0" colspan="4">
+            <widget class="MetaDataEditWidget" name="widgetMetaData" native="true">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>50</height>
+              </size>
              </property>
             </widget>
            </item>
            <item row="0" column="2">
+            <widget class="QLineEdit" name="lineEditDownloads"/>
+           </item>
+           <item row="2" column="2">
+            <widget class="QComboBox" name="comboBoxMode"/>
+           </item>
+           <item row="5" column="0" colspan="4">
+            <layout class="QHBoxLayout" name="horizontalLayout">
+             <item>
+              <widget class="QPushButton" name="pushButtonPreview">
+               <property name="text">
+                <string>Download data</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButtonDownload">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>Save to climate file...</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_11">
+             <property name="text">
+              <string>Cache directory:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_9">
+             <property name="text">
+              <string>Working Mode:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
             <widget class="QToolButton" name="toolButtonDownloadDir">
              <property name="text">
               <string>...</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="3">
+            <widget class="QToolButton" name="toolButtonHelp">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>?</string>
              </property>
             </widget>
            </item>
@@ -81,16 +118,47 @@
            </size>
           </property>
           <property name="title">
-           <string>Location</string>
+           <string>Location filter</string>
           </property>
           <layout class="QGridLayout" name="gridLayout" columnstretch="0,1,0,0">
-           <item row="3" column="1" colspan="2">
-            <widget class="QtExt::ValidatingLineEdit" name="lineEditLatitude">
-             <property name="maximumSize">
-              <size>
-               <width>16777215</width>
-               <height>16777215</height>
-              </size>
+           <item row="10" column="0" colspan="4">
+            <widget class="QSlider" name="horizontalSliderDistance">
+             <property name="maximum">
+              <number>500</number>
+             </property>
+             <property name="value">
+              <number>50</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>Latitude:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_8">
+             <property name="text">
+              <string>Filter Name:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="0" colspan="4">
+            <widget class="Line" name="line">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="3">
+            <widget class="QLabel" name="label_7">
+             <property name="text">
+              <string>km</string>
              </property>
             </widget>
            </item>
@@ -104,17 +172,17 @@
              </property>
             </widget>
            </item>
-           <item row="5" column="3">
-            <widget class="QLabel" name="label_4">
+           <item row="3" column="3">
+            <widget class="QLabel" name="label_5">
              <property name="text">
               <string>Deg</string>
              </property>
             </widget>
            </item>
-           <item row="6" column="0" colspan="4">
-            <widget class="QPushButton" name="pushButtonMap">
+           <item row="5" column="3">
+            <widget class="QLabel" name="label_4">
              <property name="text">
-              <string>pick Location</string>
+              <string>Deg</string>
              </property>
             </widget>
            </item>
@@ -125,29 +193,45 @@
              </property>
             </widget>
            </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="label_2">
+           <item row="3" column="1" colspan="2">
+            <widget class="QtExt::ValidatingLineEdit" name="lineEditLatitude">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="0">
+            <widget class="QLabel" name="label_6">
              <property name="text">
-              <string>Latitude:</string>
+              <string>Max Distance: </string>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="1" colspan="2">
+            <widget class="QtExt::ValidatingLineEdit" name="lineEditDistance">
+             <property name="text">
+              <string>10</string>
+             </property>
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="1" colspan="2">
+            <widget class="QPushButton" name="pushButtonMap">
+             <property name="text">
+              <string>pick Location on map</string>
              </property>
             </widget>
            </item>
            <item row="1" column="1" colspan="2">
             <widget class="QLineEdit" name="lineEditNameFilter"/>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_8">
-             <property name="text">
-              <string>Filter Name:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="3">
-            <widget class="QLabel" name="label_5">
-             <property name="text">
-              <string>Deg</string>
-             </property>
-            </widget>
            </item>
           </layout>
          </widget>
@@ -155,18 +239,11 @@
         <item>
          <widget class="QGroupBox" name="groupBoxTime">
           <property name="title">
-           <string>Time</string>
+           <string>Time-period filter</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
-           <item row="2" column="2">
-            <widget class="QRadioButton" name="radioButtonRecent">
-             <property name="text">
-              <string>recent</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QDateEdit" name="dateEditStart"/>
+           <item row="1" column="1">
+            <widget class="QDateEdit" name="dateEditEnd"/>
            </item>
            <item row="1" column="0">
             <widget class="QLabel" name="label_10">
@@ -178,16 +255,6 @@
              </property>
              <property name="text">
               <string>End Date:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QDateEdit" name="dateEditEnd"/>
-           </item>
-           <item row="2" column="0" colspan="2">
-            <widget class="QRadioButton" name="radioButtonHistorical">
-             <property name="text">
-              <string>historical</string>
              </property>
             </widget>
            </item>
@@ -204,76 +271,10 @@
              </property>
             </widget>
            </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="groupBoxDistance">
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="title">
-           <string>Distance </string>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_3">
-           <item row="0" column="3">
-            <widget class="QLabel" name="label_7">
-             <property name="text">
-              <string>km</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0" colspan="3">
-            <widget class="QSlider" name="horizontalSliderDistance">
-             <property name="maximum">
-              <number>500</number>
-             </property>
-             <property name="value">
-              <number>50</number>
-             </property>
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_6">
-             <property name="text">
-              <string>Max Distance: </string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="2">
-            <widget class="QtExt::ValidatingLineEdit" name="lineEditDistance">
-             <property name="text">
-              <string>10</string>
-             </property>
-             <property name="readOnly">
-              <bool>true</bool>
-             </property>
-            </widget>
+           <item row="0" column="1">
+            <widget class="QDateEdit" name="dateEditStart"/>
            </item>
           </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pushButtonPreview">
-          <property name="text">
-           <string>Download  Weather-Data</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pushButtonDownload">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Save Weather-Data as epw-File</string>
-          </property>
          </widget>
         </item>
         <item>
@@ -403,6 +404,12 @@
    <class>QwtPlot</class>
    <extends>QWidget</extends>
    <header location="global">qwt_plot.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MetaDataEditWidget</class>
+   <extends>QWidget</extends>
+   <header>MetaDataEditWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

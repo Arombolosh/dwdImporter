@@ -19,6 +19,7 @@
 #include "DWDData.h"
 #include "DWDTableModel.h"
 #include "DWDConversions.h"
+#include "MetaDataEditWidget.h"
 
 #include "QtExt_Directories.h"
 
@@ -40,6 +41,13 @@ class DWDLogWidget;
 class MainWindow : public QMainWindow
 {
 	Q_OBJECT
+
+	enum ExportMode {
+		EM_EPW,
+		EM_C6B,
+		NUM_EM
+	};
+
 
 public:
 
@@ -67,7 +75,7 @@ public:
 	void calculateDistances();
 
 	/*! Inits all plots. */
-	void initPlots();
+	void formatPlots();
 
 	/*! Formats a qwt plot. */
 	void formatQwtPlot(QwtPlot &plot, QDate startDate, QDate endDate, QString title, QString leftYAxisTitle, double yLeftMin, double yLeftMax, double yLeftStepSize,
@@ -108,7 +116,18 @@ private slots:
 
 
 
+	void on_comboBoxMode_currentIndexChanged(int index);
+
+	void on_dateEditStart_dateChanged(const QDate &date);
+
+	void on_dateEditEnd_dateChanged(const QDate &date);
+
+	void on_toolButtonHelp_clicked();
+
 private:
+
+	/*! Updates the Ui. */
+	void updateUi();
 
 	Ui::MainWindow								*m_ui;
 
@@ -141,11 +160,25 @@ private:
 
 	IBK::Path									m_exportPath;
 
-	DWDLogWidget                                *m_logWidget = nullptr;
+	DWDLogWidget								*m_logWidget = nullptr;
 
-	IBK::Path									m_downloadDir = IBK::Path(QtExt::Directories().userDataDir().toStdString() + "/downloads");
+
+	IBK::Path									m_downloadDir;
+
+	/*! List of local files, that have been already downloaded. */
 	std::vector<std::string>					m_localFileList;
 
+	/*! Current working mode such as EPW and C6b. */
+	ExportMode									m_mode;
+
+	/*! Meta Data Widget. */
+	MetaDataEditWidget							*m_metaDataWidget = nullptr;
+
+	/*! Climate data loader. */
+	CCM::ClimateDataLoader						m_ccm;
+
+	/*! Indicates if there is currently valid data. */
+	bool										m_validData = false;
 };
 
 #endif // MAINWINDOW_H

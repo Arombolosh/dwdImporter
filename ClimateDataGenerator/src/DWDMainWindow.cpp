@@ -112,22 +112,23 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 	m_ui->setupUi(this);
 
-	m_model = new QStandardItemModel();
-	m_ui->radioButtonHistorical->blockSignals(true);
-	m_ui->radioButtonHistorical->setChecked(true);
-	m_ui->radioButtonHistorical->blockSignals(false);
+	m_metaDataWidget = m_ui->widgetMetaData;
+	m_metaDataWidget->m_ccm = &m_ccm;
 
+	m_model = new QStandardItemModel();
 
 	m_ui->lineEditDistance->setup(0,1000, "Distance in km", true, true);
 	m_ui->lineEditLatitude->setup(-90,90, "Latitude in Deg", true, true);
 	m_ui->lineEditLongitude->setup(-180,180, "Longitude in Deg", true, true);
+	m_ui->lineEditLatitude->setReadOnly(true);
+	m_ui->lineEditLongitude->setReadOnly(true);
 	m_ui->lineEditLatitude->setText("51.03");
 	m_ui->lineEditLongitude->setText("13.7");
 
-	m_ui->dateEditStart->setDate(QDate(2020,1,1));
 	m_ui->dateEditEnd->setDate(QDate(2021,1,1));
 
 	//	m_ui->lineEditYear->setup(1950,2023,tr("Year of interest."), true, true);
+	m_ui->dateEditStart->setDate(QDate(2020,1,1));
 	//	m_ui->lineEditYear->setText("2020");
 
 	//	on_lineEditYear_editingFinished();
@@ -157,6 +158,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	on_horizontalSliderDistance_valueChanged(50);
 
+	// Init combo box for program mode
+	m_ui->comboBoxMode->addItem("EPW", EM_EPW);
+	m_ui->comboBoxMode->addItem("C6B", EM_C6B);
+	m_ui->comboBoxMode->setCurrentIndex(EM_EPW);
+	m_mode = EM_EPW;
+
 	m_progressDlg = new QProgressDialog(this);
 	// m_progressDlg->setFixedWidth(1000);
 	m_progressDlg->setModal(true);
@@ -167,7 +174,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	resize(scaleFactor*1900, scaleFactor*1000);
 
 	// init all plots
-	initPlots();
+	formatPlots();
 
 	// Add the Dockwidget
 	m_logWidget = new DWDLogWidget;
@@ -183,6 +190,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	// Init Map Widget
 	m_mapDialog = new DM::MapDialog(this);
+
+	// Initialize download directory
+	m_downloadDir = IBK::Path(QtExt::Directories().userDataDir().toStdString());
+
 }
 
 
@@ -269,7 +280,7 @@ void MainWindow::loadDataFromDWDServer(){
 	DWDDescriptonData  descData;
 
 	// get download links for data
-	QStringList urls = descData.downloadDescriptionFiles(m_ui->radioButtonRecent->isChecked());
+	QStringList urls = descData.downloadDescriptionFiles(false);
 
 	// initiate download manager
 	m_manager = new DWDDownloader(this);
@@ -291,7 +302,6 @@ void MainWindow::setGUIState(bool guiState) {
 	m_ui->tableView->setEnabled(guiState);
 	m_ui->groupBoxLocation->setEnabled(guiState);
 	m_ui->groupBoxTime->setEnabled(guiState);
-	m_ui->groupBoxDistance->setEnabled(guiState);
 	m_ui->groupBoxDir->setEnabled(guiState);
 	m_ui->pushButtonPreview->setEnabled(guiState);
 	m_ui->pushButtonMap->setEnabled(guiState);
@@ -425,7 +435,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 
 				dateString = "_" + m_descData[idx].m_startDateString + "_" + m_descData[idx].m_endDateString;
 
-				bool isRecent = m_ui->radioButtonRecent->isChecked();
+				bool isRecent = false;
 				QString filename = ""; //only needed by historical
 
 				//only find urls for historical and NO solar data (this is in dataInRows on position 1
@@ -643,32 +653,36 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 		QwtPlotCurve *curveTemp = new QwtPlotCurve();
 		QwtPlotCurve *curveRelHum = new QwtPlotCurve();
 		QwtPlotCurve *curveRad = new QwtPlotCurve();
+		QwtPlotCurve *curveRadDiff = new QwtPlotCurve();
 		QwtPlotCurve *curveWind = new QwtPlotCurve();
 		QwtPlotCurve *curvePressure = new QwtPlotCurve();
 		QwtPlotCurve *curvePrecipitation = new QwtPlotCurve();
 
 		QColor penColor = DWDDescriptonData::color(DWDDescriptonData::D_TemperatureAndHumidity);
-		curveTemp->setPen( penColor, 2 ); // color and thickness in pixels
+		curveTemp->setPen( penColor, 1 ); // color and thickness in pixels
 		curveTemp->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
 
 		penColor = QColor("#7F2AFF");
-		curveRelHum->setPen( penColor, 2 ); // color and thickness in pixels
+		curveRelHum->setPen( penColor, 1 ); // color and thickness in pixels
 		curveRelHum->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
 
-		curveRad->setPen( DWDDescriptonData::color(DWDDescriptonData::D_Solar), 2 ); // color and thickness in pixels
+		curveRad->setPen( DWDDescriptonData::color(DWDDescriptonData::D_Solar), 1 ); // color and thickness in pixels
 		curveRad->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
 
-		curveWind->setPen( DWDDescriptonData::color(DWDDescriptonData::D_Wind), 2 ); // color and thickness in pixels
+		curveRadDiff->setPen( DWDDescriptonData::color(DWDDescriptonData::D_Solar).darker(), 1 ); // color and thickness in pixels
+		curveRadDiff->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
+
+		curveWind->setPen( DWDDescriptonData::color(DWDDescriptonData::D_Wind), 1 ); // color and thickness in pixels
 		curveWind->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
 
-		curvePressure->setPen( DWDDescriptonData::color(DWDDescriptonData::D_Pressure), 2 ); // color and thickness in pixels
+		curvePressure->setPen( DWDDescriptonData::color(DWDDescriptonData::D_Pressure), 1 ); // color and thickness in pixels
 		curvePressure->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
 
-		curvePrecipitation->setPen( DWDDescriptonData::color(DWDDescriptonData::D_Precipitation), 2 ); // color and thickness in pixels
+		curvePrecipitation->setPen( DWDDescriptonData::color(DWDDescriptonData::D_Precipitation), 1 ); // color and thickness in pixels
 		curvePrecipitation->setRenderHint( QwtPlotItem::RenderAntialiased, true ); // use antialiasing
 
 		// data points
-		QPolygonF pointsTemp, pointsRelHum, pointsRad, pointsWind, pointsPressure, pointsPrecipitation;
+		QPolygonF pointsTemp, pointsRelHum, pointsRad, pointsRadDiff, pointsWind, pointsPressure, pointsPrecipitation;
 
 
 		QDateTime startUTC(m_ui->dateEditStart->date(), QTime(0,0,0,0), Qt::UTC);
@@ -679,7 +693,6 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 
 		start.setTimeSpec(Qt::UTC);
 		end.setTimeSpec(Qt::UTC);
-
 
 		m_progressDlg->setLabelText("Updating plot charts");
 		// Updating plots
@@ -693,7 +706,10 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 
 			pointsTemp << QPointF(timeStep , intVal.m_airTemp );
 			pointsRelHum << QPointF(timeStep , intVal.m_relHum );
-			pointsRad << QPointF(timeStep, intVal.m_globalRad );
+			double elevationAngle = 90.0 - intVal.m_zenithAngle;
+			double radValue = (intVal.m_globalRad - intVal.m_diffRad) / std::sin(IBK::PI - elevationAngle*IBK::DEG2RAD);
+			pointsRad << QPointF(timeStep, std::min(1200.0, radValue));
+			pointsRadDiff << QPointF(timeStep, intVal.m_diffRad );
 			pointsWind << QPointF(timeStep, intVal.m_windSpeed );
 			pointsPressure << QPointF(timeStep, intVal.m_pressure/1000  ); // in kPa
 			pointsPrecipitation << QPointF(timeStep, intVal.m_precipitation );
@@ -705,46 +721,56 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 		curveTemp->setSamples(pointsTemp);
 		curveRelHum->setSamples(pointsRelHum);
 		curveRad->setSamples(pointsRad);
+		curveRadDiff->setSamples(pointsRadDiff);
 		curveWind->setSamples(pointsWind);
 		curvePressure->setSamples(pointsPressure);
 		curvePrecipitation->setSamples(pointsPrecipitation);
 
 		// set the curve in the plot
 		curveRelHum->attach(m_ui->plotRelHum);
-
 		curveTemp->attach(m_ui->plotTemp);
-
 		curveRad->attach( m_ui->plotRad );
-
+		curveRadDiff->attach( m_ui->plotRad );
 		curvePressure->attach( m_ui->plotPres );
-
 		curvePrecipitation->attach( m_ui->plotRain );
-
 		curveWind->attach( m_ui->plotWind );
 
 		m_ui->plotRelHum->replot();
-		m_ui->plotRelHum->show();
-
 		m_ui->plotPres->replot();
-		m_ui->plotPres->show();
-
 		m_ui->plotRain->replot();
-		m_ui->plotRain->show();
-
 		m_ui->plotRad->replot();
-		m_ui->plotRad->show();
-
-		m_ui->plotWind->replot();
-		m_ui->plotWind->show();
-
 		m_ui->plotTemp->replot();
+		m_ui->plotWind->replot();
+
+		m_ui->plotRelHum->show();
+		m_ui->plotPres->show();
+		m_ui->plotRain->show();
+		m_ui->plotRad->show();
+		m_ui->plotWind->show();
 		m_ui->plotTemp->show();
 	}
 
+	m_validData = true;
+	updateUi();
+
 	if (exportEPW) {
 		m_progressDlg->hide();
-		m_dwdData.exportEPW(latiDeg, longiDeg, m_exportPath);
-		QMessageBox::information(this, QString("EPW-Export"), tr("Export succesfully done.\n%1").arg(QString::fromStdString(m_exportPath.str())));
+		switch (m_mode) {
+
+			case EM_EPW: {
+				QDate start = m_ui->dateEditStart->date();
+				QDate end = m_ui->dateEditStart->date();
+				if (start.daysTo(end) > 365) {
+					QMessageBox::warning(this, tr("Error in climate file creation"), tr("Only yearly data can be exported to an epw-file."));
+					return;
+				}
+				m_dwdData.exportEPW(m_ccm, latiDeg, longiDeg, m_exportPath);
+			} break;
+			case EM_C6B: m_dwdData.exportC6B(m_ccm, latiDeg, longiDeg, m_exportPath); break;
+			case NUM_EM: break;
+		}
+
+		QMessageBox::information(this, QString("Climate file export"), tr("Climate file generation succesfully done.\n%1").arg(QString::fromStdString(m_exportPath.str())));
 	}
 }
 
@@ -824,11 +850,11 @@ void MainWindow::convertDwdData() {
 
 	// reformat the now initialized plots to align left axes
 	int maxAxisWidth = std::max({m_ui->plotPres->axisWidget(QwtPlot::yLeft)->width(),
-								m_ui->plotRain->axisWidget(QwtPlot::yLeft)->width(),
-								m_ui->plotRelHum->axisWidget(QwtPlot::yLeft)->width(),
-								m_ui->plotTemp->axisWidget(QwtPlot::yLeft)->width(),
-								m_ui->plotWind->axisWidget(QwtPlot::yLeft)->width(),
-								m_ui->plotRad->axisWidget(QwtPlot::yLeft)->width()});
+								 m_ui->plotRain->axisWidget(QwtPlot::yLeft)->width(),
+								 m_ui->plotRelHum->axisWidget(QwtPlot::yLeft)->width(),
+								 m_ui->plotTemp->axisWidget(QwtPlot::yLeft)->width(),
+								 m_ui->plotWind->axisWidget(QwtPlot::yLeft)->width(),
+								 m_ui->plotRad->axisWidget(QwtPlot::yLeft)->width()});
 
 	m_ui->plotPres->setContentsMargins(maxAxisWidth-m_ui->plotPres->axisWidget(QwtPlot::yLeft)->width(),0,0,0);
 	m_ui->plotRain->setContentsMargins(maxAxisWidth-m_ui->plotRain->axisWidget(QwtPlot::yLeft)->width(),0,0,0);
@@ -879,24 +905,32 @@ void MainWindow::updateMaximumHeightOfPlots() {
 
 void MainWindow::on_pushButtonDownload_clicked(){
 
+	QString extension;
+	switch (m_mode) {
+	case EM_EPW: extension = ".epw"; break;
+	case EM_C6B: extension = ".c6b"; break;
+	case NUM_EM: break;
+	}
+
 	// request file name
 	QString filename = QFileDialog::getSaveFileName(
 				this,
-				tr("Save EPW File"),
+				tr("Save Climate File"),
 				"",
-				tr("EPW Weather file (.epw);;All files (*.*)") );
+				tr("Weather file (*%1);;All files (*.*)").arg(extension) );
 
 	if (filename.isEmpty()) {
-		QMessageBox::warning(this, tr("Export-Error"), tr("Please Select a valid file name for the exporting weather-data (epw)."));
+		QMessageBox::warning(this, tr("Export-Error"), tr("Please Select a valid file name for the exporting weather-data (%1).").arg(extension));
 		return;
 	}
 
-	if (!filename.endsWith(".epw"))
-		filename.append(".epw");
+	if (!filename.endsWith(extension))
+		filename.append(extension);
 
 	m_exportPath = IBK::Path(filename.toStdString());
 
 	downloadData(true, true);
+	formatPlots();
 }
 
 void MainWindow::addToList(const QUrlInfo qUrlI){
@@ -924,7 +958,7 @@ void MainWindow::calculateDistances() {
 	}
 }
 
-void MainWindow::initPlots() {
+void MainWindow::formatPlots() {
 	formatQwtPlot(*m_ui->plotTemp, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Air Temperature", "C", -20, 40, 20, false);
 	formatQwtPlot(*m_ui->plotPres, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Pressure", "kPa", 0, 1.4, 0.2, false);
 	formatQwtPlot(*m_ui->plotRad, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Shortwave Radiation", "W/m2", 0, 1400, 200, false);
@@ -1023,7 +1057,6 @@ void MainWindow::formatQwtPlot(QwtPlot &plot, QDate startDate, QDate endDate, QS
 	grid->setMinorPen(QPen(Qt::lightGray, 0 , Qt::DotLine));
 	grid->attach(&plot);
 
-
 	plot.replot();
 }
 
@@ -1044,8 +1077,13 @@ void MainWindow::on_pushButtonMap_clicked() {
 	m_mapDialog->showMaximized();
 	m_mapDialog->exec();
 
-	//	m_ui->lineEditLatitude->setText(QString::number(latitude) );
-	//	m_ui->lineEditLongitude->setText(QString::number(longitude) );
+	m_ui->lineEditLatitude->setText(QString::number(m_mapDialog->m_latitude) );
+	m_ui->lineEditLongitude->setText(QString::number(m_mapDialog->m_longitude) );
+
+	m_ccm.m_latitudeInDegree = m_mapDialog->m_latitude;
+	m_ccm.m_longitudeInDegree = m_mapDialog->m_longitude;
+
+	m_ui->widgetMetaData->updateUi();
 
 	calculateDistances();
 
@@ -1091,7 +1129,7 @@ void MainWindow::on_pushButtonPreview_clicked() {
 	downloadData(true, false);
 	setGUIState(true);
 	// update formatting
-	initPlots();
+	formatPlots();
 }
 
 void MainWindow::on_toolButtonOpenDirectory_clicked() {
@@ -1100,14 +1138,12 @@ void MainWindow::on_toolButtonOpenDirectory_clicked() {
 
 
 void MainWindow::on_dateEditStart_userDateChanged(const QDate &date) {
-	m_dwdData.m_startTime.set(date.year(), 0);
-	m_proxyModel->setFilterMinimumDate(date);
+
 }
 
 
 void MainWindow::on_dateEditEnd_userDateChanged(const QDate &date) {
-	m_dwdData.m_endTime.set(date.year(), 0);
-	m_proxyModel->setFilterMaximumDate(date);
+
 }
 
 
@@ -1118,7 +1154,7 @@ void MainWindow::on_toolButtonDownloadDir_clicked()
 				this,
 				tr("Set Downloads Directory"),
 				m_downloadDir.c_str(),
-			QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+				QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 
 	if (directory.isEmpty()) return;
 
@@ -1128,5 +1164,72 @@ void MainWindow::on_toolButtonDownloadDir_clicked()
 
 	updateLocalFileList();
 
+}
+
+
+void MainWindow::on_comboBoxMode_currentIndexChanged(int index) {
+	m_mode = (ExportMode)m_ui->comboBoxMode->currentData().toUInt();
+
+	m_ui->dateEditEnd->setEnabled(m_mode == ExportMode::EM_C6B);
+
+	switch (m_mode) {
+
+	case EM_EPW:
+		// In EPW only yearly data can be produced
+		m_ui->dateEditEnd->setDate(m_ui->dateEditStart->date().addMonths(12));
+		break;
+	case EM_C6B:
+
+		break;
+	case NUM_EM:
+		break;
+	}
+}
+
+void MainWindow::on_dateEditStart_dateChanged(const QDate &date) {
+
+	m_ccm.m_startYear = date.year();
+	m_ui->widgetMetaData->updateUi();
+
+	m_validData = false;
+	updateUi();
+
+	if (m_mode == ExportMode::EM_EPW) {
+		m_ui->dateEditEnd->setDate(date.addMonths(12));
+	}
+	else {
+		if (date > m_ui->dateEditEnd->date()) {
+			m_ui->dateEditEnd->setDate(date.addDays(1));
+			QMessageBox::warning(this, tr("Error in start date"), tr("Period should be at least one day."));
+		}
+	}
+
+	m_dwdData.m_startTime.set(date.year(), 0);
+	m_proxyModel->setFilterMinimumDate(date);
+}
+
+
+void MainWindow::on_dateEditEnd_dateChanged(const QDate &date) {
+	if (date < m_ui->dateEditStart->date()) {
+		m_ui->dateEditStart->setDate(date.addDays(-1));
+		QMessageBox::warning(this, tr("Error in start date"), tr("Period should be at least one day."));
+	}
+
+	m_validData = false;
+	updateUi();
+
+	m_dwdData.m_endTime.set(date.year(), 0);
+	m_proxyModel->setFilterMaximumDate(date);
+}
+
+
+void MainWindow::on_toolButtonHelp_clicked() {
+	QMessageBox::information(this, tr("Climate data modes"), tr("In EPW Mode it is only possible to produce yearly data and exported "
+																"weather files. So only a start date can be specified. Whereas in C6B "
+																"Mode continuous weather data can be produced and exported in a weather file."));
+}
+
+void MainWindow::updateUi() {
+	m_ui->pushButtonDownload->setEnabled(m_validData);
 }
 
