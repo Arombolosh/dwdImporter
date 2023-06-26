@@ -22,7 +22,7 @@ public:
 
 
 	/*! Adds a data point to the scene. */
-	void addDwdDataPoint(const Data::DataType &type, const QString & str, const IBK::Time &minDate, const IBK::Time &maxDate,
+	void addDwdDataPoint(const Data::DataType &type, unsigned int id, const QString & str, const IBK::Time &minDate, const IBK::Time &maxDate,
 						 const double &lat, const double &lon);
 
 	/*! Converts coordinates to a position at the scene. */
@@ -37,10 +37,13 @@ public:
 	QGraphicsItem*				m_mapSvgItem = nullptr;
 	QGraphicsEllipseItem*		m_locationItem = nullptr;
 
-	QGraphicsItemGroup			*m_dataGroup[Data::NUM_DT];
+	DataItem					*m_dataGroup[Data::NUM_DT];
 
 	double						m_longitude;	///< Longitude of mouse position
 	double						m_latitude;		///< Latitude of mouse position
+
+	/*! Map with id of weather station to graphics item. */
+	std::map<unsigned int, DataItem*> m_idToDataItem;
 
 signals:
 	void updatedLocation();
