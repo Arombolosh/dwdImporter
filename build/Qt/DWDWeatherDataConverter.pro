@@ -1,20 +1,18 @@
 TEMPLATE = subdirs
 
 SUBDIRS = \
-                IBK \
-                QtExt \
-                QuaZIP \
-                CCM \
-                TiCPP \
-                qtftp \
-                qwt \
-                DataMap \
-                ClimateDataGenerator
+        IBK \
+		QtExt \
+		QuaZIP \
+		CCM \
+		TiCPP \
+		qtftp \
+		qwt \
+		DataMap \
+		DWDWeatherDataConverter
 
 
 # where to find the sub projects
-#ClimateDataGenerator.file = ../../ClimateDataGenerator/projects/Qt/ClimateDataGenerator.pro
-
 IBK.file = ../../externals/IBK/projects/Qt/IBK.pro
 #IBKMK.file = ../../externals/IBKMK/projects/Qt/IBKMK.pro
 QtExt.file = ../../externals/QtExt/projects/Qt/QtExt.pro
@@ -25,7 +23,7 @@ qtftp.file = ../../externals/qftp/projects/Qt/qftp.pro
 qwt.file = ../../externals/qwt/projects/Qt/qwt.pro
 DataMap.file = ../../externals/DataMap/projects/Qt/DataMap.pro
 
-ClimateDataGenerator.file = ../../ClimateDataGenerator/projects/Qt/ClimateDataGenerator.pro
+DWDWeatherDataConverter.file = ../../DWDWeatherDataConverter/projects/Qt/DWDWeatherDataConverter.pro
 
 
 # dependencies
@@ -35,5 +33,5 @@ QuaZIP.depends = IBK
 CCM.depends = IBK TiCPP
 TiCPP.depends = IBK
 DataMap.depends = IBK QtExt
-ClimateDataGenerator.depends = IBK QtExt qtftp qwt DataMap
+DWDWeatherDataConverter.depends = IBK QtExt qtftp qwt DataMap
 
