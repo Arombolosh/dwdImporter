@@ -4,6 +4,7 @@
 #include <QSvgRenderer>
 #include <QGraphicsSvgItem>
 #include <QGraphicsItemGroup>
+#include <QGraphicsDropShadowEffect>
 
 namespace DM {
 Scene::Scene(QObject * parent) :
@@ -15,7 +16,7 @@ Scene::Scene(QObject * parent) :
 
 	// Initialize all item groups
 	for (unsigned int i=0; i<Data::NUM_DT; ++i) {
-		m_dataGroup[(Data::DataType)i] = new QGraphicsItemGroup;
+		m_dataGroup[(Data::DataType)i] = new DataItem;
 		addItem(m_dataGroup[(Data::DataType)i]);
 	}
 
@@ -36,9 +37,18 @@ Scene::Scene(QObject * parent) :
 	// Hold the pointer
 	m_mapSvgItem = item;
 
-	m_locationItem = new QGraphicsEllipseItem(-5,-5,10,10);
-	m_locationItem->setBrush(Qt::black);
+	m_locationItem = new QGraphicsEllipseItem(-10,-10,20,20);
+	// m_locationItem->setBrush(Qt::black);
+	m_locationItem->setPen(QPen(Qt::red, 2));
 	m_locationItem->setZValue(100);
+
+	// Erstellen Sie den Schatteneffekt und konfigurieren Sie ihn
+	QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect();
+	effect->setOffset(0);  // Setzen Sie den Offset des Schattens
+	effect->setBlurRadius(20);  // Setzen Sie den Unschärferadius
+
+	// Fügen Sie den Schatteneffekt zum Ellipsenobjekt hinzu
+	m_locationItem->setGraphicsEffect(effect);
 
 	addItem(m_locationItem);
 }
@@ -74,13 +84,15 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 	m_cursor->setDefaultTextColor(Qt::black);
 
 	// Set the new position of the cursor
-	m_cursor->setPos(event->scenePos().x() + 20, event->scenePos().y() + 20 );
+	m_cursor->setPos(event->scenePos().x() + 10, event->scenePos().y() + 10 );
 
 }
 
-void Scene::addDwdDataPoint(const Data::DataType & type, const QString &str, const IBK::Time &minDate, const IBK::Time &maxDate, const double & lat, const double & lon) {
+void Scene::addDwdDataPoint(const Data::DataType & type, unsigned int id, const QString &str, const IBK::Time &minDate, const IBK::Time &maxDate, const double & lat, const double & lon) {
 	DataItem *item = new DataItem(m_mapSvgItem->boundingRect(), str, minDate, maxDate, lat, lon, type);
 	m_dataGroup[type]->addToGroup(item);
+
+	m_idToDataItem[id] = item;
 
 	update();
 }
