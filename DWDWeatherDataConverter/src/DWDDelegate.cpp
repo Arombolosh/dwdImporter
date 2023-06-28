@@ -98,7 +98,7 @@ bool DWDDelegate::editorEvent( QEvent *event, QAbstractItemModel *model, const Q
 				break;
 			}
 
-			qDebug() << state;
+			// qDebug() << state;
 			model->setData( index, state, Qt::CheckStateRole );
 
 		}
