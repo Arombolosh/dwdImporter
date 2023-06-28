@@ -12,7 +12,6 @@ namespace Ui {
 class MapDialog;
 }
 
-
 /*! Class with a tiny map viewer with map of Germany.
 	Basis is a graphics scene with a graphics viewer,
 	that loads a svg map. */
@@ -34,13 +33,18 @@ public:
 	double					m_longitude;
 
 	/*! Distance of location. */
-	double					m_distance;
+	double					m_distance = 50.0;
 
 	/*! Sets the coordinates in the line edit. */
 	void setCoordinates(double latitude, double longitude);
 
 	/*! Sets the current distance. */
 	void setDistance(double distance);
+
+signals:
+	void updateDistances();
+
+	void updatelocation(double latitude, double longitude);
 
 private slots:
 	/*! Is called in order to update Location. */
@@ -56,13 +60,13 @@ private slots:
 
 	void on_checkBoxPrecipitation_toggled(bool checked);
 
-	void on_horizontalSliderOpacity_valueChanged(int value);
-
 	void on_lineEditLongitude_editingFinishedSuccessfully();
 
 	void on_lineEditLatitude_editingFinishedSuccessfully();
 
 	void on_horizontalSliderDistance_valueChanged(int value);
+
+	void on_horizontalSliderSize_valueChanged(int value);
 
 private:
 	Ui::MapDialog			*m_ui;

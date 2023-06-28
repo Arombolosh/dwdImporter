@@ -49,12 +49,14 @@ void MapDialog::setDistance(double distance) {
 	m_ui->lineEditDistance->setValue(distance);
 	m_distance = distance;
 
-	double value = distance * 2. / 1.1;
+	double value = 5 + distance * 2. / 1.1;
 	m_scene->m_locationItem->setRect(-value/2,-value/2,value,value);
 }
 
 void MapDialog::onUpdateLocation() {
 	setCoordinates(m_scene->m_latitude, m_scene->m_longitude);
+
+	emit updateDistances();
 }
 
 
@@ -91,22 +93,14 @@ void MapDialog::resizeEvent(QResizeEvent *event) {
 	m_ui->graphicsViewMap->fitInView(m_scene->sceneRect(), Qt::KeepAspectRatio);
 }
 
-
-void MapDialog::on_horizontalSliderOpacity_valueChanged(int value) {
-	m_scene->m_dataGroup[Data::DT_Precipitation]->setOpacity((double)value/255);
-	m_scene->m_dataGroup[Data::DT_Pressure]->setOpacity((double)value/255);
-	m_scene->m_dataGroup[Data::DT_Solar]->setOpacity((double)value/255);
-	m_scene->m_dataGroup[Data::DT_TemperatureAndHumidity]->setOpacity((double)value/255);
-	m_scene->m_dataGroup[Data::DT_Wind]->setOpacity((double)value/255);
-}
-
-
 void MapDialog::on_lineEditLongitude_editingFinishedSuccessfully() {
 	double longi = m_ui->lineEditLongitude->value();
 	m_longitude = longi;
 
 	QPointF pos = convertCoordinatesToPos(m_scene->m_mapSvgItem->boundingRect(), m_latitude, longi);
 	m_scene->m_locationItem->setPos(pos);
+
+	emit updateDistances();
 }
 
 
@@ -116,11 +110,20 @@ void MapDialog::on_lineEditLatitude_editingFinishedSuccessfully() {
 
 	QPointF pos = convertCoordinatesToPos(m_scene->m_mapSvgItem->boundingRect(), m_latitude, lati);
 	m_scene->m_locationItem->setPos(pos);
+
+	emit updateDistances();
 }
 
 
 void MapDialog::on_horizontalSliderDistance_valueChanged(int distance) {
 	setDistance(distance);
+
+	emit updateDistances();
+}
+
+
+void MapDialog::on_horizontalSliderSize_valueChanged(int value) {
+	m_scene->m_dataPointSize = value;
 }
 
 } // namespace DM
