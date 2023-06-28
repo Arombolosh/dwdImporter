@@ -1,6 +1,8 @@
 #include "DWDMainWindow.h"
-#include "DM_Conversions.h"
 #include "ui_DWDMainWindow.h"
+
+#include "DM_Conversions.h"
+#include "DM_Data.h"
 
 #include <IBK_NotificationHandler.h>
 #include <IBK_messages.h>
@@ -57,8 +59,8 @@
 #include "DWDDelegate.h"
 #include "DWDConversions.h"
 
-#include "Constants.h"
-#include "Utilities.h"
+#include "DWDConstants.h"
+#include "DWDUtilities.h"
 // #include "DWD_CheckBox.h"
 
 
@@ -169,7 +171,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_mode = EM_EPW;
 
 	m_progressDlg = new QProgressDialog(this);
-	// m_progressDlg->setFixedWidth(1000);
+	m_progressDlg->setMinimumDuration(2000);
 	m_progressDlg->setModal(true);
 
 	connect( &m_dwdData, &DWDData::progress, this, &MainWindow::setProgress );
@@ -194,6 +196,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	// Init Map Widget
 	m_mapDialog = new DM::MapDialog(this);
+	connect(m_mapDialog, &DM::MapDialog::updateDistances, this, &MainWindow::onUpdateDistances);
+	m_mapDialog->m_latitude = m_ccm.m_latitudeInDegree;
+	m_mapDialog->m_longitude = m_ccm.m_longitudeInDegree;
 
 	// Initialize download directory
 	m_downloadDir = IBK::Path(QtExt::Directories().userDataDir().toStdString());
@@ -357,6 +362,9 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 	}
 
 	m_progressDlg->show();
+	m_progressDlg->setLabelText("Downloading DWD Data.");
+	m_progressDlg->setValue(0);
+	m_progressDlg->setMaximum(0);
 
 	//check longitude and latitude
 	if(m_ui->lineEditLatitude->text().isEmpty()){
@@ -478,7 +486,7 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 				QString filename = ""; //only needed by historical
 
 				//only find urls for historical and NO solar data (this is in dataInRows on position 1
-				if(!isRecent && i != DWDDescriptonData::D_Solar){
+				if(!isRecent){
 					QFtp *ftp = new QFtp;
 
 					connect(ftp, &QFtp::listInfo, &dwdData, &DWDData::findFile );
@@ -558,6 +566,8 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 			case DWDData::DT_Precipitation:		cat = "Precipitation";							break;
 			}
 			QMessageBox::warning(this, QString(), QString("Download of file '%1' was not successful. Category: '%2'").arg(filenames[i]+".zip").arg(cat));
+			m_progressDlg->hide();
+			return;
 		}
 		else
 			validFiles[i] = checkfile;
@@ -822,8 +832,6 @@ void MainWindow::convertDwdData() {
 	IBK::IBK_Message("Converting weather data.", IBK::MSG_PROGRESS);
 
 	descData.readAllDescriptions(m_descData);
-	calculateDistances();
-
 	DM::Scene *s = m_mapDialog->m_scene;
 	// s->addDwdDataPoint(DM::Data::DT_TemperatureAndHumidity, QString(), IBK::Time(), IBK::Time(), 55.036579, 8.389285);
 
@@ -836,13 +844,17 @@ void MainWindow::convertDwdData() {
 					continue;
 
 				DM::Scene *s = m_mapDialog->m_scene;
-				s->addDwdDataPoint((DM::Data::DataType)i, d.m_idStation, d.m_name.c_str(), d.m_minDate, d.m_maxDate, d.m_latitude, d.m_longitude);
+				s->addDwdDataPoint(&m_mapDialog->m_distance, &m_dwdData.m_startTime, &m_dwdData.m_endTime,
+								   (DM::Data::DataType)i, d.m_idStation, d.m_name.c_str(), d.m_minDate, d.m_maxDate,
+								   d.m_latitude, d.m_longitude);
 			}
 		}
 	}
 	catch (IBK::Exception &ex) {
 		IBK::IBK_Message("Error converting data.", IBK::MSG_ERROR);
 	}
+
+	calculateDistances();
 
 	s->m_dataGroup[DM::Data::DT_Precipitation]->setZValue(1);
 	s->m_dataGroup[DM::Data::DT_Pressure]->setZValue(3);
@@ -861,7 +873,7 @@ void MainWindow::convertDwdData() {
 	m_ui->tableView->sortByColumn(1, Qt::AscendingOrder);
 
 	m_dwdTableModel->m_proxyModel = m_proxyModel;
-	m_ui->tableView->resizeColumnsToContents();
+	//m_ui->tableView->resizeColumnsToContents();
 
 	m_ui->tableView->setItemDelegateForColumn(DWDTableModel::ColPressure, new DWDDelegate);
 	m_ui->tableView->setItemDelegateForColumn(DWDTableModel::ColRadiation, new DWDDelegate);
@@ -878,14 +890,25 @@ void MainWindow::convertDwdData() {
 
 	m_ui->tableView->reset();
 
-	double width = this->devicePixelRatioFScale() * 80;
+	double width = this->devicePixelRatioFScale() * 70;
 	m_ui->tableView->setColumnWidth(DWDTableModel::ColPressure, width);
 	m_ui->tableView->setColumnWidth(DWDTableModel::ColAirTemp, width);
 	m_ui->tableView->setColumnWidth(DWDTableModel::ColPrecipitation, width);
 	m_ui->tableView->setColumnWidth(DWDTableModel::ColRadiation, width);
 	m_ui->tableView->setColumnWidth(DWDTableModel::ColWind, width);
 
-	headerView->setSectionResizeMode(DWDTableModel::ColCountry, QHeaderView::Stretch);
+	double defWidth = 70;
+	m_ui->tableView->setColumnWidth(DWDTableModel::ColId, defWidth);
+	m_ui->tableView->setColumnWidth(DWDTableModel::ColDistance, defWidth);
+	m_ui->tableView->setColumnWidth(DWDTableModel::ColLongitude, defWidth);
+	m_ui->tableView->setColumnWidth(DWDTableModel::ColLatitude, defWidth);
+
+	m_ui->tableView->setColumnWidth(DWDTableModel::ColMinDate, defWidth);
+	m_ui->tableView->setColumnWidth(DWDTableModel::ColMaxDate, defWidth);
+
+	m_ui->tableView->setColumnWidth(DWDTableModel::ColCountry, 80);
+
+	headerView->setSectionResizeMode(DWDTableModel::ColName, QHeaderView::Stretch);
 
 	// initialize local file list on startup
 	// this can only be done after m_descData is filled, so the isLocal flags can be set correctly
@@ -908,6 +931,14 @@ void MainWindow::convertDwdData() {
 
 
 	m_progressDlg->hide();
+}
+
+void MainWindow::onUpdateDistances() {
+	calculateDistances();
+}
+
+void MainWindow::onLocationDistances(double latitude, double longitude) {
+
 }
 
 
@@ -983,8 +1014,8 @@ void MainWindow::addToList(const QUrlInfo qUrlI){
 
 void MainWindow::calculateDistances() {
 
-	double lat1 = m_ui->lineEditLatitude->text().toDouble();
-	double lon1 = m_ui->lineEditLongitude->text().toDouble();
+	double lat1 = m_mapDialog->m_latitude;
+	double lon1 = m_mapDialog->m_longitude;
 
 	// we calculate for each description the distance to the reference location
 	for ( DWDDescriptonData &data : m_descData ) {
@@ -998,7 +1029,20 @@ void MainWindow::calculateDistances() {
 		double a = 0.5 - cos((lat2-lat1)*IBK::DEG2RAD)/2 + cos(lat1*IBK::DEG2RAD) * cos(lat2*IBK::DEG2RAD) * (1-cos((lon2-lon1)*IBK::DEG2RAD))/2;
 
 		// calc distance
-		data.m_distance = 12742 * std::asin(sqrt(a)); //2*R*asin
+		double dist = 12742 * std::asin(sqrt(a)); //2*R*asin
+		data.m_distance = dist;
+
+		for (unsigned int i=0; i<DWDDescriptonData::DWDDataType::NUM_D; ++i) {
+			if (!data.m_data[i].m_isAvailable)
+				continue;
+
+			std::pair<DM::Data::DataType, unsigned int> key((DM::Data::DataType)i, data.m_idStation);
+
+			DM::DataItem *dataItem = m_mapDialog->m_scene->m_idToDataItem.at(key);
+
+			Q_ASSERT(dataItem != nullptr);
+			const_cast<DM::Data &>(dataItem->data()).m_currentDistance = dist;
+		}
 	}
 }
 
@@ -1183,23 +1227,8 @@ void MainWindow::on_pushButtonPreview_clicked() {
 	formatPlots();
 }
 
-void MainWindow::on_toolButtonOpenDirectory_clicked() {
 
-}
-
-
-void MainWindow::on_dateEditStart_userDateChanged(const QDate &date) {
-
-}
-
-
-void MainWindow::on_dateEditEnd_userDateChanged(const QDate &date) {
-
-}
-
-
-void MainWindow::on_toolButtonDownloadDir_clicked()
-{
+void MainWindow::on_toolButtonDownloadDir_clicked() {
 	// request directory
 	QString directory = QFileDialog::getExistingDirectory (
 				this,
@@ -1255,7 +1284,7 @@ void MainWindow::on_dateEditStart_dateChanged(const QDate &date) {
 		}
 	}
 
-	m_dwdData.m_startTime.set(date.year(), 0);
+	m_dwdData.m_startTime.set(date.year(), date.month()-1, date.day()-1, 0 );
 	m_proxyModel->setFilterMinimumDate(date);
 }
 
@@ -1269,7 +1298,7 @@ void MainWindow::on_dateEditEnd_dateChanged(const QDate &date) {
 	m_validData = false;
 	updateUi();
 
-	m_dwdData.m_endTime.set(date.year(), 0);
+	m_dwdData.m_endTime.set(date.year(), date.month()-1, date.day()-1, 0 );
 	m_proxyModel->setFilterMaximumDate(date);
 }
 

@@ -89,6 +89,12 @@ protected:
 private slots:
 	void convertDwdData();
 
+	/*! Updates all distances. */
+	void onUpdateDistances();
+
+	/*! Updates all distances. */
+	void onLocationDistances(double latitude, double longitude);
+
 	/*! Updates the Maximum height of the plots, when the main window is beeing resized. */
 	void updateMaximumHeightOfPlots();
 
@@ -106,17 +112,6 @@ private slots:
 
 	void on_pushButtonPreview_clicked();
 
-	void on_toolButtonOpenDirectory_clicked();
-
-
-	void on_dateEditStart_userDateChanged(const QDate &date);
-
-	void on_dateEditEnd_userDateChanged(const QDate &date);
-
-	void on_toolButtonDownloadDir_clicked();
-
-
-
 	void on_comboBoxMode_currentIndexChanged(int index);
 
 	void on_dateEditStart_dateChanged(const QDate &date);
@@ -124,6 +119,8 @@ private slots:
 	void on_dateEditEnd_dateChanged(const QDate &date);
 
 	void on_toolButtonHelp_clicked();
+
+	void on_toolButtonDownloadDir_clicked();
 
 private:
 
