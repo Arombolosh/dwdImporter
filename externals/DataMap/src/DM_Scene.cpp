@@ -1,5 +1,6 @@
 #include "DM_Scene.h"
 #include "DM_Conversions.h"
+#include "DM_DataItem.h"
 
 #include <QSvgRenderer>
 #include <QGraphicsSvgItem>
@@ -16,7 +17,7 @@ Scene::Scene(QObject * parent) :
 
 	// Initialize all item groups
 	for (unsigned int i=0; i<Data::NUM_DT; ++i) {
-		m_dataGroup[(Data::DataType)i] = new DataItem;
+		m_dataGroup[(Data::DataType)i] = new DataItemGroup;
 		addItem(m_dataGroup[(Data::DataType)i]);
 	}
 
@@ -39,7 +40,7 @@ Scene::Scene(QObject * parent) :
 
 	m_locationItem = new QGraphicsEllipseItem(-10,-10,20,20);
 	// m_locationItem->setBrush(Qt::black);
-	m_locationItem->setPen(QPen(Qt::red, 2));
+	m_locationItem->setPen(QPen(Qt::black, 1));
 	m_locationItem->setZValue(100);
 
 	// Erstellen Sie den Schatteneffekt und konfigurieren Sie ihn
@@ -54,16 +55,19 @@ Scene::Scene(QObject * parent) :
 }
 
 void Scene::mousePressEvent(QGraphicsSceneMouseEvent * event) {
-	QPointF pos = event->scenePos() - m_locationItem->scenePos();
+	if (event->button() == Qt::LeftButton) {
+		QPointF pos = event->scenePos() - m_locationItem->scenePos();
 
-	m_locationItem->moveBy(pos.x(), pos.y());
+		m_locationItem->moveBy(pos.x(), pos.y());
 
-	int height = m_mapSvgItem->boundingRect().size().height();
-	int width = m_mapSvgItem->boundingRect().size().width();
+		int height = m_mapSvgItem->boundingRect().size().height();
+		int width = m_mapSvgItem->boundingRect().size().width();
 
-	convertPosToCoordinates(event->scenePos() + m_mapSvgItem->scenePos(), height, width, m_latitude, m_longitude);
+		convertPosToCoordinates(event->scenePos() + m_mapSvgItem->scenePos(), height, width, m_latitude, m_longitude);
 
-	emit updatedLocation();
+		emit updatedLocation();
+	}
+	QGraphicsScene::mousePressEvent(event);
 }
 
 void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
@@ -88,11 +92,21 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 
 }
 
-void Scene::addDwdDataPoint(const Data::DataType & type, unsigned int id, const QString &str, const IBK::Time &minDate, const IBK::Time &maxDate, const double & lat, const double & lon) {
-	DataItem *item = new DataItem(m_mapSvgItem->boundingRect(), str, minDate, maxDate, lat, lon, type);
+void Scene::addDwdDataPoint(double *maxDist, IBK::Time *start, IBK::Time *end, const Data::DataType & type, unsigned int id, const QString &str, const IBK::Time &minDate, const IBK::Time &maxDate, const double & lat, const double & lon) {
+	Data data(str, minDate, maxDate, lat, lon, type);
+
+	QPointF pos = ::DM::convertCoordinatesToPos(m_mapSvgItem->boundingRect(), lat, lon);
+
+	DataItem *item = new DataItem(pos, data, colorFromDataType(type), m_dataPointSize);
 	m_dataGroup[type]->addToGroup(item);
 
-	m_idToDataItem[id] = item;
+	item->m_maximumDistance = maxDist;
+	item->m_minDate = start;
+	item->m_maxDate = end;
+
+	std::pair<DM::Data::DataType, unsigned int> key (type, id);
+
+	m_idToDataItem[key] = item;
 
 	update();
 }
