@@ -26,17 +26,19 @@ Scene::Scene(QObject * parent) :
 
 	// load svg
 	renderer->load(QString(":/gfx/Karte_Deutschland.svg"));
+	renderer->setFramesPerSecond(60);
 
 	// construct an graphics item and then we set the renderer
 	QGraphicsSvgItem *item = new QGraphicsSvgItem();
-	item->setSharedRenderer(renderer);
+	//item->setSharedRenderer(renderer);
 	item->setZValue(-99);
 	item->setPos(0,0);
 	addItem(item); // add the item to the scene
 
 	//QGraphicsEllipseItem *ellipse = addEllipse(0-10,0-10,20,20, QPen(Qt::red), Qt::blue);
 	// Hold the pointer
-	m_mapSvgItem = item;
+	m_mapSvgItem = new QGraphicsSvgItem(":/gfx/Karte_Deutschland.svg");
+	addItem(m_mapSvgItem);
 
 	m_locationItem = new QGraphicsEllipseItem(-10,-10,20,20);
 	// m_locationItem->setBrush(Qt::black);
@@ -89,6 +91,8 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 
 	// Set the new position of the cursor
 	m_cursor->setPos(event->scenePos().x() + 10, event->scenePos().y() + 10 );
+
+	QGraphicsScene::mouseMoveEvent(event);
 
 }
 

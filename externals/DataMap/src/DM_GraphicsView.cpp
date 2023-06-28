@@ -8,6 +8,8 @@ GraphicsView::GraphicsView(QWidget *parent) :
 	QGraphicsView(parent)
 {
 	setRenderHint(QPainter::Antialiasing);
+	setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+	setCacheMode(QGraphicsView::CacheBackground);
 }
 
 GraphicsView::~GraphicsView() {
