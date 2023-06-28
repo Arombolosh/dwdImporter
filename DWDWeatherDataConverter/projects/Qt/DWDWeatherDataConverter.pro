@@ -7,7 +7,7 @@ TEMPLATE = app
 # this pri must be sourced from all our applications
 include( ../../../externals/IBK/projects/Qt/IBK.pri )
 
-QT += xml core gui network printsupport widgets svg opengl charts
+QT += xml core gui network printsupport widgets svg
 CONFIG += console
 
 LIBS += -L../../../lib$${DIR_PREFIX} \
