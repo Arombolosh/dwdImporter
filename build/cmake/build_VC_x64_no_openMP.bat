@@ -23,11 +23,11 @@ if not defined CMAKE_PREFIX_PATH (
 set PATH=%PATH%;%JOM_PATH%
 
 :: create and change into build subdir
-mkdir bb_VC_x64
-pushd bb_VC_x64
+mkdir bb_VC_x64_noOpenMP
+pushd bb_VC_x64_noOpenMP
 
 :: configure makefiles and build
-cmake -G "NMake Makefiles JOM" .. -DCMAKE_BUILD_TYPE:String="Release" -DUSE_OMP:BOOL=ON
+cmake -G "NMake Makefiles JOM" .. -DCMAKE_BUILD_TYPE:String="Release" -DUSE_OMP:BOOL=OFF
 jom
 if ERRORLEVEL 1 GOTO fail
 
@@ -40,7 +40,10 @@ xcopy /Y .\bb_VC_x64\NandradFMUGenerator\NandradFMUGenerator.exe ..\..\bin\relea
 xcopy /Y .\bb_VC_x64\SIM-VICUS\SIM-VICUS.exe ..\..\bin\release_x64
 xcopy /Y .\bb_VC_x64\NandradSolverFMI\NandradSolverFMI.dll ..\..\bin\release_x64
 
+echo ** Run Tests **
+run_tests.bat				  			 
 exit /b 0
+
 
 :fail
 echo ** Build Failed **
