@@ -4,8 +4,6 @@
 
 #include <QMessageBox>
 
-#include "Constants.h"
-
 #include "QtExt_Directories.h"
 
 QStringList DWDDescriptonData::downloadDescriptionFiles(bool isRecent){

@@ -69,7 +69,6 @@ public:
 	/*! End date of data type. */
 	IBK::Time					m_endDate[NUM_D];
 
-
 	/*! Min Date */
 	IBK::Time					m_minDate;
 
