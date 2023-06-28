@@ -1163,7 +1163,7 @@ void MainWindow::on_pushButtonMap_clicked() {
 	//DWDMap::getLocation(m_descData, latitude, longitude, year, distance, this);
 	m_mapDialog->setCoordinates(latitude, longitude);
 	m_mapDialog->setDistance(distance);
-	m_mapDialog->showMaximized();
+	// m_mapDialog->showMaximized();
 
 	QRectF rect = m_mapDialog->m_scene->m_mapSvgItem->boundingRect();
 	QPointF pos = DM::convertCoordinatesToPos(rect, latitude, longitude);

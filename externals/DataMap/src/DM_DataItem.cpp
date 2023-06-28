@@ -37,9 +37,11 @@ void DataItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
 	painter->setPen(Qt::NoPen);
 	painter->setBrush(m_color);
 
-	setOpacity(1.0);
-	if(m_data.m_currentDistance > *m_maximumDistance)
-		setOpacity(0.2);
+	double currentOpacity = opacity();
+	double newOpacity = m_data.m_currentDistance > *m_maximumDistance ? 0.2 : 1.0;
+
+	if (newOpacity != currentOpacity)
+		setOpacity(newOpacity);
 
 	Q_ASSERT(m_maximumDistance != nullptr);
 
