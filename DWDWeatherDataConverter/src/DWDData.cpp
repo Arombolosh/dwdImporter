@@ -16,7 +16,7 @@
 #include <CCM_SolarRadiationModel.h>
 #include <CCM_ClimateDataLoader.h>
 
-#include "Constants.h"
+#include "DWDConstants.h"
 #include "DWDDescriptonData.h"
 
 
