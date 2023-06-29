@@ -25,6 +25,7 @@ void DWDData::createData(IBK::NotificationHandler * notify, const std::map<IBK::
 
 	FUNCID(createData);
 
+	try {
 	m_intervalDuration = intervalDuration;
 
 	m_data.clear();
@@ -55,7 +56,9 @@ void DWDData::createData(IBK::NotificationHandler * notify, const std::map<IBK::
 
 		++counter;
 	}
-
+	} catch (IBK::Exception &ex) {
+		throw IBK::Exception("Could not read DWD Data", FUNC_ID);
+	}
 }
 
 
