@@ -1,9 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>gfx/Karte_Deutschland.svg</file>
-        <file>gfx/barometer.png</file>
-        <file>gfx/sunny-day.png</file>
-        <file>gfx/thermometer.png</file>
-        <file>gfx/wind.png</file>
-    </qresource>
-</RCC>
