@@ -76,10 +76,10 @@ public:
 	void calculateDistances();
 
 	/*! Inits all plots. */
-	void formatPlots();
+	void formatPlots(bool init = false);
 
 	/*! Formats a qwt plot. */
-	void formatQwtPlot(QwtPlot &plot, QDate startDate, QDate endDate, QString title, QString leftYAxisTitle, double yLeftMin, double yLeftMax, double yLeftStepSize,
+	void formatQwtPlot(bool init, QwtPlot &plot, QDate startDate, QDate endDate, QString title, QString leftYAxisTitle, double yLeftMin, double yLeftMax, double yLeftStepSize,
 					   bool hasRightAxis = false, QString rightYAxisTitle = "", double yRightMin = 0, double yRightMax = 100, double yRightStepSize = 0);
 
 protected:

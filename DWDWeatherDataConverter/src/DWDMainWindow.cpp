@@ -180,7 +180,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	//resize(scaleFactor*1900, scaleFactor*1000);
 
 	// init all plots
-	formatPlots();
+	formatPlots(true);
 
 	// Add the Dockwidget
 	m_logWidget = new DWDLogWidget;
@@ -806,17 +806,17 @@ void MainWindow::downloadData(bool showPreview, bool exportEPW) {
 		m_progressDlg->hide();
 		switch (m_mode) {
 
-			case EM_EPW: {
-				QDate start = m_ui->dateEditStart->date();
-				QDate end = m_ui->dateEditStart->date();
-				if (start.daysTo(end) > 365) {
-					QMessageBox::warning(this, tr("Error in climate file creation"), tr("Only yearly data can be exported to an epw-file."));
-					return;
-				}
-				m_dwdData.exportEPW(m_ccm, latiDeg, longiDeg, m_exportPath);
-			} break;
-			case EM_C6B: m_dwdData.exportC6B(m_ccm, latiDeg, longiDeg, m_exportPath); break;
-			case NUM_EM: break;
+		case EM_EPW: {
+			QDate start = m_ui->dateEditStart->date();
+			QDate end = m_ui->dateEditStart->date();
+			if (start.daysTo(end) > 365) {
+				QMessageBox::warning(this, tr("Error in climate file creation"), tr("Only yearly data can be exported to an epw-file."));
+				return;
+			}
+			m_dwdData.exportEPW(m_ccm, latiDeg, longiDeg, m_exportPath);
+		} break;
+		case EM_C6B: m_dwdData.exportC6B(m_ccm, latiDeg, longiDeg, m_exportPath); break;
+		case NUM_EM: break;
 		}
 
 		QMessageBox::information(this, QString("Climate file export"), tr("Climate file generation succesfully done.\n%1").arg(QString::fromStdString(m_exportPath.str())));
@@ -980,32 +980,39 @@ void MainWindow::updateMaximumHeightOfPlots() {
 
 void MainWindow::on_pushButtonDownload_clicked(){
 
-	QString extension;
-	switch (m_mode) {
-	case EM_EPW: extension = ".epw"; break;
-	case EM_C6B: extension = ".c6b"; break;
-	case NUM_EM: break;
+	try {
+		QString extension;
+		switch (m_mode) {
+		case EM_EPW: extension = ".epw"; break;
+		case EM_C6B: extension = ".c6b"; break;
+		case NUM_EM: break;
+		}
+
+		// request file name
+		QString filename = QFileDialog::getSaveFileName(
+					this,
+					tr("Save Climate File"),
+					"",
+					tr("Weather file (*%1);;All files (*.*)").arg(extension) );
+
+		if (filename.isEmpty()) {
+			QMessageBox::warning(this, tr("Export-Error"), tr("Please Select a valid file name for the exporting weather-data (%1).").arg(extension));
+			return;
+		}
+
+		if (!filename.endsWith(extension))
+			filename.append(extension);
+
+		m_exportPath = IBK::Path(filename.toStdString());
+		downloadData(true, true);
+		formatPlots();
 	}
+	catch (IBK::Exception &ex) {
+		m_progressDlg->hide();
+		QMessageBox::warning(this, tr("Error reading DWD Data."),
+							 tr("Could not read DWD Data. See Error below.\n%1").arg(QString::fromStdString(ex.what())));
 
-	// request file name
-	QString filename = QFileDialog::getSaveFileName(
-				this,
-				tr("Save Climate File"),
-				"",
-				tr("Weather file (*%1);;All files (*.*)").arg(extension) );
-
-	if (filename.isEmpty()) {
-		QMessageBox::warning(this, tr("Export-Error"), tr("Please Select a valid file name for the exporting weather-data (%1).").arg(extension));
-		return;
 	}
-
-	if (!filename.endsWith(extension))
-		filename.append(extension);
-
-	m_exportPath = IBK::Path(filename.toStdString());
-
-	downloadData(true, true);
-	formatPlots();
 }
 
 void MainWindow::addToList(const QUrlInfo qUrlI){
@@ -1046,17 +1053,18 @@ void MainWindow::calculateDistances() {
 	}
 }
 
-void MainWindow::formatPlots() {
-	formatQwtPlot(*m_ui->plotTemp, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Air Temperature", "C", -20, 40, 20, false);
-	formatQwtPlot(*m_ui->plotPres, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Pressure", "kPa", 0, 1.4, 0.2, false);
-	formatQwtPlot(*m_ui->plotRad, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Shortwave Radiation", "W/m2", 0, 1400, 200, false);
-	formatQwtPlot(*m_ui->plotRain, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Precipitation", "mm", 0, 50, 10, false);
-	formatQwtPlot(*m_ui->plotWind, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Wind speed", "m/s", 0, 100, 20, false);
-	formatQwtPlot(*m_ui->plotRelHum, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Relative Humidity", "%", 0, 100, 20, false);
+void MainWindow::formatPlots(bool init) {
+	formatQwtPlot(init, *m_ui->plotTemp, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Air Temperature", "C", -20, 40, 20, false);
+	formatQwtPlot(init, *m_ui->plotPres, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Pressure", "kPa", 0, 1.4, 0.2, false);
+	formatQwtPlot(init, *m_ui->plotRad, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Shortwave Radiation", "W/m2", 0, 1400, 200, false);
+	formatQwtPlot(init, *m_ui->plotRain, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Precipitation", "mm", 0, 50, 10, false);
+	formatQwtPlot(init, *m_ui->plotWind, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Wind speed", "m/s", 0, 100, 20, false);
+	formatQwtPlot(init, *m_ui->plotRelHum, m_ui->dateEditStart->date(), m_ui->dateEditEnd->date(), "Relative Humidity", "%", 0, 100, 20, false);
 }
 
-void MainWindow::formatQwtPlot(QwtPlot &plot, QDate startDate, QDate endDate, QString title, QString leftYAxisTitle, double yLeftMin, double yLeftMax, double yLeftStepSize,
+void MainWindow::formatQwtPlot(bool init, QwtPlot &plot, QDate startDate, QDate endDate, QString title, QString leftYAxisTitle, double yLeftMin, double yLeftMax, double yLeftStepSize,
 							   bool hasRightAxis, QString rightYAxisTitle, double yRightMin, double yRightMax, double yRightStepSize) {
+
 
 	// initialize start and end date
 	QDateTime start(startDate, QTime(0,0,0,0), Qt::UTC);
@@ -1075,8 +1083,8 @@ void MainWindow::formatQwtPlot(QwtPlot &plot, QDate startDate, QDate endDate, QS
 	// assume an average month has 30 days
 	unsigned int months = days / 30;
 
-	for(unsigned int i=0; i<months; ++i)
-		majorTicks.push_back(QwtDate::toDouble(start.addMonths(i) ) );
+	for(unsigned int i=0; i<months/2; ++i)
+		majorTicks.push_back(QwtDate::toDouble(start.addMonths(2*i) ) );
 
 	// Init Scale Divider
 	QwtScaleDiv scaleDiv(QwtDate::toDouble(start), QwtDate::toDouble(end), QList<double>(), QList<double>(), majorTicks);
@@ -1128,11 +1136,12 @@ void MainWindow::formatQwtPlot(QwtPlot &plot, QDate startDate, QDate endDate, QS
 
 	QwtDateScaleEngine *scaleEngine = new QwtDateScaleEngine(Qt::UTC);
 
+	plot.enableAxis(QwtPlot::xBottom, !init);
 	// Set scale draw engine
 	plot.setAxisScaleDraw(QwtPlot::xBottom, scaleDrawTemp);
-	//plot.setAxisScaleDiv(QwtPlot::xBottom, scaleDiv);
 	plot.setAxisScaleEngine(QwtPlot::xBottom, scaleEngine);
 	plot.setMinimumWidth(350);
+
 
 	// Init Grid
 	QwtPlotGrid *grid = new QwtPlotGrid;
